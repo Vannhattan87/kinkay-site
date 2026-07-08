@@ -1,7 +1,7 @@
 ---
 title: "Vì sao lớp nền glow của KINKAY nhìn gần vẫn là da?"
 date: 2026-07-08
-cover: assets/img/beautyqueen/beautyqueen_001.jpg
+cover: /assets/img/beautyqueen/beautyqueen_001.jpg
 excerpt: "Câu trả lời không nằm ở cây phấn nào xịn hơn. Nó nằm ở thứ tự làm việc."
 ---
 

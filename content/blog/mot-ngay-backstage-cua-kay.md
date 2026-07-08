@@ -1,7 +1,7 @@
 ---
 title: "Một ngày backstage: makeup cho pageant khác gì makeup cho cô dâu?"
 date: 2026-06-28
-cover: assets/img/beautyqueen/beautyqueen_003.jpg
+cover: /assets/img/beautyqueen/beautyqueen_003.jpg
 excerpt: "Backstage pageant dạy mình những thứ không trường lớp nào dạy — và khách của mình hưởng hết."
 ---
 

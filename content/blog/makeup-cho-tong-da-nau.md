@@ -1,7 +1,7 @@
 ---
 title: "Da nâu không cần trắng hơn — cần đúng tông hơn"
 date: 2026-06-20
-cover: assets/img/lookbook/lookbook_002.jpg
+cover: /assets/img/lookbook/lookbook_002.jpg
 excerpt: "Sai lầm phổ biến nhất với da nâu là cố nâng tông. Vẻ đẹp của da nâu nằm ở chiều sâu của nó."
 ---
 

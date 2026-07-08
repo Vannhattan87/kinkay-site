@@ -10,7 +10,7 @@ display_url: https://kinkay.vn
 logo_url: https://kinkay.vn/apple-touch-icon.png
 
 media_folder: "static/assets/uploads"
-public_folder: "assets/uploads"
+public_folder: "/assets/uploads"
 
 collections:
   - name: "blog"
@@ -22,7 +22,7 @@ collections:
     fields:
       - { label: "Tiêu đề", name: "title", widget: "string" }
       - { label: "Ngày đăng", name: "date", widget: "datetime", format: "YYYY-MM-DD", time_format: false }
-      - { label: "Ảnh cover", name: "cover", widget: "image", hint: "Ảnh ngang đẹp nhất của bài — hiện trên trang Blog và khi share link" }
+      - { label: "Ảnh cover", name: "cover", widget: "image", media_folder: "/static/assets/uploads", public_folder: "/assets/uploads", hint: "Ảnh ngang đẹp nhất của bài — hiện trên trang Blog và khi share link" }
       - { label: "Mô tả ngắn", name: "excerpt", widget: "string", hint: "1-2 câu, hiện dưới tiêu đề trên trang Blog" }
       - { label: "Nội dung", name: "body", widget: "markdown", hint: "Viết như nói chuyện với khách. Dùng nút H2 cho tiêu đề mục." }
 
@@ -46,5 +46,5 @@ collections:
               - label: "Ảnh trong nhóm"
                 name: "images"
                 widget: "list"
-                field: { label: "Ảnh", name: "image", widget: "image" }
+                field: { label: "Ảnh", name: "image", widget: "image", media_folder: "/static/assets/img", public_folder: "/assets/img" }
                 hint: "Ảnh đầu tiên là ảnh mặt tiền của nhóm. Kéo thả để đổi thứ tự."
