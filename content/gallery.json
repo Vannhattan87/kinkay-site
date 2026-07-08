@@ -1,0 +1,120 @@
+{
+ "categories": [
+  {
+   "slug": "bridal",
+   "label_vi": "Cô dâu",
+   "label_en": "Bridal",
+   "images": [
+    "assets/img/bridal/bridal_001.jpg",
+    "assets/img/bridal/bridal_002.jpg",
+    "assets/img/bridal/bridal_003.jpg",
+    "assets/img/bridal/bridal_004.jpg",
+    "assets/img/bridal/bridal_005.jpg",
+    "assets/img/bridal/bridal_006.jpg",
+    "assets/img/bridal/bridal_007.jpg",
+    "assets/img/bridal/bridal_008.jpg",
+    "assets/img/bridal/bridal_009.jpg",
+    "assets/img/bridal/bridal_010.jpg",
+    "assets/img/bridal/bridal_011.jpg",
+    "assets/img/bridal/bridal_012.jpg",
+    "assets/img/bridal/bridal_013.jpg",
+    "assets/img/bridal/bridal_014.jpg",
+    "assets/img/bridal/bridal_015.jpg",
+    "assets/img/bridal/bridal_016.jpg"
+   ]
+  },
+  {
+   "slug": "beautyqueen",
+   "label_vi": "Hoa hậu",
+   "label_en": "Beauty Queen",
+   "images": [
+    "assets/img/beautyqueen/beautyqueen_001.jpg",
+    "assets/img/beautyqueen/beautyqueen_002.jpg",
+    "assets/img/beautyqueen/beautyqueen_003.jpg",
+    "assets/img/beautyqueen/beautyqueen_004.jpg",
+    "assets/img/beautyqueen/beautyqueen_005.jpg",
+    "assets/img/beautyqueen/beautyqueen_006.jpg",
+    "assets/img/beautyqueen/beautyqueen_007.jpg",
+    "assets/img/beautyqueen/beautyqueen_008.jpg",
+    "assets/img/beautyqueen/beautyqueen_009.jpg",
+    "assets/img/beautyqueen/beautyqueen_010.jpg"
+   ]
+  },
+  {
+   "slug": "celebrity",
+   "label_vi": "Nghệ sĩ",
+   "label_en": "Celebrity",
+   "images": [
+    "assets/img/celebrity/celebrity_001.jpg",
+    "assets/img/celebrity/celebrity_002.jpg",
+    "assets/img/celebrity/celebrity_003.jpg",
+    "assets/img/celebrity/celebrity_004.jpg",
+    "assets/img/celebrity/celebrity_005.jpg",
+    "assets/img/celebrity/celebrity_006.jpg",
+    "assets/img/celebrity/celebrity_007.jpg",
+    "assets/img/celebrity/celebrity_008.jpg",
+    "assets/img/celebrity/celebrity_009.jpg",
+    "assets/img/celebrity/celebrity_010.jpg",
+    "assets/img/celebrity/celebrity_011.jpg",
+    "assets/img/celebrity/celebrity_012.jpg",
+    "assets/img/celebrity/celebrity_013.jpg",
+    "assets/img/celebrity/celebrity_014.jpg"
+   ]
+  },
+  {
+   "slug": "lookbook",
+   "label_vi": "Look Book",
+   "label_en": "Look Book",
+   "images": [
+    "assets/img/lookbook/lookbook_001.jpg",
+    "assets/img/lookbook/lookbook_002.jpg",
+    "assets/img/lookbook/lookbook_003.jpg",
+    "assets/img/lookbook/lookbook_004.jpg",
+    "assets/img/lookbook/lookbook_005.jpg",
+    "assets/img/lookbook/lookbook_006.jpg"
+   ]
+  },
+  {
+   "slug": "party",
+   "label_vi": "Tiệc",
+   "label_en": "Party",
+   "images": [
+    "assets/img/party/party_001.jpg",
+    "assets/img/party/party_002.jpg",
+    "assets/img/party/party_003.jpg",
+    "assets/img/party/party_004.jpg",
+    "assets/img/party/party_005.jpg"
+   ]
+  },
+  {
+   "slug": "concept",
+   "label_vi": "Concept",
+   "label_en": "Concept",
+   "images": [
+    "assets/img/concept/concept_001.jpg",
+    "assets/img/concept/concept_002.jpg",
+    "assets/img/concept/concept_003.jpg"
+   ]
+  },
+  {
+   "slug": "kinkay",
+   "label_vi": "KINKAY",
+   "label_en": "KINKAY",
+   "images": [
+    "assets/img/kinkay/kinkay_001.jpg",
+    "assets/img/kinkay/kinkay_002.jpg",
+    "assets/img/kinkay/kinkay_003.jpg",
+    "assets/img/kinkay/kinkay_004.jpg",
+    "assets/img/kinkay/kinkay_005.jpg",
+    "assets/img/kinkay/kinkay_006.jpg",
+    "assets/img/kinkay/kinkay_007.jpg",
+    "assets/img/kinkay/kinkay_008.jpg",
+    "assets/img/kinkay/kinkay_009.jpg",
+    "assets/img/kinkay/kinkay_010.jpg",
+    "assets/img/kinkay/kinkay_011.jpg",
+    "assets/img/kinkay/kinkay_012.jpg",
+    "assets/img/kinkay/kinkay_013.jpg"
+   ]
+  }
+ ]
+}

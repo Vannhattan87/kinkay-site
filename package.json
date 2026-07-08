@@ -1,0 +1,6 @@
+{
+  "name": "kinkay-site",
+  "private": true,
+  "scripts": { "build": "node build.js" },
+  "dependencies": { "marked": "^12.0.0", "sharp": "^0.33.0" }
+}

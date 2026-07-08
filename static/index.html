@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="vi"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KINKAY — a beauty atelier | Makeup &amp; Hair Styling HCMC</title>
+<meta name="description" content="KINKAY — a beauty atelier. Makeup &amp; hair styling by Kay. Soft glam, bridal, beauty queen, editorial. HCMC · nhận lịch toàn quốc.">
+<link rel="canonical" href="https://kinkay.vn/">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://kinkay.vn/">
+<meta property="og:site_name" content="KINKAY">
+<meta property="og:title" content="KINKAY — a beauty atelier">
+<meta property="og:description" content="Makeup &amp; hair styling by Kay — soft glam, bridal, beauty queen, editorial. HCMC · nhận lịch toàn quốc.">
+<meta property="og:image" content="https://kinkay.vn/assets/img/og_cover.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="vi_VN">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="KINKAY — a beauty atelier">
+<meta name="twitter:description" content="Makeup &amp; hair styling by Kay — soft glam, bridal, beauty queen, editorial.">
+<meta name="twitter:image" content="https://kinkay.vn/assets/img/og_cover.jpg">
+<meta name="theme-color" content="#1A0F08">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&amp;family=Be+Vietnam+Pro:wght@300;400;500&amp;display=swap" rel="stylesheet">
+<style>
+:root{
+  --cream:#FAF7F2; --espresso:#2C1810; --gold:#C4A882; --taupe:#8B6B52;
+  --sand:#E8DDD0; --ink:#1A0F08; --paper:#FDFAF6;
+  --display:'Playfair Display','Times New Roman',serif;
+  --body:'Be Vietnam Pro',-apple-system,'Segoe UI',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:var(--body);font-weight:300;background:var(--cream);color:var(--espresso);line-height:1.7}
+img{display:block;max-width:100%;height:auto}
+a{color:inherit;text-decoration:none}
+h1,h2,h3{font-family:var(--display);font-weight:500}
+.wrap{max-width:1100px;margin:0 auto;padding:0 20px}
+.eyebrow{font-size:11.5px;letter-spacing:.38em;text-transform:uppercase;color:var(--gold);font-weight:400}
+.section{padding:110px 0}
+.section-head{text-align:center;margin-bottom:60px}
+.section-head h2{font-size:clamp(30px,4.4vw,46px);letter-spacing:.04em;margin-top:12px}
+
+/* scroll reveal */
+.reveal{opacity:0;transform:translateY(26px);transition:opacity .8s ease,transform .8s ease}
+.reveal.in{opacity:1;transform:none}
+
+/* WORDMARK */
+.wordmark{display:inline-block;text-align:center;line-height:1;font-family:var(--display)}
+.wordmark .wm-name{font-size:1em;letter-spacing:.4em;text-indent:.4em;white-space:nowrap}
+.wordmark .wm-rule{display:block;width:72%;height:1px;background:var(--gold);margin:.42em auto .38em}
+.wordmark .wm-sub{font-size:.26em;letter-spacing:.5em;text-indent:.5em;text-transform:uppercase;white-space:nowrap;color:var(--gold);font-family:var(--body);font-weight:300}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:50;display:flex;align-items:center;justify-content:space-between;
+  padding:16px 24px;transition:background .3s,box-shadow .3s,padding .3s}
+nav.solid{background:rgba(250,247,242,.97);box-shadow:0 1px 0 rgba(44,24,16,.08);padding:10px 24px}
+.brand{font-family:var(--display);font-size:20px;letter-spacing:.32em;text-indent:.32em;color:#fff;transition:color .3s;
+  text-shadow:0 1px 8px rgba(26,15,8,.45)}
+nav.solid .brand{color:var(--espresso);text-shadow:none}
+nav ul{display:flex;gap:28px;list-style:none;align-items:center}
+nav ul a{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:#fff;transition:color .3s;font-weight:400;
+  text-shadow:0 1px 6px rgba(26,15,8,.4)}
+nav.solid ul a{color:var(--espresso);text-shadow:none}
+nav ul a:hover{color:var(--gold)}
+.lang-btn{background:none;border:1px solid currentColor;border-radius:2px;color:#fff;
+  font-family:var(--body);font-size:11.5px;letter-spacing:.12em;padding:4px 10px;cursor:pointer;transition:.3s}
+nav.solid .lang-btn{color:var(--espresso)}
+.lang-btn:hover{background:var(--gold);border-color:var(--gold);color:#fff}
+.nav-book{border:1px solid var(--gold);color:var(--gold)!important;padding:8px 18px;border-radius:2px;transition:.3s;text-shadow:none!important}
+.nav-book:hover{background:var(--gold);color:#fff!important}
+.burger{display:none;background:none;border:none;color:#fff;font-size:26px;cursor:pointer;text-shadow:0 1px 6px rgba(26,15,8,.5)}
+nav.solid .burger{color:var(--espresso);text-shadow:none}
+
+/* HERO */
+.hero{position:relative;min-height:100svh;display:flex;align-items:flex-end;overflow:hidden;background:var(--ink)}
+.hero .bg{position:absolute;inset:0;background:url('assets/img/hero_01.jpg') center 18%/cover no-repeat;
+  animation:heroZoom 14s ease-out forwards}
+@keyframes heroZoom{from{transform:scale(1.08)}to{transform:scale(1)}}
+.hero::after{content:"";position:absolute;inset:0;
+  background:linear-gradient(to top,rgba(26,15,8,.87) 0%,rgba(26,15,8,.2) 50%,rgba(26,15,8,.32) 100%)}
+.hero-inner{position:relative;z-index:2;width:100%;max-width:1100px;margin:0 auto;
+  padding:0 20px 11vh;color:var(--cream);animation:fadeUp 1.1s .2s ease both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:none}}
+.hero-inner .wordmark{font-size:clamp(46px,8vw,80px);color:var(--cream);
+  text-shadow:0 2px 24px rgba(26,15,8,.55);margin-bottom:22px}
+.hero-inner .sub{max-width:480px;margin:0 0 34px;font-size:clamp(15px,1.8vw,17.5px);color:var(--sand);
+  text-shadow:0 1px 8px rgba(26,15,8,.5)}
+.btn{display:inline-block;background:var(--gold);color:var(--ink);padding:15px 36px;border-radius:2px;
+  font-family:var(--body);font-weight:500;font-size:13px;letter-spacing:.2em;text-transform:uppercase;
+  transition:.3s;border:none;cursor:pointer}
+.btn:hover{background:var(--cream);color:var(--espresso);transform:translateY(-2px);box-shadow:0 8px 24px rgba(26,15,8,.35)}
+.btn-ghost{background:none;border:1px solid var(--sand);color:var(--sand);margin-left:14px}
+.btn-ghost:hover{border-color:var(--gold);color:var(--gold);background:none;box-shadow:none}
+
+/* sticky mobile CTA */
+.mcta{display:none;position:fixed;left:0;right:0;bottom:0;z-index:48;background:var(--gold);color:var(--ink);
+  text-align:center;padding:15px 16px;font-family:var(--body);font-weight:500;font-size:13.5px;
+  letter-spacing:.2em;text-transform:uppercase;box-shadow:0 -4px 18px rgba(26,15,8,.25);
+  transform:translateY(110%);transition:transform .4s}
+.mcta.show{transform:none}
+
+/* CREDITS */
+.credits{background:var(--ink);color:var(--sand);padding:38px 0;overflow:hidden}
+.credits .wrap{display:flex;flex-wrap:wrap;justify-content:center;gap:16px 0;align-items:center}
+.credits span.item{font-size:12px;letter-spacing:.2em;text-transform:uppercase;white-space:nowrap;padding:0 24px;
+  border-right:1px solid rgba(196,168,130,.35);font-weight:300}
+.credits span.item:last-child{border-right:none}
+
+/* APPROACH */
+.approach{background:var(--paper)}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:34px;margin-top:14px}
+.step{padding:42px 32px;background:var(--cream);border-top:2px solid var(--gold);transition:transform .35s,box-shadow .35s}
+.step:hover{transform:translateY(-6px);box-shadow:0 16px 36px rgba(44,24,16,.12)}
+.step .num{font-size:11px;letter-spacing:.32em;color:var(--taupe)}
+.step h3{font-size:27px;letter-spacing:.2em;margin:12px 0 4px;color:var(--espresso)}
+.step h4{font-size:14.5px;font-style:italic;font-family:var(--display);color:var(--taupe);margin-bottom:14px;font-weight:400}
+.step p{font-size:14.5px}
+.approach-intro{text-align:center;max-width:560px;margin:0 auto 50px;font-style:italic;
+  font-family:var(--display);font-size:18px;color:var(--taupe)}
+
+/* PORTFOLIO — decks */
+.decks{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,170px));justify-content:center;
+  gap:52px 40px;max-width:960px;margin:0 auto}
+.deck{position:relative;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.deck .card{position:relative;aspect-ratio:3/4;border-radius:4px;overflow:hidden;
+  box-shadow:0 12px 30px rgba(44,24,16,.25);transition:transform .4s cubic-bezier(.2,.7,.3,1.2)}
+.deck .card img{width:100%;height:100%;object-fit:cover;transition:transform .6s}
+.deck .layer{position:absolute;inset:0;border-radius:4px;background:var(--sand) center/cover no-repeat;
+  box-shadow:0 6px 18px rgba(44,24,16,.15);transition:transform .4s cubic-bezier(.2,.7,.3,1.2)}
+.deck .layer.l1{transform:rotate(-5deg) translate(-7px,5px)}
+.deck .layer.l2{transform:rotate(4deg) translate(8px,3px)}
+.deck:hover .card{transform:translateY(-12px) rotate(-1deg) scale(1.03)}
+.deck:hover .card img{transform:scale(1.08)}
+.deck:hover .layer.l1{transform:rotate(-10deg) translate(-16px,9px)}
+.deck:hover .layer.l2{transform:rotate(8deg) translate(17px,5px)}
+.deck .card::after{content:"";position:absolute;inset:0;border-radius:4px;
+  background:linear-gradient(to top,rgba(26,15,8,.75) 0%,transparent 52%)}
+.deck .card-title{position:absolute;bottom:13px;left:6px;right:6px;z-index:2;text-align:center;
+  font-family:var(--display);color:var(--cream);font-size:clamp(14px,1.6vw,17px);
+  letter-spacing:.12em;text-transform:uppercase;text-shadow:0 1px 6px rgba(0,0,0,.55);transition:color .3s}
+.deck:hover .card-title{color:var(--gold)}
+.deck-label{text-align:center;margin-top:14px}
+.deck-label .name{font-family:var(--display);font-size:16.5px;letter-spacing:.12em;text-transform:uppercase;transition:color .3s}
+.deck:hover .deck-label .name{color:var(--gold)}
+.deck-label .count{font-size:11px;letter-spacing:.24em;color:var(--taupe);text-transform:uppercase;margin-top:2px}
+
+/* VIEWER */
+.viewer{position:fixed;inset:0;z-index:99;background:rgba(26,15,8,.96);display:none;flex-direction:column;
+  align-items:center;justify-content:center;touch-action:pan-y}
+.viewer.open{display:flex}
+.viewer img{max-width:94vw;max-height:78vh;border-radius:3px;user-select:none;-webkit-user-drag:none}
+.viewer .v-head{position:absolute;top:0;left:0;right:0;display:flex;align-items:center;justify-content:space-between;
+  padding:14px 18px;color:var(--sand)}
+.viewer .v-title{font-size:12px;letter-spacing:.24em;text-transform:uppercase}
+.viewer .v-count{font-size:12.5px;letter-spacing:.14em;color:var(--gold);margin-left:14px}
+.viewer button{background:none;border:none;color:var(--sand);font-family:var(--display);font-size:34px;
+  cursor:pointer;padding:12px 16px;transition:color .2s}
+.viewer button:hover{color:var(--gold)}
+.viewer .v-prev,.viewer .v-next{position:absolute;top:50%;transform:translateY(-50%)}
+.viewer .v-prev{left:2px}.viewer .v-next{right:2px}
+.viewer .v-hint{position:absolute;bottom:18px;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:rgba(232,221,208,.55)}
+
+/* VIDEO */
+.videos{background:var(--ink);color:var(--sand)}
+.videos .section-head h2{color:var(--cream)}
+.videos-sub{text-align:center;max-width:480px;margin:-34px auto 46px;font-style:italic;font-family:var(--display);color:var(--taupe)}
+.vid-row{display:flex;gap:20px;overflow-x:auto;padding:6px 4px 18px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch}
+.vid-row::-webkit-scrollbar{height:6px}
+.vid-row::-webkit-scrollbar-thumb{background:rgba(196,168,130,.4);border-radius:3px}
+.vid{flex:0 0 220px;scroll-snap-align:center}
+.vid video{width:100%;aspect-ratio:9/16;object-fit:cover;border-radius:6px;background:#000;
+  box-shadow:0 10px 28px rgba(0,0,0,.4)}
+
+/* TESTIMONIALS */
+.testi{background:var(--paper)}
+.testi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:28px;max-width:1020px;margin:0 auto}
+.tcard{background:var(--cream);border-top:2px solid var(--gold);padding:40px 30px 30px;position:relative;
+  transition:transform .35s,box-shadow .35s}
+.tcard:hover{transform:translateY(-5px);box-shadow:0 14px 32px rgba(44,24,16,.1)}
+.tcard::before{content:"\201C";position:absolute;top:10px;left:22px;font-family:var(--display);
+  font-size:64px;color:var(--gold);opacity:.45;line-height:1}
+.tcard p{font-style:italic;font-family:var(--display);font-size:16.5px;margin-bottom:18px;position:relative;z-index:1;line-height:1.6}
+.tcard .who{font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--taupe)}
+.testi-note{text-align:center;margin-top:38px;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--taupe)}
+
+/* SERVICES */
+.services{background:var(--espresso);color:var(--sand)}
+.services .section-head h2{color:var(--cream)}
+.svc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:26px}
+.svc{border:1px solid rgba(196,168,130,.3);padding:38px 30px;border-radius:2px;transition:border-color .3s,transform .3s}
+.svc:hover{border-color:var(--gold);transform:translateY(-4px)}
+.svc h3{font-size:22px;letter-spacing:.06em;color:var(--cream);margin-bottom:12px}
+.svc p{font-size:14px;min-height:66px}
+.svc-note{text-align:center;margin-top:44px;font-style:italic;font-family:var(--display);font-size:15px;color:var(--taupe)}
+
+/* KAY'S KIT */
+.kit{background:var(--paper);text-align:center;padding:88px 0}
+.kit-sub{max-width:420px;margin:-34px auto 44px;font-style:italic;font-family:var(--display);color:var(--taupe)}
+.kit-row{display:flex;flex-wrap:wrap;justify-content:center;gap:18px 0;max-width:900px;margin:0 auto}
+.kit-row span{font-family:var(--display);font-size:clamp(17px,2.2vw,22px);letter-spacing:.06em;
+  color:var(--espresso);padding:0 26px;border-right:1px solid var(--gold);line-height:1.4}
+.kit-row span:last-child{border-right:none}
+
+/* ABOUT */
+.about-grid{display:grid;grid-template-columns:5fr 6fr;gap:60px;align-items:center}
+.about-grid img{border-radius:4px;box-shadow:0 18px 44px rgba(44,24,16,.18)}
+.about-txt p{margin-bottom:16px;font-size:15.5px;white-space:pre-line}
+.about-quote{margin:28px 0 8px;font-style:italic;font-family:var(--display);font-size:19px;
+  color:var(--taupe);border-left:2px solid var(--gold);padding-left:18px;line-height:1.6}
+.about-sign{font-size:12.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold)}
+
+/* JOURNAL */
+.journal{background:var(--paper)}
+.journal-sub{text-align:center;max-width:460px;margin:-34px auto 46px;font-style:italic;font-family:var(--display);color:var(--taupe)}
+.jgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:28px;max-width:1020px;margin:0 auto 44px}
+.jcard{background:var(--cream);border-radius:4px;overflow:hidden;box-shadow:0 10px 28px rgba(44,24,16,.1);
+  transition:transform .3s,box-shadow .3s;display:block}
+.jcard:hover{transform:translateY(-6px);box-shadow:0 18px 40px rgba(44,24,16,.16)}
+.jcard img{width:100%;aspect-ratio:16/10;object-fit:cover}
+.jcard .in{padding:22px 24px 26px}
+.jcard .jdate{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--taupe)}
+.jcard h3{font-size:20px;line-height:1.4;margin:8px 0 10px}
+.jcard p{font-size:14px;color:var(--taupe)}
+.journal-more{text-align:center}
+.btn-line{display:inline-block;border:1px solid var(--gold);color:var(--taupe);padding:12px 30px;border-radius:2px;
+  font-size:12.5px;letter-spacing:.18em;text-transform:uppercase;transition:.3s}
+.btn-line:hover{background:var(--gold);color:var(--ink)}
+
+/* BOOKING */
+.booking{background:var(--sand);text-align:center}
+.booking .sub{max-width:430px;margin:0 auto 34px;color:var(--taupe)}
+.channels{display:flex;flex-wrap:wrap;gap:10px 28px;justify-content:center;margin-top:38px}
+.channels a{font-size:13.5px;color:var(--taupe);border-bottom:1px solid transparent;transition:.25s}
+.channels a:hover{color:var(--espresso);border-color:var(--gold)}
+.channels a b{font-weight:400;color:var(--espresso)}
+
+/* FOOTER */
+footer{background:var(--ink);color:var(--taupe);text-align:center;padding:56px 20px 64px}
+footer .wordmark{font-size:26px;color:var(--sand);margin-bottom:18px}
+footer p{font-size:11.5px;letter-spacing:.24em;text-transform:uppercase}
+
+/* MOBILE */
+@media(max-width:760px){
+  nav ul{position:fixed;top:0;right:-100%;height:100vh;width:72vw;background:var(--ink);
+    flex-direction:column;justify-content:center;gap:34px;transition:right .35s}
+  nav ul.open{right:0}
+  nav ul a{color:var(--cream)!important;font-size:15px;text-shadow:none}
+  .burger{display:block;z-index:60}
+  .steps{grid-template-columns:1fr}
+  .about-grid{grid-template-columns:1fr}
+  .decks{grid-template-columns:repeat(2,minmax(130px,1fr));gap:40px 22px;padding:0 6px}
+  .hero-inner{padding-bottom:16vh}
+  .btn-ghost{margin-left:0;margin-top:12px}
+  .section{padding:76px 0}
+  .credits span.item{border-right:none;padding:0 10px}
+  .mcta{display:block}
+  .vid{flex:0 0 66vw}
+  footer{padding-bottom:96px}
+}
+</style>
+</head>
+<body>
+
+<nav id="nav">
+  <a class="brand" href="#top">KINKAY</a>
+  <button class="burger" id="burger" aria-label="menu">☰</button>
+  <ul id="menu">
+    <li><a href="#portfolio" data-t="nav.portfolio">Portfolio</a></li>
+    <li><a href="#approach" data-t="nav.approach">Phương pháp</a></li>
+    <li><a href="#services" data-t="nav.services">Dịch vụ</a></li>
+    <li><a href="#about" data-t="nav.about">Về Kay</a></li>
+    <li><a href="blog/" data-t="nav.blog">Blog</a></li>
+    <li><a class="nav-book" href="#booking" data-t="nav.book">Đặt lịch</a></li>
+    <li><button class="lang-btn" id="langBtn">EN</button></li>
+  </ul>
+</nav>
+
+<header class="hero" id="top">
+  <div class="bg"></div>
+  <div class="hero-inner">
+    <div class="wordmark">
+      <span class="wm-name">KINKAY</span>
+      <span class="wm-rule"></span>
+      <span class="wm-sub" data-t="hero.tagline">a beauty atelier</span>
+    </div>
+    <p class="sub" data-t="hero.sub">Makeup &amp; hair styling — sắc nét, sang, và vẫn là chính bạn.</p>
+    <a class="btn" href="#booking" data-t="hero.cta">Đặt lịch với Kay</a>
+    <a class="btn btn-ghost" href="#portfolio" data-t="hero.scroll">Xem portfolio</a>
+  </div>
+</header>
+
+<a class="mcta" id="mcta" href="#booking" data-t="hero.cta">Đặt lịch với Kay</a>
+
+<div class="credits" id="credits"><div class="wrap"><span class="item">Miss Cosmo Vietnam</span><span class="item">Miss Cosmo International</span><span class="item">Hoa Hậu Việt Nam</span><span class="item">Miss Grand Vietnam</span><span class="item">Aquafina Vietnam Int'l Fashion Week</span><span class="item">DCM Design</span><span class="item">Đỗ Long Design</span><span class="item">Adrian Anh Tuấn Shows</span><span class="item">Vietnam Wedding Fest</span></div></div>
+
+<section class="section approach" id="approach">
+  <div class="wrap">
+    <div class="section-head reveal in">
+      <div class="eyebrow">KINKAY</div>
+      <h2 data-t="approach.heading">The KINKAY Approach</h2>
+    </div>
+    <p class="approach-intro reveal in" data-t="approach.intro">Không có công thức chung cho mọi gương mặt. Chỉ có một cách làm đúng: bắt đầu từ chính bạn.</p>
+    <div class="steps" id="steps">
+    <div class="step reveal in" style="transition-delay:0ms">
+      <div class="num">01</div>
+      <h3>READ</h3>
+      <h4>Đọc gương mặt</h4>
+      <p>Trước khi chạm cọ, Kay đọc khuôn mặt: cấu trúc xương, tông da, nét nào là nét đắt giá nhất của bạn.</p>
+    </div>
+    <div class="step reveal in" style="transition-delay:120ms">
+      <div class="num">02</div>
+      <h3>SKIN</h3>
+      <h4>Nền da là nền tảng</h4>
+      <p>Da căng bóng, mỏng nhẹ, nhìn gần vẫn là da. Lớp nền đẹp nhất là lớp nền người ta không nhận ra.</p>
+    </div>
+    <div class="step reveal in" style="transition-delay:240ms">
+      <div class="num">03</div>
+      <h3>SCULPT</h3>
+      <h4>Sắc mà vẫn là mình</h4>
+      <p>Đường nét sắc, có chiều sâu — nhưng soi gương bạn vẫn nhận ra chính mình, phiên bản tự tin nhất.</p>
+    </div></div>
+  </div>
+</section>
+
+<section class="section" id="portfolio">
+  <div class="wrap">
+    <div class="section-head reveal in">
+      <div class="eyebrow">KINKAY</div>
+      <h2 data-t="portfolio.heading">Portfolio</h2>
+    </div>
+    <div class="decks" id="decks">
+    <div class="deck reveal in" data-cat="0" role="button" tabindex="0" aria-label="Cô dâu" style="transition-delay:0ms">
+      <div class="layer l1" style="background-image:url('assets/img/bridal/bridal_002.jpg')"></div>
+      <div class="layer l2" style="background-image:url('assets/img/bridal/bridal_003.jpg')"></div>
+      <div class="card"><img src="assets/img/bridal/bridal_001.jpg" alt="KINKAY Cô dâu" loading="lazy"><div class="card-title">Cô dâu</div></div>
+      <div class="deck-label">
+        <div class="count">16 ảnh</div>
+      </div>
+    </div>
+    <div class="deck reveal in" data-cat="1" role="button" tabindex="0" aria-label="Hoa hậu" style="transition-delay:90ms">
+      <div class="layer l1" style="background-image:url('assets/img/beautyqueen/beautyqueen_002.jpg')"></div>
+      <div class="layer l2" style="background-image:url('assets/img/beautyqueen/beautyqueen_003.jpg')"></div>
+      <div class="card"><img src="assets/img/beautyqueen/beautyqueen_001.jpg" alt="KINKAY Hoa hậu" loading="lazy"><div class="card-title">Hoa hậu</div></div>
+      <div class="deck-label">
+        <div class="count">10 ảnh</div>
+      </div>
+    </div>
+    <div class="deck reveal in" data-cat="2" role="button" tabindex="0" aria-label="Nghệ sĩ" style="transition-delay:180ms">
+      <div class="layer l1" style="background-image:url('assets/img/celebrity/celebrity_002.jpg')"></div>
+      <div class="layer l2" style="background-image:url('assets/img/celebrity/celebrity_003.jpg')"></div>
+      <div class="card"><img src="assets/img/celebrity/celebrity_001.jpg" alt="KINKAY Nghệ sĩ" loading="lazy"><div class="card-title">Nghệ sĩ</div></div>
+      <div class="deck-label">
+        <div class="count">14 ảnh</div>
+      </div>
+    </div>
+    <div class="deck reveal in" data-cat="3" role="button" tabindex="0" aria-label="Look Book" style="transition-delay:270ms">
+      <div class="layer l1" style="background-image:url('assets/img/lookbook/lookbook_002.jpg')"></div>
+      <div class="layer l2" style="background-image:url('assets/img/lookbook/lookbook_003.jpg')"></div>
+      <div class="card"><img src="assets/img/lookbook/lookbook_001.jpg" alt="KINKAY Look Book" loading="lazy"><div class="card-title">Look Book</div></div>
+      <div class="deck-label">
+        <div class="count">6 ảnh</div>
+      </div>
+    </div>
+    <div class="deck reveal in" data-cat="4" role="button" tabindex="0" aria-label="Tiệc" style="transition-delay:360ms">
+      <div class="layer l1" style="background-image:url('assets/img/party/party_002.jpg')"></div>
+      <div class="layer l2" style="background-image:url('assets/img/party/party_003.jpg')"></div>
+      <div class="card"><img src="assets/img/party/party_001.jpg" alt="KINKAY Tiệc" loading="lazy"><div class="card-title">Tiệc</div></div>
+      <div class="deck-label">
+        <div class="count">5 ảnh</div>
+      </div>
+    </div>
+    <div class="deck reveal in" data-cat="5" role="button" tabindex="0" aria-label="Concept" style="transition-delay:450ms">
+      <div class="layer l1" style="background-image:url('assets/img/concept/concept_002.jpg')"></div>
+      <div class="layer l2" style="background-image:url('assets/img/concept/concept_003.jpg')"></div>
+      <div class="card"><img src="assets/img/concept/concept_001.jpg" alt="KINKAY Concept" loading="lazy"><div class="card-title">Concept</div></div>
+      <div class="deck-label">
+        <div class="count">3 ảnh</div>
+      </div>
+    </div>
+    <div class="deck reveal in" data-cat="6" role="button" tabindex="0" aria-label="KINKAY" style="transition-delay:540ms">
+      <div class="layer l1" style="background-image:url('assets/img/kinkay/kinkay_002.jpg')"></div>
+      <div class="layer l2" style="background-image:url('assets/img/kinkay/kinkay_003.jpg')"></div>
+      <div class="card"><img src="assets/img/kinkay/kinkay_001.jpg" alt="KINKAY KINKAY" loading="lazy"><div class="card-title">KINKAY</div></div>
+      <div class="deck-label">
+        <div class="count">13 ảnh</div>
+      </div>
+    </div></div>
+  </div>
+</section>
+
+<section class="section videos" id="videos">
+  <div class="wrap">
+    <div class="section-head reveal in">
+      <div class="eyebrow">Backstage</div>
+      <h2 data-t="videos.heading">Behind the Glam</h2>
+    </div>
+    <p class="videos-sub reveal in" data-t="videos.sub">Kay trong hậu trường — cùng nghệ sĩ và khách của KINKAY.</p>
+    <div class="vid-row" id="vidRow">
+  <div class="vid">
+    <video src="assets/video/video_01.mp4" poster="assets/video/poster_01.jpg" controls="" playsinline="" preload="none"></video>
+  </div>
+  <div class="vid">
+    <video src="assets/video/video_02.mp4" poster="assets/video/poster_02.jpg" controls="" playsinline="" preload="none"></video>
+  </div>
+  <div class="vid">
+    <video src="assets/video/video_03.mp4" poster="assets/video/poster_03.jpg" controls="" playsinline="" preload="none"></video>
+  </div>
+  <div class="vid">
+    <video src="assets/video/video_04.mp4" poster="assets/video/poster_04.jpg" controls="" playsinline="" preload="none"></video>
+  </div>
+  <div class="vid">
+    <video src="assets/video/video_05.mp4" poster="assets/video/poster_05.jpg" controls="" playsinline="" preload="none"></video>
+  </div></div>
+  </div>
+</section>
+
+<section class="section testi" id="testimonials">
+  <div class="wrap">
+    <div class="section-head reveal in">
+      <div class="eyebrow">KINKAY</div>
+      <h2 data-t="testimonials.heading">Khách nói về Kay</h2>
+    </div>
+    <div class="testi-grid" id="testiGrid">
+    <div class="tcard reveal in" style="transition-delay:0ms">
+      <p>“Make kiểu gì mà xuống khách sạn người ta tưởng tui hoa hậu, chạy tới xin chụp hình.”</p>
+      <div class="who">Khách makeup sự kiện</div>
+    </div>
+    <div class="tcard reveal in" style="transition-delay:120ms">
+      <p>“Cảm ơn bà Kin Kay đã cho tui với mẹ tui những bộ tóc đẹp trong ngày đám cưới của tui.”</p>
+      <div class="who">Cô dâu — bridal hair</div>
+    </div>
+    <div class="tcard reveal in" style="transition-delay:240ms">
+      <p>“Ai cũng nhìn, ai cũng khen. Quá đã.”</p>
+      <div class="who">Khách makeup tiệc</div>
+    </div></div>
+    <p class="testi-note reveal in" data-t="testimonials.note">Trích nguyên văn tin nhắn khách gửi Kay</p>
+  </div>
+</section>
+
+<section class="section services" id="services">
+  <div class="wrap">
+    <div class="section-head reveal in">
+      <div class="eyebrow" style="color:var(--gold)">Makeup · Hair</div>
+      <h2 data-t="services.heading">Dịch vụ</h2>
+    </div>
+    <div class="svc-grid" id="svcGrid">
+    <div class="svc reveal in" style="transition-delay:0ms">
+      <h3>Makeup</h3>
+      <p>Tiệc, sự kiện, photoshoot editorial. Da căng bóng, nét sắc, bền suốt sự kiện.</p>
+    </div>
+    <div class="svc reveal in" style="transition-delay:100ms">
+      <h3>Hair Styling</h3>
+      <p>Blowout, soft waves, updo cho tiệc và sự kiện.</p>
+    </div>
+    <div class="svc reveal in" style="transition-delay:200ms">
+      <h3>Full Glam Combo</h3>
+      <p>Makeup + hair trọn gói cho tiệc, event, chụp hình cá nhân.</p>
+    </div>
+    <div class="svc reveal in" style="transition-delay:300ms">
+      <h3>Bridal</h3>
+      <p>Trial trước ngày cưới + day-of trọn gói. Look cô dâu sắc nét mà vẫn là bạn trong ngày quan trọng nhất.</p>
+    </div></div>
+    <p class="svc-note reveal in" data-t="services.note">Studio tại Phường Tân Hưng, TP.HCM (by appointment) · Nhận lịch toàn quốc, phụ phí di chuyển báo trước khi xác nhận. Giá chi tiết và combo — nhắn Kay để nhận menu đầy đủ.</p>
+  </div>
+</section>
+
+<section class="section kit" id="kit">
+  <div class="wrap">
+    <div class="section-head reveal in">
+      <div class="eyebrow">In the bag</div>
+      <h2 data-t="kit.heading">Kay's Kit</h2>
+    </div>
+    <p class="kit-sub reveal in" data-t="kit.sub">Những thương hiệu luôn có trong túi đồ nghề của Kay.</p>
+    <div class="kit-row reveal in" id="kitRow"><span>NARS</span><span>M·A·C</span><span>Charlotte Tilbury</span><span>YSL Beauty</span><span>Tom Ford</span><span>Chanel</span><span>Bobbi Brown</span><span>Clinique</span></div>
+  </div>
+</section>
+
+<section class="section" id="about">
+  <div class="wrap about-grid">
+    <img class="reveal in" src="assets/img/about_kay.jpg" alt="Kay — founder of KINKAY" loading="lazy">
+    <div class="about-txt reveal in">
+      <h2 style="font-size:36px;margin:8px 0 22px">Kay</h2>
+      <p data-t="about.body">Kay — Thạch Bé Trâm — bước vào nghề từ một tiệm áo cưới, nơi cô học được rằng cái đẹp nằm ở sự tỉ mỉ. Được đào tạo tại Học viện Quân Nguyễn &amp; Pu Lê và Ken Academy, sáu năm sau Kay đứng sau hậu trường Miss Cosmo International, Hoa Hậu Việt Nam, Miss Grand và các sàn diễn của Đỗ Long, Adrian Anh Tuấn.
+
+Style của Kay: soft glam, old money — tôn vẻ đẹp tự nhiên với đôi mắt sắc sảo và lớp nền glow. Đặc biệt, nhưng không quá khác biệt.
+
+Ngồi ghế KINKAY, bạn được tư vấn thật — dựa trên mắt thẩm mỹ và kinh nghiệm, không chạy theo xu hướng.</p>
+      <div class="about-quote" data-t="about.quote">“Bạn đã có nét đẹp rồi. Nhiệm vụ của tôi là làm cho mọi người nhìn ra được nó — rõ hơn và lung linh hơn.”</div>
+      <div class="about-sign" data-t="about.sign">— Kay, founder</div>
+    </div>
+  </div>
+</section>
+
+<section class="section journal" id="journal">
+  <div class="wrap">
+    <div class="section-head reveal in">
+      <div class="eyebrow">KINKAY</div>
+      <h2 data-t="journal.heading">Journal</h2>
+    </div>
+    <p class="journal-sub reveal in" data-t="journal.sub">Bí quyết makeup, hậu trường show và guide cho cô dâu — từ ghế làm việc của Kay.</p>
+    <div class="jgrid" id="jGrid">
+    <a class="jcard reveal in" href="blog/nen-glow-nhin-gan-van-la-da.html" style="transition-delay:0ms">
+      <img src="assets/img/beautyqueen/beautyqueen_001.jpg" alt="Vì sao lớp nền glow của KINKAY nhìn gần vẫn là da?" loading="lazy">
+      <div class="in"><div class="jdate">Tháng 7, 2026</div><h3>Vì sao lớp nền glow của KINKAY nhìn gần vẫn là da?</h3><p>Câu trả lời không nằm ở cây phấn nào xịn hơn. Nó nằm ở thứ tự làm việc.</p></div>
+    </a>
+    <a class="jcard reveal in" href="blog/trial-makeup-truoc-ngay-cuoi-bao-lau.html" style="transition-delay:110ms">
+      <img src="assets/img/bridal/bridal_003.jpg" alt="Nên trial makeup trước ngày cưới bao lâu?" loading="lazy">
+      <div class="in"><div class="jdate">Tháng 7, 2026</div><h3>Nên trial makeup trước ngày cưới bao lâu?</h3><p>Trial không phải để 'xem thử cho biết'. Nó là buổi làm việc quan trọng nhất trước ngày cưới của bạn.</p></div>
+    </a>
+    <a class="jcard reveal in" href="blog/mot-ngay-backstage-cua-kay.html" style="transition-delay:220ms">
+      <img src="assets/img/beautyqueen/beautyqueen_003.jpg" alt="Một ngày backstage: makeup cho pageant khác gì makeup cho cô dâu?" loading="lazy">
+      <div class="in"><div class="jdate">Tháng 6, 2026</div><h3>Một ngày backstage: makeup cho pageant khác gì makeup cho cô dâu?</h3><p>Backstage pageant dạy mình những thứ không trường lớp nào dạy — và khách của mình hưởng hết.</p></div>
+    </a></div>
+    <div class="journal-more reveal in"><a class="btn-line" href="blog/" data-t="journal.all">Xem tất cả bài viết</a></div>
+  </div>
+</section>
+
+<section class="section booking" id="booking">
+  <div class="wrap">
+    <div class="section-head reveal in" style="margin-bottom:18px">
+      <div class="eyebrow">KINKAY</div>
+      <h2 data-t="booking.heading">Đặt lịch</h2>
+    </div>
+    <p class="sub reveal in" data-t="booking.sub">Nhắn Kay ngày, giờ và dịp của bạn. Kay phản hồi trong ngày.</p>
+    <a class="btn" id="bookCta" href="https://www.instagram.com/kinkay.official/" rel="noopener" data-t="booking.cta">Nhắn Kay trên Instagram</a>
+    <div class="channels" id="channels"><a href="https://instagram.com/kinkay.official" rel="noopener" data-ch="Instagram">Instagram · <b>@kinkay.official</b></a><a href="https://tiktok.com/@kinkay.official" target="_blank" rel="noopener" data-ch="TikTok">TikTok · <b>@kinkay.official</b></a><a href="https://www.facebook.com/missTram.99/" target="_blank" rel="noopener" data-ch="Facebook">Facebook · <b>Kin Kay</b></a><a href="mailto:kinkay20t@gmail.com" target="_blank" rel="noopener" data-ch="Email">Email · <b>kinkay20t@gmail.com</b></a></div>
+  </div>
+</section>
+
+<footer>
+  <div class="wordmark">
+    <span class="wm-name">KINKAY</span>
+    <span class="wm-rule"></span>
+    <span class="wm-sub">a beauty atelier</span>
+  </div>
+  <p data-t="footer.line">KINKAY · a beauty atelier · HCMC</p>
+</footer>
+
+<div class="viewer" id="viewer">
+  <div class="v-head">
+    <div><span class="v-title" id="vTitle"></span><span class="v-count" id="vCount"></span></div>
+    <button class="v-close" aria-label="close">×</button>
+  </div>
+  <button class="v-prev" aria-label="previous">‹</button>
+  <img id="vImg" src="" alt="KINKAY portfolio">
+  <button class="v-next" aria-label="next">›</button>
+  <div class="v-hint" id="vHint"></div>
+</div>
+
+<script src="content.js"></script>
+<script src="gallery.js"></script>
+<script src="bloglist.js"></script>
+<script>
+const C = window.CONTENT, G = window.GALLERY;
+let lang = 'vi';
+
+function get(path){ return path.split('.').reduce((o,k)=>o&&o[k], C); }
+function applyLang(){
+  document.documentElement.lang = lang;
+  document.title = C.meta.title[lang];
+  document.querySelectorAll('[data-t]').forEach(el=>{
+    const v = get(el.dataset.t);
+    if(v && v[lang] !== undefined) el.textContent = v[lang];
+  });
+  document.getElementById('langBtn').textContent = lang==='vi' ? 'EN' : 'VI';
+  renderSteps(); renderServices(); renderDecks(); renderTesti(); renderKit(); renderJournal(); observeReveals();
+}
+document.getElementById('langBtn').onclick = ()=>{ lang = lang==='vi'?'en':'vi'; applyLang(); };
+
+/* credits */
+document.querySelector('#credits .wrap').innerHTML =
+  C.credits.items.map(t=>`<span class="item">${t}</span>`).join('');
+
+/* approach steps */
+function renderSteps(){
+  document.getElementById('steps').innerHTML = C.approach.steps.map((s,i)=>`
+    <div class="step reveal" style="transition-delay:${i*120}ms">
+      <div class="num">0${i+1}</div>
+      <h3>${s.name}</h3>
+      <h4>${s.title[lang]}</h4>
+      <p>${s.body[lang]}</p>
+    </div>`).join('');
+}
+
+/* services (không hiện giá) */
+function renderServices(){
+  document.getElementById('svcGrid').innerHTML = C.services.items.map((s,i)=>`
+    <div class="svc reveal" style="transition-delay:${i*100}ms">
+      <h3>${s.title[lang]}</h3>
+      <p>${s.desc[lang]}</p>
+    </div>`).join('');
+}
+
+/* testimonials */
+function renderTesti(){
+  const t = C.testimonials;
+  if(!t) return;
+  document.getElementById('testiGrid').innerHTML = t.items.map((it,i)=>`
+    <div class="tcard reveal" style="transition-delay:${i*120}ms">
+      <p>${it.quote[lang]}</p>
+      <div class="who">${it.who[lang]}</div>
+    </div>`).join('');
+}
+
+/* portfolio decks */
+function renderDecks(){
+  document.getElementById('decks').innerHTML = G.categories.map((c,i)=>{
+    const label = lang==='vi' ? c.label_vi : c.label_en;
+    const l1 = c.items[1] ? `style="background-image:url('${c.items[1].src}')"` : '';
+    const l2 = c.items[2] ? `style="background-image:url('${c.items[2].src}')"` : '';
+    return `
+    <div class="deck reveal" data-cat="${i}" role="button" tabindex="0" aria-label="${label}" style="transition-delay:${i*90}ms">
+      <div class="layer l1" ${l1}></div>
+      <div class="layer l2" ${l2}></div>
+      <div class="card"><img src="${c.items[0].src}" alt="KINKAY ${label}" loading="lazy"><div class="card-title">${label}</div></div>
+      <div class="deck-label">
+        <div class="count">${c.items.length} ${lang==='vi'?'ảnh':'photos'}</div>
+      </div>
+    </div>`;
+  }).join('');
+  document.querySelectorAll('.deck').forEach(d=>{
+    d.addEventListener('click', ()=>openViewer(+d.dataset.cat, 0));
+    d.addEventListener('keydown', e=>{ if(e.key==='Enter') openViewer(+d.dataset.cat, 0); });
+  });
+}
+
+/* videos */
+document.getElementById('vidRow').innerHTML = (C.videos ? C.videos.items : []).map(v=>`
+  <div class="vid">
+    <video src="${v.src}" poster="${v.poster}" controls playsinline preload="none"></video>
+  </div>`).join('');
+document.querySelectorAll('.vid video').forEach(v=>{
+  v.addEventListener('play', ()=>{
+    document.querySelectorAll('.vid video').forEach(o=>{ if(o!==v) o.pause(); });
+  });
+});
+
+/* journal */
+function renderJournal(){
+  if(!window.BLOG || !document.getElementById('jGrid')) return;
+  document.getElementById('jGrid').innerHTML = window.BLOG.map((p,i)=>`
+    <a class="jcard reveal" href="blog/${p.slug}.html" style="transition-delay:${i*110}ms">
+      <img src="${p.cover}" alt="${p.title}" loading="lazy">
+      <div class="in"><div class="jdate">${p.date}</div><h3>${p.title}</h3><p>${p.excerpt}</p></div>
+    </a>`).join('');
+}
+
+/* kit */
+function renderKit(){
+  if(!C.kit) return;
+  document.getElementById('kitRow').innerHTML = C.kit.items.map(b=>`<span>${b}</span>`).join('');
+}
+
+/* viewer */
+const viewer = document.getElementById('viewer'), vImg = document.getElementById('vImg');
+let vCat = 0, vIdx = 0;
+function showV(){
+  const c = G.categories[vCat];
+  vImg.src = c.items[vIdx].src;
+  document.getElementById('vTitle').textContent = lang==='vi' ? c.label_vi : c.label_en;
+  document.getElementById('vCount').textContent = `${vIdx+1} / ${c.items.length}`;
+  const nxt = c.items[(vIdx+1)%c.items.length]; new Image().src = nxt.src;
+}
+function openViewer(cat, idx){
+  vCat = cat; vIdx = idx;
+  viewer.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  document.getElementById('vHint').textContent = lang==='vi' ? 'vuốt để xem tiếp' : 'swipe to browse';
+  showV();
+}
+function closeViewer(){ viewer.classList.remove('open'); document.body.style.overflow=''; }
+function stepV(d){
+  const n = G.categories[vCat].items.length;
+  vIdx = (vIdx + d + n) % n; showV();
+}
+viewer.querySelector('.v-close').addEventListener('click', closeViewer);
+viewer.querySelector('.v-prev').addEventListener('click', e=>{e.stopPropagation();stepV(-1);});
+viewer.querySelector('.v-next').addEventListener('click', e=>{e.stopPropagation();stepV(1);});
+viewer.addEventListener('click', e=>{ if(e.target===viewer) closeViewer(); });
+document.addEventListener('keydown', e=>{
+  if(!viewer.classList.contains('open')) return;
+  if(e.key==='Escape') closeViewer();
+  if(e.key==='ArrowLeft') stepV(-1);
+  if(e.key==='ArrowRight') stepV(1);
+});
+let tX = null;
+viewer.addEventListener('touchstart', e=>{ tX = e.touches[0].clientX; }, {passive:true});
+viewer.addEventListener('touchend', e=>{
+  if(tX===null) return;
+  const dx = e.changedTouches[0].clientX - tX;
+  if(Math.abs(dx) > 40) stepV(dx<0 ? 1 : -1);
+  tX = null;
+}, {passive:true});
+
+/* booking channels — deep link mở thẳng app, fallback web sau 1.2s */
+const IG_APP = 'instagram://user?username=kinkay.official';
+const IG_WEB = 'https://www.instagram.com/kinkay.official/';
+function appLink(e, scheme, web){
+  e.preventDefault();
+  const t = Date.now();
+  location.href = scheme;
+  setTimeout(()=>{ if(Date.now()-t < 1600 && !document.hidden) location.href = web; }, 1200);
+}
+const bookBtn = document.getElementById('bookCta');
+bookBtn.href = IG_WEB;
+bookBtn.removeAttribute('target');
+bookBtn.addEventListener('click', e=>appLink(e, IG_APP, IG_WEB));
+document.getElementById('channels').innerHTML = C.booking.channels.map(ch=>
+  `<a href="${ch.href}" target="_blank" rel="noopener" data-ch="${ch.label}">${ch.label} · <b>${ch.handle}</b></a>`).join('');
+const igCh = document.querySelector('#channels a[data-ch="Instagram"]');
+if(igCh){ igCh.removeAttribute('target'); igCh.addEventListener('click', e=>appLink(e, IG_APP, IG_WEB)); }
+
+/* nav + sticky CTA */
+const nav = document.getElementById('nav'), mcta = document.getElementById('mcta');
+addEventListener('scroll', ()=>{
+  nav.classList.toggle('solid', scrollY>60);
+  const nearBooking = document.getElementById('booking').getBoundingClientRect().top < innerHeight;
+  mcta.classList.toggle('show', scrollY > innerHeight*.8 && !nearBooking);
+});
+const menu = document.getElementById('menu');
+document.getElementById('burger').onclick = ()=>menu.classList.toggle('open');
+menu.querySelectorAll('a').forEach(a=>a.onclick=()=>menu.classList.remove('open'));
+
+/* scroll reveal */
+let io = null;
+function observeReveals(){
+  if(io) io.disconnect();
+  if(!('IntersectionObserver' in window)){
+    document.querySelectorAll('.reveal').forEach(el=>el.classList.add('in'));
+    return;
+  }
+  io = new IntersectionObserver(es=>es.forEach(e=>{
+    if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
+  }),{threshold:.12});
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+}
+
+applyLang();
+</script>
+
+
+</body></html>

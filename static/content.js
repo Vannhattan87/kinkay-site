@@ -1,0 +1,194 @@
+// KINKAY — content song ngữ. Sửa text ở đây, không cần đụng index.html.
+window.CONTENT = {
+  meta: {
+    title: { vi: "KINKAY — a beauty atelier | Makeup & Hair Styling HCMC", en: "KINKAY — a beauty atelier | Makeup & Hair Styling HCMC" }
+  },
+  nav: {
+    portfolio: { vi: "Portfolio", en: "Portfolio" },
+    approach: { vi: "Phương pháp", en: "Approach" },
+    services: { vi: "Dịch vụ", en: "Services" },
+    about: { vi: "Về Kay", en: "About Kay" },
+    blog: { vi: "Blog", en: "Blog" },
+    book: { vi: "Đặt lịch", en: "Book Now" }
+  },
+  hero: {
+    tagline: { vi: "a beauty atelier", en: "a beauty atelier" },
+    sub: {
+      vi: "Makeup & hair styling — sắc nét, sang, và vẫn là chính bạn.",
+      en: "Makeup & hair styling — sculpted, luxurious, and still unmistakably you."
+    },
+    cta: { vi: "Đặt lịch với Kay", en: "Book with Kay" },
+    scroll: { vi: "Xem portfolio", en: "View portfolio" }
+  },
+  credits: {
+    heading: { vi: "Selected Credits", en: "Selected Credits" },
+    items: [
+      "Miss Cosmo Vietnam",
+      "Miss Cosmo International",
+      "Hoa Hậu Việt Nam",
+      "Miss Grand Vietnam",
+      "Aquafina Vietnam Int'l Fashion Week",
+      "DCM Design",
+      "Đỗ Long Design",
+      "Adrian Anh Tuấn Shows",
+      "Vietnam Wedding Fest"
+    ]
+  },
+  approach: {
+    heading: { vi: "The KINKAY Approach", en: "The KINKAY Approach" },
+    intro: {
+      vi: "Không có công thức chung cho mọi gương mặt. Chỉ có một cách làm đúng: bắt đầu từ chính bạn.",
+      en: "There is no one formula for every face. Only one right way to work: start from you."
+    },
+    steps: [
+      {
+        name: "READ",
+        title: { vi: "Đọc gương mặt", en: "Read the face" },
+        body: {
+          vi: "Trước khi chạm cọ, Kay đọc khuôn mặt: cấu trúc xương, tông da, nét nào là nét đắt giá nhất của bạn.",
+          en: "Before the first brushstroke, Kay reads the face — bone structure, skin tone, and the feature that deserves the spotlight."
+        }
+      },
+      {
+        name: "SKIN",
+        title: { vi: "Nền da là nền tảng", en: "Skin comes first" },
+        body: {
+          vi: "Da căng bóng, mỏng nhẹ, nhìn gần vẫn là da. Lớp nền đẹp nhất là lớp nền người ta không nhận ra.",
+          en: "Luminous, weightless, still skin up close. The best base is the one nobody notices."
+        }
+      },
+      {
+        name: "SCULPT",
+        title: { vi: "Sắc mà vẫn là mình", en: "Sculpted, still you" },
+        body: {
+          vi: "Đường nét sắc, có chiều sâu — nhưng soi gương bạn vẫn nhận ra chính mình, phiên bản tự tin nhất.",
+          en: "Defined, dimensional features — yet the mirror still shows you, at your most confident."
+        }
+      }
+    ]
+  },
+  portfolio: {
+    heading: { vi: "Portfolio", en: "Portfolio" },
+    all: { vi: "Tất cả", en: "All" }
+  },
+  services: {
+    heading: { vi: "Dịch vụ", en: "Services" },
+    note: {
+      vi: "Studio tại Phường Tân Hưng, TP.HCM (by appointment) · Nhận lịch toàn quốc, phụ phí di chuyển báo trước khi xác nhận. Giá chi tiết và combo — nhắn Kay để nhận menu đầy đủ.",
+      en: "Studio in Tân Hưng Ward, HCMC (by appointment) · Bookings nationwide, travel fee quoted before confirming. For the full menu and combos, message Kay."
+    },
+    items: [
+      {
+        title: { vi: "Makeup", en: "Makeup" },
+        desc: {
+          vi: "Tiệc, sự kiện, photoshoot editorial. Da căng bóng, nét sắc, bền suốt sự kiện.",
+          en: "Party, events, editorial photoshoots. Luminous skin, sharp definition, lasts all night."
+        }
+      },
+      {
+        title: { vi: "Hair Styling", en: "Hair Styling" },
+        desc: {
+          vi: "Blowout, soft waves, updo cho tiệc và sự kiện.",
+          en: "Blowouts, soft waves, formal updos."
+        }
+      },
+      {
+        title: { vi: "Full Glam Combo", en: "Full Glam Combo" },
+        desc: {
+          vi: "Makeup + hair trọn gói cho tiệc, event, chụp hình cá nhân.",
+          en: "Makeup + hair, one seamless session for events and personal shoots."
+        }
+      },
+      {
+        title: { vi: "Bridal", en: "Bridal" },
+        desc: {
+          vi: "Trial trước ngày cưới + day-of trọn gói. Look cô dâu sắc nét mà vẫn là bạn trong ngày quan trọng nhất.",
+          en: "Pre-wedding trial + day-of packages. A bridal look that is polished — and unmistakably you."
+        }
+      }
+    ]
+  },
+  about: {
+    heading: { vi: "Về Kay", en: "About Kay" },
+    body: {
+      vi: "Kay — Thạch Bé Trâm — bước vào nghề từ một tiệm áo cưới, nơi cô học được rằng cái đẹp nằm ở sự tỉ mỉ. Được đào tạo tại Học viện Quân Nguyễn & Pu Lê và Ken Academy, sáu năm sau Kay đứng sau hậu trường Miss Cosmo International, Hoa Hậu Việt Nam, Miss Grand và các sàn diễn của Đỗ Long, Adrian Anh Tuấn.\n\nStyle của Kay: soft glam, old money — tôn vẻ đẹp tự nhiên với đôi mắt sắc sảo và lớp nền glow. Đặc biệt, nhưng không quá khác biệt.\n\nNgồi ghế KINKAY, bạn được tư vấn thật — dựa trên mắt thẩm mỹ và kinh nghiệm, không chạy theo xu hướng.",
+      en: "Kay — Thạch Bé Trâm — entered the industry through a bridal shop, where she learned that beauty lives in the details. Trained at Quân Nguyễn & Pu Lê Academy and Ken Academy, six years on she works backstage at Miss Cosmo International, Miss Vietnam, Miss Grand, and runway shows for Đỗ Long and Adrian Anh Tuấn.\n\nHer style: soft glam with an old-money sensibility — natural beauty, sharply defined eyes, a luminous glowing base. Distinctive, never unrecognisable.\n\nIn the KINKAY chair, you get honest advice — grounded in a trained eye and experience, never in passing trends."
+    },
+    quote: {
+      vi: "“Bạn đã có nét đẹp rồi. Nhiệm vụ của tôi là làm cho mọi người nhìn ra được nó — rõ hơn và lung linh hơn.”",
+      en: "“Your beauty is already there. My job is to make the world see it — clearer, and more luminous.”"
+    },
+    sign: { vi: "— Kay, founder", en: "— Kay, founder" }
+  },
+  testimonials: {
+    heading: { vi: "Khách nói về Kay", en: "What Clients Say" },
+    note: { vi: "Trích nguyên văn tin nhắn khách gửi Kay", en: "Real messages sent to Kay, word for word" },
+    items: [
+      {
+        quote: {
+          vi: "“Make kiểu gì mà xuống khách sạn người ta tưởng tui hoa hậu, chạy tới xin chụp hình.”",
+          en: "“What did you even do — people at the hotel thought I was a pageant queen and ran over asking for photos.”"
+        },
+        who: { vi: "Khách makeup sự kiện", en: "Event makeup client" }
+      },
+      {
+        quote: {
+          vi: "“Cảm ơn bà Kin Kay đã cho tui với mẹ tui những bộ tóc đẹp trong ngày đám cưới của tui.”",
+          en: "“Thank you Kin Kay for giving me and my mom the most beautiful hair on my wedding day.”"
+        },
+        who: { vi: "Cô dâu — bridal hair", en: "Bride — bridal hair" }
+      },
+      {
+        quote: {
+          vi: "“Ai cũng nhìn, ai cũng khen. Quá đã.”",
+          en: "“Everyone looked, everyone complimented. So worth it.”"
+        },
+        who: { vi: "Khách makeup tiệc", en: "Party makeup client" }
+      }
+    ]
+  },
+  kit: {
+    heading: { vi: "Kay's Kit", en: "Kay's Kit" },
+    sub: {
+      vi: "Những thương hiệu luôn có trong túi đồ nghề của Kay.",
+      en: "The brands always inside Kay's professional kit."
+    },
+    items: ["NARS", "M·A·C", "Charlotte Tilbury", "YSL Beauty", "Tom Ford", "Chanel", "Bobbi Brown", "Clinique"]
+  },
+  videos: {
+    heading: { vi: "Behind the Glam", en: "Behind the Glam" },
+    sub: {
+      vi: "Kay trong hậu trường — cùng nghệ sĩ và khách của KINKAY.",
+      en: "Kay backstage — with KINKAY's artists and clients."
+    },
+    items: [
+      { src: "assets/video/video_01.mp4", poster: "assets/video/poster_01.jpg" },
+      { src: "assets/video/video_02.mp4", poster: "assets/video/poster_02.jpg" },
+      { src: "assets/video/video_03.mp4", poster: "assets/video/poster_03.jpg" },
+      { src: "assets/video/video_04.mp4", poster: "assets/video/poster_04.jpg" },
+      { src: "assets/video/video_05.mp4", poster: "assets/video/poster_05.jpg" }
+    ]
+  },
+  journal: {
+    heading: { vi: "Journal", en: "Journal" },
+    sub: { vi: "Bí quyết makeup, hậu trường show và guide cho cô dâu — từ ghế làm việc của Kay.", en: "Makeup know-how, backstage stories and bridal guides — straight from Kay's chair." },
+    all: { vi: "Xem tất cả bài viết", en: "View all posts" }
+  },
+  booking: {
+    heading: { vi: "Đặt lịch", en: "Book a Session" },
+    sub: {
+      vi: "Nhắn Kay ngày, giờ và dịp của bạn. Kay phản hồi trong ngày.",
+      en: "Send Kay your date, time and occasion. She replies within the day."
+    },
+    cta: { vi: "Nhắn Kay trên Instagram", en: "Message Kay on Instagram" },
+    channels: [
+      { label: "Instagram", href: "https://instagram.com/kinkay.official", handle: "@kinkay.official" },
+      { label: "TikTok", href: "https://tiktok.com/@kinkay.official", handle: "@kinkay.official" },
+      { label: "Facebook", href: "https://www.facebook.com/missTram.99/", handle: "Kin Kay" },
+      { label: "Email", href: "mailto:kinkay20t@gmail.com", handle: "kinkay20t@gmail.com" }
+    ]
+  },
+  footer: {
+    line: { vi: "KINKAY · a beauty atelier · HCMC", en: "KINKAY · a beauty atelier · HCMC" }
+  }
+};

@@ -1,0 +1,50 @@
+backend:
+  name: github
+  repo: Vannhattan87/kinkay-site
+  branch: main
+  base_url: https://api.netlify.com
+
+locale: 'vi'
+site_url: https://kinkay.vn
+display_url: https://kinkay.vn
+logo_url: https://kinkay.vn/apple-touch-icon.png
+
+media_folder: "static/assets/uploads"
+public_folder: "assets/uploads"
+
+collections:
+  - name: "blog"
+    label: "Bài viết Blog"
+    label_singular: "bài viết"
+    folder: "content/blog"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - { label: "Tiêu đề", name: "title", widget: "string" }
+      - { label: "Ngày đăng", name: "date", widget: "datetime", format: "YYYY-MM-DD", time_format: false }
+      - { label: "Ảnh cover", name: "cover", widget: "image", hint: "Ảnh ngang đẹp nhất của bài — hiện trên trang Blog và khi share link" }
+      - { label: "Mô tả ngắn", name: "excerpt", widget: "string", hint: "1-2 câu, hiện dưới tiêu đề trên trang Blog" }
+      - { label: "Nội dung", name: "body", widget: "markdown", hint: "Viết như nói chuyện với khách. Dùng nút H2 cho tiêu đề mục." }
+
+  - name: "settings"
+    label: "Portfolio (ảnh)"
+    files:
+      - name: "gallery"
+        label: "Ảnh Portfolio theo nhóm"
+        file: "content/gallery.json"
+        fields:
+          - label: "Các nhóm"
+            name: "categories"
+            widget: "list"
+            allow_add: false
+            collapsed: true
+            summary: "{{fields.label_vi}}"
+            fields:
+              - { label: "Slug (không đổi)", name: "slug", widget: "string" }
+              - { label: "Tên tiếng Việt", name: "label_vi", widget: "string" }
+              - { label: "Tên tiếng Anh", name: "label_en", widget: "string" }
+              - label: "Ảnh trong nhóm"
+                name: "images"
+                widget: "list"
+                field: { label: "Ảnh", name: "image", widget: "image" }
+                hint: "Ảnh đầu tiên là ảnh mặt tiền của nhóm. Kéo thả để đổi thứ tự."

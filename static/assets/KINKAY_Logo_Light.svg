@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 180" width="500" height="180">
+  <rect width="500" height="180" fill="#FAF7F2"/>
+  <text
+    x="250" y="84"
+    font-family="Georgia, 'Palatino Linotype', Palatino, serif"
+    font-size="40"
+    font-weight="400"
+    fill="#2C1810"
+    text-anchor="middle"
+    letter-spacing="18"
+    xml:space="preserve">KINKAY</text>
+  <line x1="145" y1="102" x2="355" y2="102" stroke="#C4A882" stroke-width="0.6"/>
+  <text
+    x="250" y="120"
+    font-family="Georgia, 'Palatino Linotype', Palatino, serif"
+    font-size="10"
+    font-weight="400"
+    fill="#8B6B52"
+    text-anchor="middle"
+    letter-spacing="5"
+    xml:space="preserve">MAKEUP ARTIST</text>
+</svg>
