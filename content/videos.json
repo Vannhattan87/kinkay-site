@@ -1,6 +1,9 @@
 {
   "videos": [
     {
+      "url": "/assets/uploads/v1c044g50000d8mfkvvog65pg18431k0.mp4"
+    },
+    {
       "url": "/assets/uploads/v1c044g50000d51eqrvog65vqaful8o0.mp4"
     },
     {
@@ -11,9 +14,6 @@
     },
     {
       "url": "/assets/uploads/v14044g50000d84g6tnog65vdmljq770.mp4"
-    },
-    {
-      "url": "/assets/uploads/v1c044g50000d8mfkvvog65pg18431k0.mp4"
     }
   ]
 }
