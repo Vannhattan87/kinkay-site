@@ -57,6 +57,20 @@ collections:
             widget: "list"
             label_singular: "video"
             allow_add: true
+            max: 5
             summary: "{{fields.url}}"
             fields:
-              - { label: "Link video (TikTok / YouTube)", name: "url", widget: "string", hint: "Dán link YouTube, hoặc link TikTok ĐẦY ĐỦ (dạng tiktok.com/@.../video/...). Link rút gọn vt.tiktok.com vẫn dùng được nhưng sẽ mở sang TikTok khi bấm thay vì phát tại chỗ. Kéo thả để đổi thứ tự, bấm thùng rác để xóa." }
+              - label: "Video (mp4)"
+                name: "url"
+                widget: "file"
+                media_library:
+                  name: cloudinary
+                  config:
+                    cloud_name: d9c3f7b0
+                    api_key: 999744796853135
+                    default_transformations:
+                      - - fetch_format: auto
+                          quality: auto
+                          width: 720
+                          crop: limit
+                hint: "Bấm để upload video mp4 (tối đa 5). Hệ thống tự nén dung lượng. Kéo thả để đổi thứ tự, thùng rác để xóa."
