@@ -1,8 +1,9 @@
 ---
-title: "Da nâu không cần trắng hơn — cần đúng tông hơn"
+title: Da nâu không cần trắng hơn — cần đúng tông hơn
 date: 2026-06-20
-cover: /assets/img/lookbook/lookbook_002.jpg
-excerpt: "Sai lầm phổ biến nhất với da nâu là cố nâng tông. Vẻ đẹp của da nâu nằm ở chiều sâu của nó."
+cover: /assets/uploads/4f330275-0c23-4f34-b35c-fbca15a582c4_1_105_c.jpeg
+excerpt: Sai lầm phổ biến nhất với da nâu là cố nâng tông. Vẻ đẹp của da nâu nằm
+  ở chiều sâu của nó.
 ---
 
 Mình có một tình yêu đặc biệt với những làn da nâu. Và cũng vì vậy, mình thấy tiếc mỗi lần gặp một bạn da nâu từng bị đánh nền sáng hơn da thật hai ba tông — mặt một màu, cổ một màu, và vẻ đẹp riêng thì biến mất.
