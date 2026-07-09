@@ -2,7 +2,7 @@
   "categories": [
     {
       "slug": "bridal",
-      "label_vi": "Cô dâu",
+      "label_vi": "Bridal",
       "label_en": "Bridal",
       "images": [
         "/assets/img/bridal/bridal_001.jpg",
@@ -11,15 +11,16 @@
         "/assets/img/bridal/bridal_003.jpg",
         "/assets/img/bridal/bridal_005.jpg",
         "/assets/img/bridal/bridal_004.jpg",
-        "/assets/img/bridal/bridal_007.jpg",
-        "/assets/img/bridal/bridal_008.jpg",
         "/assets/img/bridal/bridal_009.jpg",
         "/assets/img/bridal/bridal_011.jpg",
         "/assets/img/bridal/bridal_012.jpg",
         "/assets/img/bridal/bridal_013.jpg",
         "/assets/img/bridal/bridal_014.jpg",
         "/assets/img/bridal/bridal_015.jpg",
-        "/assets/img/bridal/bridal_016.jpg"
+        "/assets/img/bridal/bridal_016.jpg",
+        "/assets/img/img_0233.jpg",
+        "/assets/img/bridal/bridal_007.jpg",
+        "/assets/img/img_0232.jpg"
       ]
     },
     {
@@ -28,14 +29,16 @@
       "label_en": "Beauty Queen",
       "images": [
         "/assets/img/beautyqueen/beautyqueen_003.jpg",
-        "/assets/img/beautyqueen/beautyqueen_002.jpg",
         "/assets/img/beautyqueen/beautyqueen_004.jpg",
         "/assets/img/beautyqueen/beautyqueen_005.jpg",
-        "/assets/img/beautyqueen/beautyqueen_006.jpg",
         "/assets/img/beautyqueen/beautyqueen_007.jpg",
-        "/assets/img/beautyqueen/beautyqueen_008.jpg",
         "/assets/img/beautyqueen/beautyqueen_009.jpg",
-        "/assets/img/beautyqueen/beautyqueen_010.jpg"
+        "/assets/img/beautyqueen/beautyqueen_010.jpg",
+        "/assets/img/img_9769.jpg",
+        "/assets/img/img_0240.jpg",
+        "/assets/img/img_0247.jpg",
+        "/assets/img/img_0256.jpg",
+        "/assets/img/img_0248.jpg"
       ]
     },
     {
@@ -134,6 +137,16 @@
         "/assets/img/img_9780-2.jpg",
         "/assets/img/img_2544-2.jpg",
         "/assets/img/img_3538-2.jpg"
+      ]
+    },
+    {
+      "label_vi": "Transformation",
+      "images": [
+        "/assets/img/img_0262.jpg",
+        "/assets/img/img_0266.jpg",
+        "/assets/img/img_0267.jpg",
+        "/assets/img/img_0268.jpg",
+        "/assets/img/img_0269.jpg"
       ]
     }
   ]
