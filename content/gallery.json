@@ -59,7 +59,6 @@
         "/assets/img/img_0175.jpg",
         "/assets/img/celebrity/celebrity_012.jpg",
         "/assets/img/celebrity/celebrity_014.jpg",
-        null,
         "/assets/img/img_0175.jpg"
       ]
     },
@@ -88,9 +87,9 @@
       "label_vi": "Party",
       "label_en": "Party",
       "images": [
+        "/assets/img/party/party_003.jpg",
         "/assets/img/party/party_001.jpg",
         "/assets/img/party/party_002.jpg",
-        "/assets/img/party/party_003.jpg",
         "/assets/img/party/party_004.jpg",
         "/assets/img/party/party_005.jpg",
         "/assets/img/img_0253.jpg",
@@ -142,12 +141,14 @@
     {
       "label_vi": "Transformation",
       "images": [
-        "/assets/img/img_0262.jpg",
-        "/assets/img/img_0266.jpg",
+        "/assets/img/img_0269.jpg",
         "/assets/img/img_0267.jpg",
         "/assets/img/img_0268.jpg",
-        "/assets/img/img_0269.jpg"
-      ]
+        "/assets/img/img_0262.jpg",
+        "/assets/img/img_0266.jpg"
+      ],
+      "slug": "transformation",
+      "label_en": "transformation"
     }
   ]
 }
