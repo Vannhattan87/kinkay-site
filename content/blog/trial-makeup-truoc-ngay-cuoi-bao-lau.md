@@ -1,8 +1,9 @@
 ---
-title: "Nên trial makeup trước ngày cưới bao lâu?"
+title: Nên trial makeup trước ngày cưới bao lâu?
 date: 2026-07-05
-cover: /assets/img/bridal/bridal_003.jpg
-excerpt: "Trial không phải để 'xem thử cho biết'. Nó là buổi làm việc quan trọng nhất trước ngày cưới của bạn."
+cover: /assets/uploads/62bb180d-395e-4cab-8e39-0640ff3a2231_1_105_c.jpeg
+excerpt: Trial không phải để 'xem thử cho biết'. Nó là buổi làm việc quan trọng
+  nhất trước ngày cưới của bạn.
 ---
 
 Nhiều cô dâu nhắn mình hỏi lịch trial khi chỉ còn một tuần trước đám cưới. Vẫn làm được — nhưng nếu bạn đang đọc bài này sớm hơn, hãy làm đúng cách.
