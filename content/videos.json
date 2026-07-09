@@ -1,9 +1,22 @@
 {
   "videos": [
-    { "url": "/assets/video/video_01.mp4" },
-    { "url": "/assets/video/video_02.mp4" },
-    { "url": "/assets/video/video_03.mp4" },
-    { "url": "/assets/video/video_04.mp4" },
-    { "url": "/assets/video/video_05.mp4" }
+    {
+      "url": "/assets/video/video_01.mp4"
+    },
+    {
+      "url": "/assets/video/video_02.mp4"
+    },
+    {
+      "url": "/assets/video/video_03.mp4"
+    },
+    {
+      "url": "/assets/video/video_04.mp4"
+    },
+    {
+      "url": "/assets/video/video_05.mp4"
+    },
+    {
+      "url": "https://vt.tiktok.com/ZSCoVvFVW/"
+    }
   ]
 }
