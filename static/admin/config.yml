@@ -36,7 +36,7 @@ collections:
           - label: "Các nhóm"
             name: "categories"
             widget: "list"
-            allow_add: false
+            allow_add: true
             collapsed: true
             summary: "{{fields.label_vi}}"
             fields:
@@ -48,3 +48,15 @@ collections:
                 widget: "list"
                 field: { label: "Ảnh", name: "image", widget: "image", media_folder: "/static/assets/img", public_folder: "/assets/img" }
                 hint: "Ảnh đầu tiên là ảnh mặt tiền của nhóm. Kéo thả để đổi thứ tự."
+      - name: "videos"
+        label: "Video Behind the Glam"
+        file: "content/videos.json"
+        fields:
+          - label: "Danh sách video"
+            name: "videos"
+            widget: "list"
+            label_singular: "video"
+            allow_add: true
+            summary: "{{fields.url}}"
+            fields:
+              - { label: "Link video (TikTok / YouTube)", name: "url", widget: "string", hint: "Dán link YouTube, hoặc link TikTok ĐẦY ĐỦ (dạng tiktok.com/@.../video/...). Link rút gọn vt.tiktok.com vẫn dùng được nhưng sẽ mở sang TikTok khi bấm thay vì phát tại chỗ. Kéo thả để đổi thứ tự, bấm thùng rác để xóa." }

@@ -41,6 +41,15 @@ const G = { categories: gal.categories
 fs.writeFileSync(path.join(SITE, 'gallery.js'), 'window.GALLERY=' + JSON.stringify(G) + ';');
 console.log('gallery.js:', G.categories.length, 'nhóm');
 
+// ---------- 3b. videos.json -> videos.js ----------
+let VID = [];
+try {
+  const vj = JSON.parse(fs.readFileSync('content/videos.json', 'utf8'));
+  VID = (vj.videos || []).map(v => (typeof v === 'string' ? v : (v && v.url) || '')).map(u => String(u).trim()).filter(Boolean);
+} catch (e) { console.log('videos.json không có — bỏ qua'); }
+fs.writeFileSync(path.join(SITE, 'videos.js'), 'window.VIDEOS=' + JSON.stringify(VID) + ';');
+console.log('videos.js:', VID.length, 'video');
+
 // ---------- 4. blog ----------
 const CSS = fs.readFileSync('blog_theme.css', 'utf8');
 const FONTS = '<link rel="preconnect" href="https://fonts.googleapis.com">'
