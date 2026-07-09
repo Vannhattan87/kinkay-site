@@ -1,9 +1,6 @@
 {
   "videos": [
     {
-      "url": "https://vt.tiktok.com/ZSCoVvFVW/"
-    },
-    {
       "url": "/assets/video/video_01.mp4"
     },
     {
@@ -17,6 +14,9 @@
     },
     {
       "url": "/assets/video/video_05.mp4"
+    },
+    {
+      "url": "https://www.tiktok.com/@kinkay.official/video/7647765154184187157?_r=1&_t=ZS-97tKxlYbmUu"
     }
   ]
 }
