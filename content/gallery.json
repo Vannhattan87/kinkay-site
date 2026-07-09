@@ -40,23 +40,24 @@
     },
     {
       "slug": "celebrity",
-      "label_vi": "Nghệ sĩ",
+      "label_vi": "Celebrity",
       "label_en": "Celebrity",
       "images": [
+        "/assets/img/celebrity/celebrity_013.jpg",
         "/assets/img/celebrity/celebrity_001.jpg",
         "/assets/img/celebrity/celebrity_002.jpg",
-        "/assets/img/celebrity/celebrity_003.jpg",
+        "/assets/img/6115d518-772c-4cad-aeb6-714cd1d23fc4.jpeg",
         "/assets/img/celebrity/celebrity_004.jpg",
-        "/assets/img/celebrity/celebrity_005.jpg",
-        "/assets/img/celebrity/celebrity_006.jpg",
+        "/assets/img/88891cdc-ea8d-4a1f-b45f-60132477817e_1_105_c.jpeg",
         "/assets/img/celebrity/celebrity_007.jpg",
         "/assets/img/celebrity/celebrity_008.jpg",
         "/assets/img/celebrity/celebrity_009.jpg",
         "/assets/img/celebrity/celebrity_010.jpg",
-        "/assets/img/celebrity/celebrity_011.jpg",
+        "/assets/img/img_0175.jpg",
         "/assets/img/celebrity/celebrity_012.jpg",
-        "/assets/img/celebrity/celebrity_013.jpg",
-        "/assets/img/celebrity/celebrity_014.jpg"
+        "/assets/img/celebrity/celebrity_014.jpg",
+        null,
+        "/assets/img/img_0175.jpg"
       ]
     },
     {
@@ -69,19 +70,28 @@
         "/assets/img/lookbook/lookbook_003.jpg",
         "/assets/img/lookbook/lookbook_004.jpg",
         "/assets/img/lookbook/lookbook_005.jpg",
-        "/assets/img/lookbook/lookbook_006.jpg"
+        "/assets/img/ea18e06c-ff69-4f90-8c17-41cdb0830fc1_1_105_c.jpeg",
+        "/assets/img/img_0234.jpg",
+        "/assets/img/d8b58aec-ec79-4108-845e-3c1946253c7c_1_105_c.jpeg",
+        "/assets/img/incollage_save.jpg",
+        "/assets/img/img_2593.jpeg",
+        "/assets/img/img_1123.jpg",
+        "/assets/img/img_1120.jpg",
+        "/assets/img/img_1108.jpg"
       ]
     },
     {
       "slug": "party",
-      "label_vi": "Tiệc",
+      "label_vi": "Party",
       "label_en": "Party",
       "images": [
         "/assets/img/party/party_001.jpg",
         "/assets/img/party/party_002.jpg",
         "/assets/img/party/party_003.jpg",
         "/assets/img/party/party_004.jpg",
-        "/assets/img/party/party_005.jpg"
+        "/assets/img/party/party_005.jpg",
+        "/assets/img/img_0253.jpg",
+        "/assets/img/img_0254.jpg"
       ]
     },
     {
@@ -91,7 +101,19 @@
       "images": [
         "/assets/img/concept/concept_001.jpg",
         "/assets/img/concept/concept_002.jpg",
-        "/assets/img/concept/concept_003.jpg"
+        "/assets/img/concept/concept_003.jpg",
+        "/assets/img/img_0236.jpg",
+        "/assets/img/img_0231.jpg",
+        "/assets/img/img_0236.jpg",
+        "/assets/img/img_0237.jpg",
+        "/assets/img/img_0239.jpg",
+        "/assets/img/img_0249.jpg",
+        "/assets/img/img_0257.jpg",
+        "/assets/img/img_0258.jpg",
+        "/assets/img/img_0259.jpg",
+        "/assets/img/img_0263.jpg",
+        "/assets/img/img_0264.jpg",
+        "/assets/img/img_0273.jpg"
       ]
     },
     {
@@ -100,18 +122,18 @@
       "label_en": "KINKAY",
       "images": [
         "/assets/img/kinkay/kinkay_001.jpg",
-        "/assets/img/kinkay/kinkay_002.jpg",
-        "/assets/img/kinkay/kinkay_003.jpg",
         "/assets/img/kinkay/kinkay_004.jpg",
-        "/assets/img/kinkay/kinkay_005.jpg",
-        "/assets/img/kinkay/kinkay_006.jpg",
-        "/assets/img/kinkay/kinkay_007.jpg",
-        "/assets/img/kinkay/kinkay_008.jpg",
-        "/assets/img/kinkay/kinkay_009.jpg",
         "/assets/img/kinkay/kinkay_010.jpg",
-        "/assets/img/kinkay/kinkay_011.jpg",
-        "/assets/img/kinkay/kinkay_012.jpg",
-        "/assets/img/kinkay/kinkay_013.jpg"
+        "/assets/img/kinkay/kinkay_013.jpg",
+        "/assets/img/img_0230.jpg",
+        "/assets/img/img_0275.jpg",
+        "/assets/img/att.dspoqx-5avk_uyppr0g7qwmo2ttqgz4pc9im6yvr6bc-2.jpg",
+        "/assets/img/img_0281.jpg",
+        "/assets/img/img_2546-2.jpg",
+        "/assets/img/img_2552-2.jpg",
+        "/assets/img/img_9780-2.jpg",
+        "/assets/img/img_2544-2.jpg",
+        "/assets/img/img_3538-2.jpg"
       ]
     }
   ]
