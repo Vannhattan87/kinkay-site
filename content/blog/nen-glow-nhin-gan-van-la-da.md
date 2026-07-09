@@ -1,8 +1,8 @@
 ---
-title: "Vì sao lớp nền glow của KINKAY nhìn gần vẫn là da?"
+title: Vì sao lớp nền glow của KINKAY nhìn gần vẫn là da?
 date: 2026-07-08
-cover: /assets/img/beautyqueen/beautyqueen_001.jpg
-excerpt: "Câu trả lời không nằm ở cây phấn nào xịn hơn. Nó nằm ở thứ tự làm việc."
+cover: /assets/uploads/68e707c1-b7f1-4bcb-bc74-048df93ec040.jpeg
+excerpt: Câu trả lời không nằm ở cây phấn nào xịn hơn. Nó nằm ở thứ tự làm việc.
 ---
 
 Khách ngồi ghế mình hay hỏi một câu: “Sao nền em make nhìn mỏng vậy mà che được hết?”
