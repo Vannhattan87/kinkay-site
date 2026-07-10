@@ -113,12 +113,12 @@ window.CONTENT = {
   about: {
     heading: { vi: "Về Kay", en: "About Kay" },
     body: {
-      vi: "Kay — Thạch Bé Trâm — bước vào nghề từ một tiệm áo cưới, nơi cô học được rằng cái đẹp nằm ở sự tỉ mỉ. Được đào tạo tại Học viện Quân Nguyễn & Pu Lê và Ken Academy, sáu năm sau Kay đứng sau hậu trường Miss Cosmo International, Hoa Hậu Việt Nam, Miss Grand và các sàn diễn của Đỗ Long, Adrian Anh Tuấn.\n\nStyle của Kay: soft glam, old money — tôn vẻ đẹp tự nhiên với đôi mắt sắc sảo và lớp nền glow. Đặc biệt, nhưng không quá khác biệt.\n\nNgồi ghế KINKAY, bạn được tư vấn thật — dựa trên mắt thẩm mỹ và kinh nghiệm, không chạy theo xu hướng.",
-      en: "Kay — Thạch Bé Trâm — entered the industry through a bridal shop, where she learned that beauty lives in the details. Trained at Quân Nguyễn & Pu Lê Academy and Ken Academy, six years on she works backstage at Miss Cosmo International, Miss Vietnam, Miss Grand, and runway shows for Đỗ Long and Adrian Anh Tuấn.\n\nHer style: soft glam with an old-money sensibility — natural beauty, sharply defined eyes, a luminous glowing base. Distinctive, never unrecognisable.\n\nIn the KINKAY chair, you get honest advice — grounded in a trained eye and experience, never in passing trends."
+      vi: "Kay bước ra từ hậu trường những sân khấu lớn — Miss Cosmo International, Hoa Hậu Việt Nam, Miss Grand Vietnam, cùng các show của Đỗ Long và Adrian Anh Tuấn. Được đào tạo tại Học viện Quân Nguyễn & Pu Lê và Ken Academy, Kay mang chuẩn mực khắt khe của sân khấu về từng gương mặt khách của KINKAY.\n\nPhong cách của Kay là glam tiết chế: nền da căng mịn, nhìn gần vẫn là da; đường nét sắc nhưng vẫn tự nhiên. Kay không biến bạn thành người khác — chỉ làm bạn hiện lên rõ nét và tự tin hơn.\n\nNgồi vào ghế KINKAY, bạn nhận được tư vấn thật — bằng con mắt nghề và kinh nghiệm, không chạy theo xu hướng. Kay đọc gương mặt bạn trước khi chạm cọ, để giữ lại đúng nét đẹp riêng của bạn.",
+      en: "Kay comes from backstage at some of the biggest stages — Miss Cosmo International, Miss Vietnam, Miss Grand Vietnam, and runway shows for Đỗ Long and Adrian Anh Tuấn. Trained at Quân Nguyễn & Pu Lê Academy and Ken Academy, she brings that stage-level standard to every face in the KINKAY chair.\n\nHer signature is restrained glam: a fresh base that still looks like skin up close, and definition that stays natural. Kay will not turn you into someone else — only a sharper, more confident version of yourself.\n\nIn the KINKAY chair, you get honest advice — built on a trained eye and real experience, never on passing trends. She reads your face before the first brushstroke, to keep exactly what makes you, you."
     },
     quote: {
-      vi: "“Bạn đã có nét đẹp rồi. Nhiệm vụ của tôi là làm cho mọi người nhìn ra được nó — rõ hơn và lung linh hơn.”",
-      en: "“Your beauty is already there. My job is to make the world see it — clearer, and more luminous.”"
+      vi: "“Nét đẹp của bạn vốn đã có sẵn. Việc của Kay là làm cho người ta nhìn thấy nó — rõ hơn, và đúng chất bạn hơn.”",
+      en: "“Your beauty is already there. My job is simply to let people see it — clearer, and more like you.”"
     },
     sign: { vi: "— Kay, founder", en: "— Kay, founder" }
   },
