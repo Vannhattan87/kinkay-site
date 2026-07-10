@@ -1,8 +1,9 @@
 ---
 title: "Một ngày backstage: makeup cho pageant khác gì makeup cho cô dâu?"
 date: 2026-06-28
-cover: /assets/img/beautyqueen/beautyqueen_003.jpg
-excerpt: "Backstage pageant dạy mình những thứ không trường lớp nào dạy — và khách của mình hưởng hết."
+cover: /assets/uploads/img_2546-2.jpg
+excerpt: Backstage pageant dạy mình những thứ không trường lớp nào dạy — và
+  khách của mình hưởng hết.
 ---
 
 Backstage một đêm chung kết không giống bất cứ chỗ làm việc nào khác: vài chục gương mặt, đèn thay đổi liên tục, và đồng hồ không chờ ai. Mỗi thí sinh chỉ có một khoảng thời gian ngắn trên ghế — làm đúng ngay từ đầu, không có lượt thứ hai.
