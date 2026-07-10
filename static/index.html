@@ -60,8 +60,8 @@ nav.solid{background:rgba(250,247,242,.97);box-shadow:0 1px 0 rgba(44,24,16,.08)
 .brand{font-family:var(--display);font-size:20px;letter-spacing:.32em;text-indent:.32em;color:#fff;transition:color .3s;
   text-shadow:0 1px 8px rgba(26,15,8,.45)}
 nav.solid .brand{color:var(--espresso);text-shadow:none}
-nav ul{display:flex;gap:28px;list-style:none;align-items:center}
-nav ul a{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:#fff;transition:color .3s;font-weight:400;
+nav ul{display:flex;gap:22px;list-style:none;align-items:center}
+nav ul a{font-size:11.5px;letter-spacing:.13em;text-transform:uppercase;color:#fff;transition:color .3s;font-weight:400;
   text-shadow:0 1px 6px rgba(26,15,8,.4)}
 nav.solid ul a{color:var(--espresso);text-shadow:none}
 nav ul a:hover{color:var(--gold)}
@@ -151,7 +151,7 @@ nav.solid .burger{color:var(--espresso);text-shadow:none}
 .viewer{position:fixed;inset:0;z-index:99;background:rgba(26,15,8,.96);display:none;flex-direction:column;
   align-items:center;justify-content:center;touch-action:pan-y}
 .viewer.open{display:flex}
-.viewer img{max-width:94vw;max-height:78vh;border-radius:3px;user-select:none;-webkit-user-drag:none}
+.viewer img{max-width:94vw;max-height:78vh;border-radius:3px;user-select:none;-webkit-user-drag:none;backface-visibility:hidden;transform-origin:center;will-change:transform,opacity}
 .viewer .v-head{position:absolute;top:0;left:0;right:0;display:flex;align-items:center;justify-content:space-between;
   padding:14px 18px;color:var(--sand)}
 .viewer .v-title{font-size:12px;letter-spacing:.24em;text-transform:uppercase}
@@ -277,8 +277,10 @@ footer p{font-size:11.5px;letter-spacing:.24em;text-transform:uppercase}
   <a class="brand" href="#top">KINKAY</a>
   <button class="burger" id="burger" aria-label="menu">☰</button>
   <ul id="menu">
-    <li><a href="#portfolio" data-t="nav.portfolio">Portfolio</a></li>
     <li><a href="#approach" data-t="nav.approach">Phương pháp</a></li>
+    <li><a href="#portfolio" data-t="nav.portfolio">Portfolio</a></li>
+    <li><a href="#videos" data-t="nav.video">Video</a></li>
+    <li><a href="#testimonials" data-t="nav.testi">Cảm nhận</a></li>
     <li><a href="#services" data-t="nav.services">Dịch vụ</a></li>
     <li><a href="#about" data-t="nav.about">Về Kay</a></li>
     <li><a href="blog/" data-t="nav.blog">Blog</a></li>
@@ -687,24 +689,44 @@ function renderKit(){
 /* viewer */
 const viewer = document.getElementById('viewer'), vImg = document.getElementById('vImg');
 let vCat = 0, vIdx = 0;
-function showV(){
+const vReduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+let vFlipping = false;
+function showV(dir){
   const c = G.categories[vCat];
-  vImg.src = c.items[vIdx].src;
+  const src = c.items[vIdx].src;
   document.getElementById('vTitle').textContent = lang==='vi' ? c.label_vi : c.label_en;
   document.getElementById('vCount').textContent = `${vIdx+1} / ${c.items.length}`;
-  const nxt = c.items[(vIdx+1)%c.items.length]; new Image().src = nxt.src;
+  new Image().src = c.items[(vIdx+1)%c.items.length].src;
+  new Image().src = c.items[(vIdx-1+c.items.length)%c.items.length].src;
+  if(!dir || vReduce){ vImg.style.transition='none'; vImg.style.transform='none'; vImg.style.opacity='1'; vImg.src = src; return; }
+  vFlipping = true;
+  vImg.style.transition = 'transform .22s cubic-bezier(.4,0,1,1), opacity .22s ease';
+  vImg.style.transform = `perspective(1400px) rotateY(${dir>0?-82:82}deg) scale(.95)`;
+  vImg.style.opacity = '0';
+  setTimeout(()=>{
+    vImg.src = src;
+    vImg.style.transition = 'none';
+    vImg.style.transform = `perspective(1400px) rotateY(${dir>0?82:-82}deg) scale(.95)`;
+    vImg.style.opacity = '0';
+    void vImg.offsetWidth;
+    vImg.style.transition = 'transform .30s cubic-bezier(.2,.75,.3,1), opacity .26s ease';
+    vImg.style.transform = 'perspective(1400px) rotateY(0deg) scale(1)';
+    vImg.style.opacity = '1';
+    setTimeout(()=>{ vFlipping = false; }, 300);
+  }, 210);
 }
 function openViewer(cat, idx){
   vCat = cat; vIdx = idx;
   viewer.classList.add('open');
   document.body.style.overflow = 'hidden';
   document.getElementById('vHint').textContent = lang==='vi' ? 'vuốt để xem tiếp' : 'swipe to browse';
-  showV();
+  showV(0);
 }
 function closeViewer(){ viewer.classList.remove('open'); document.body.style.overflow=''; }
 function stepV(d){
+  if(vFlipping) return;
   const n = G.categories[vCat].items.length;
-  vIdx = (vIdx + d + n) % n; showV();
+  vIdx = (vIdx + d + n) % n; showV(d);
 }
 viewer.querySelector('.v-close').addEventListener('click', closeViewer);
 viewer.querySelector('.v-prev').addEventListener('click', e=>{e.stopPropagation();stepV(-1);});

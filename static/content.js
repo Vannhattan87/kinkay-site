@@ -4,8 +4,10 @@ window.CONTENT = {
     title: { vi: "KINKAY — a beauty atelier | Makeup & Hair Styling HCMC", en: "KINKAY — a beauty atelier | Makeup & Hair Styling HCMC" }
   },
   nav: {
-    portfolio: { vi: "Portfolio", en: "Portfolio" },
     approach: { vi: "Phương pháp", en: "Approach" },
+    portfolio: { vi: "Portfolio", en: "Portfolio" },
+    video: { vi: "Video", en: "Video" },
+    testi: { vi: "Cảm nhận", en: "Reviews" },
     services: { vi: "Dịch vụ", en: "Services" },
     about: { vi: "Về Kay", en: "About Kay" },
     blog: { vi: "Blog", en: "Blog" },
