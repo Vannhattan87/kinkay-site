@@ -56,6 +56,8 @@ const FONTS = '<link rel="preconnect" href="https://fonts.googleapis.com">'
  + '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
  + '<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&family=Be+Vietnam+Pro:wght@300;400;500&display=swap" rel="stylesheet">';
 const ICONS = '<link rel="icon" type="image/png" href="../favicon.png">';
+const GA = '<script async src="https://www.googletagmanager.com/gtag/js?id=G-HMVQB181BH"></script>' +
+  '<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","G-HMVQB181BH");</script>';
 const FOOT = '<footer>KINKAY · a beauty atelier · HCMC</footer>';
 const bar = (back, label) => `<div class="bar"><a class="brand" href="../">KINKAY</a><a class="back" href="${back}">${label}</a></div>`;
 const og = (title, desc, url, image, type) =>
@@ -105,7 +107,7 @@ for (const p of posts) {
   const html = `<!DOCTYPE html>
 <html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(p.title)} | KINKAY</title><meta name="description" content="${esc(p.excerpt)}">
-${og(p.title, p.excerpt, url, ogImg, 'article')}${ICONS}${FONTS}<style>${CSS}</style></head><body>
+${og(p.title, p.excerpt, url, ogImg, 'article')}${ICONS}${FONTS}${GA}<style>${CSS}</style></head><body>
 ${bar('./', '← Blog')}
 <article class="post">
   <div class="date eyebrow">${p.date_display}</div>
@@ -137,7 +139,7 @@ const index = `<!DOCTYPE html>
 <html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Blog | KINKAY — a beauty atelier</title>
 <meta name="description" content="Blog KINKAY — bí quyết makeup, hậu trường show và pageant, guide cho cô dâu từ Kay.">
-${og('Blog | KINKAY', 'Bí quyết makeup, hậu trường show và guide cô dâu từ Kay.', 'https://kinkay.vn/blog/', 'https://kinkay.vn/assets/img/og_cover.jpg', 'website')}${ICONS}${FONTS}<style>${CSS}</style></head><body>
+${og('Blog | KINKAY', 'Bí quyết makeup, hậu trường show và guide cô dâu từ Kay.', 'https://kinkay.vn/blog/', 'https://kinkay.vn/assets/img/og_cover.jpg', 'website')}${ICONS}${FONTS}${GA}<style>${CSS}</style></head><body>
 ${bar('../', '← kinkay.vn')}
 <div class="blog-head"><div class="eyebrow">KINKAY Journal</div><h1>Blog</h1></div>
 <div class="cards">${cards}</div>
