@@ -2,7 +2,7 @@ backend:
   name: github
   repo: Vannhattan87/kinkay-site
   branch: main
-  base_url: https://api.netlify.com
+  base_url: https://kinkay-site.pages.dev
 
 locale: 'vi'
 site_url: https://kinkay.vn
@@ -45,9 +45,11 @@ collections:
               - { label: "Tên tiếng Anh", name: "label_en", widget: "string" }
               - label: "Ảnh trong nhóm"
                 name: "images"
-                widget: "list"
-                field: { label: "Ảnh", name: "image", widget: "image", media_folder: "/static/assets/img", public_folder: "/assets/img" }
-                hint: "Ảnh đầu tiên là ảnh mặt tiền của nhóm. Kéo thả để đổi thứ tự."
+                widget: "image"
+                multiple: true
+                media_folder: "/static/assets/img"
+                public_folder: "/assets/img"
+                hint: "Bấm để chọn NHIỀU ảnh cùng lúc (kéo-thả cũng được). Ảnh đầu tiên là ảnh mặt tiền của nhóm. Kéo để đổi thứ tự."
       - name: "videos"
         label: "Video Behind the Glam"
         file: "content/videos.json"
@@ -65,4 +67,4 @@ collections:
                 widget: "file"
                 media_folder: "/static/assets/uploads"
                 public_folder: "/assets/uploads"
-                hint: "Bấm để upload video mp4 (tối đa 5). Nên dùng clip ngắn, nhẹ (dưới ~20MB). Kéo thả để đổi thứ tự, thùng rác để xóa."
+                hint: "Bấm để upload video mp4 (tối đa 10). Nên dùng clip ngắn, nhẹ (dưới ~20MB). Kéo thả để đổi thứ tự, thùng rác để xóa."
