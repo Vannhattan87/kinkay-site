@@ -57,7 +57,7 @@ collections:
             widget: "list"
             label_singular: "video"
             allow_add: true
-            max: 5
+            max: 10
             summary: "{{fields.url}}"
             fields:
               - label: "Video (mp4)"
