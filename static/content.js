@@ -1,7 +1,7 @@
 // KINKAY — content song ngữ. Sửa text ở đây, không cần đụng index.html.
 window.CONTENT = {
   meta: {
-    title: { vi: "KINKAY — a beauty atelier | Makeup & Hair Styling HCMC", en: "KINKAY — a beauty atelier | Makeup & Hair Styling HCMC" }
+    title: { vi: "KINKAY — Makeup Cô Dâu & Trang Điểm Dự Tiệc TP.HCM", en: "KINKAY — Bridal & Event Makeup, Hair Styling | HCMC" }
   },
   nav: {
     approach: { vi: "Phương pháp", en: "Approach" },
