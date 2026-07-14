@@ -151,7 +151,7 @@ const mini = posts.slice(0, 3).map(p => ({ slug: p.slug, title: p.title, date: p
 fs.writeFileSync(path.join(SITE, 'bloglist.js'), 'window.BLOG=' + JSON.stringify(mini) + ';');
 // ---------- 5. sitemap.xml ----------
 const today = new Date().toISOString().slice(0, 10);
-const urls = ['https://kinkay.vn/', 'https://kinkay.vn/blog/']
+const urls = ['https://kinkay.vn/', 'https://kinkay.vn/masterclass/', 'https://kinkay.vn/blog/']
   .concat(posts.map(p => `https://kinkay.vn/blog/${p.slug}.html`));
 const sitemap = '<?xml version="1.0" encoding="UTF-8"?>\n' +
   '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +

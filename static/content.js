@@ -8,6 +8,7 @@ window.CONTENT = {
     portfolio: { vi: "Portfolio", en: "Portfolio" },
     video: { vi: "Video", en: "Video" },
     testi: { vi: "Cảm nhận", en: "Reviews" },
+    masterclass: { vi: "Học 1:1", en: "Class" },
     services: { vi: "Dịch vụ", en: "Services" },
     about: { vi: "Về Kay", en: "About Kay" },
     blog: { vi: "Blog", en: "Blog" },
@@ -121,6 +122,22 @@ window.CONTENT = {
       en: "“Your beauty is already there. My job is simply to let people see it — clearer, and more like you.”"
     },
     sign: { vi: "— Kay, founder", en: "— Kay, founder" }
+  },
+  masterclass: {
+    badge: { vi: "Đang nhận học viên · Masterclass 1:1", en: "Now enrolling · 1:1 Masterclass" },
+    eyebrow: { vi: "KINKAY Education", en: "KINKAY Education" },
+    heading: { vi: "Personal Makeup Masterclass", en: "Personal Makeup Masterclass" },
+    intro: {
+      vi: "Học 1 kèm 1 trực tiếp với Kay — lộ trình cá nhân hóa, từ người mới đến Makeup Artist muốn nâng cao. Cùng một chuẩn mực Kay mang lên sân khấu hoa hậu, giờ truyền lại cho bạn.",
+      en: "Learn one-to-one with Kay — a personalized path, from beginner to working artist. The same standard Kay brings to the pageant stage, taught directly to you."
+    },
+    p1: { vi: "1 kèm 1, dạy trực tiếp bởi Kay", en: "One-to-one, taught by Kay herself" },
+    p2: { vi: "Lộ trình cá nhân hóa theo trình độ", en: "A path built around your level" },
+    p3: { vi: "8 module: từ tư duy đến signature look", en: "8 modules: mindset to signature look" },
+    p4: { vi: "Thực hành trên mẫu thật mỗi buổi", en: "Hands-on practice on real models" },
+    p5: { vi: "Định hướng nghề & xây portfolio", en: "Career direction & portfolio building" },
+    cta: { vi: "Xem lộ trình & học phí", en: "See curriculum & tuition" },
+    cta2: { vi: "Đăng ký giữ chỗ", en: "Reserve a seat" }
   },
   testimonials: {
     heading: { vi: "Khách nói về Kay", en: "What Clients Say" },
