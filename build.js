@@ -32,6 +32,58 @@ if (sharp && fs.existsSync(upDir)) {
   }
 }
 
+// ---------- 2b. KIEM TRA: anh/video duoc tham chieu co thuc su ton tai khong ----------
+// Ly do: 15/07/2026 phat hien gallery.json tro toi 5 anh Concept chua tung duoc commit
+// -> live site hien anh vo ma khong ai biet. Tha build fail (Cloudflare giu ban deploy cu,
+// khach van xem duoc web binh thuong) con hon day anh vo len production.
+const errs = [];
+
+const checkRef = (src, where) => {
+  const s = String(src || '').trim();
+  if (!s) return;
+  if (/^https?:\/\//i.test(s)) return;              // link ngoai - khong kiem tra duoc
+  const rel = decodeURIComponent(s.split(/[?#]/)[0]).replace(/^\/+/, '');
+  if (!fs.existsSync(path.join(SITE, rel))) errs.push(where + ': KHONG co file "' + s + '"');
+};
+
+// 2b-1. anh trong gallery.json
+const galRaw = JSON.parse(fs.readFileSync('content/gallery.json', 'utf8'));
+for (const c of galRaw.categories || [])
+  for (const src of c.images || []) checkRef(src, 'gallery.json [' + c.slug + ']');
+
+// 2b-2. video trong videos.json
+try {
+  const vjRaw = JSON.parse(fs.readFileSync('content/videos.json', 'utf8'));
+  for (const v of vjRaw.videos || [])
+    checkRef(typeof v === 'string' ? v : (v && v.url), 'videos.json');
+} catch (e) { /* khong co videos.json - muc 3b xu ly */ }
+
+// 2b-3. anh cover cua bai blog
+for (const f of (fs.existsSync('content/blog') ? fs.readdirSync('content/blog') : [])) {
+  if (!/\.md$/i.test(f)) continue;
+  const m = fs.readFileSync(path.join('content/blog', f), 'utf8').match(/^cover:\s*["']?(.+?)["']?\s*$/m);
+  if (m) checkRef(m[1], 'blog/' + f);
+}
+
+// 2b-4. hai file chi khac nhau hoa/thuong -> Windows chi giu duoc 1 ban, repo dirty vinh vien
+const walk = d => fs.readdirSync(d, { withFileTypes: true }).flatMap(e =>
+  e.isDirectory() ? walk(path.join(d, e.name)) : [path.join(d, e.name)]);
+const seen = new Map();
+for (const f of walk(SITE)) {
+  const k = f.toLowerCase();
+  if (seen.has(k)) errs.push('TRUNG TEN hoa/thuong: "' + seen.get(k) + '" vs "' + f + '"');
+  else seen.set(k, f);
+}
+
+if (errs.length) {
+  console.error('\n=========== BUILD DUNG: ' + errs.length + ' loi tham chieu file ===========');
+  errs.forEach(e => console.error('  - ' + e));
+  console.error('\nCach xu ly: vao trang admin, xoa muc tro toi file thieu roi upload lai anh/video do.');
+  console.error('Web dang chay KHONG bi anh huong - Cloudflare giu nguyen ban deploy gan nhat.\n');
+  process.exit(1);
+}
+console.log('kiem tra tham chieu OK:', seen.size, 'file');
+
 // ---------- 3. gallery.json -> gallery.js ----------
 const gal = JSON.parse(fs.readFileSync('content/gallery.json', 'utf8'));
 const G = { categories: gal.categories
