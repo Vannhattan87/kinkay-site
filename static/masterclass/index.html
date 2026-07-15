@@ -145,6 +145,7 @@ h1,h2,h3{font-family:var(--display);font-weight:500}
 .tu .price{font-family:var(--display);font-size:28px;color:var(--espresso);margin-bottom:4px}
 .tu .price small{font-size:13px;color:var(--taupe);font-family:var(--body)}
 .tu .fmt{font-size:12.5px;letter-spacing:.06em;color:var(--taupe);text-transform:uppercase;margin-bottom:20px}
+.tu ul li.gift{color:var(--gold);font-weight:500}
 .tu ul{list-style:none;margin-bottom:26px}
 .tu li{position:relative;padding-left:20px;font-size:14px;color:var(--taupe);margin-bottom:9px;line-height:1.5}
 .tu li::before{content:"—";position:absolute;left:0;color:var(--gold)}
@@ -196,7 +197,7 @@ footer p{font-size:11.5px;letter-spacing:.24em;text-transform:uppercase}
  "@context":"https://schema.org",
  "@type":"Course",
  "name":"KINKAY Personal Makeup Masterclass",
- "description":"Khóa học trang điểm 1 kèm 1 với Kay — lộ trình cá nhân hóa 8 module, từ người mới đến Makeup Artist muốn nâng cao. Thực hành trên mẫu thật tại TP.HCM.",
+ "description":"Khóa học trang điểm 1 kèm 1 với Kay — lộ trình cá nhân hóa 8 module theo đúng trình độ và mục tiêu của từng người. Thực hành trên mẫu thật tại TP.HCM.",
  "inLanguage":"vi-VN",
  "url":"https://kinkay.vn/masterclass/",
  "provider":{"@type":"Organization","name":"KINKAY","url":"https://kinkay.vn/"},
@@ -224,7 +225,7 @@ footer p{font-size:11.5px;letter-spacing:.24em;text-transform:uppercase}
     <div class="eyebrow">KINKAY Education</div>
     <h1>Personal Makeup<br>Masterclass</h1>
     <div class="lux">Luxury Makeup Education · One-to-One Training</div>
-    <p class="sub">Học 1 kèm 1 trực tiếp với Kay — lộ trình cá nhân hóa từ người mới bắt đầu đến Makeup Artist muốn nâng cao kỹ thuật. Cùng một chuẩn mực Kay mang lên sân khấu hoa hậu, giờ truyền lại cho bạn.</p>
+    <p class="sub">Học 1 kèm 1 trực tiếp với Kay — lộ trình cá nhân hóa theo đúng trình độ, gương mặt và mục tiêu của bạn.</p>
     <div class="cta-row">
       <a class="btn" href="#dang-ky">Đăng ký giữ chỗ</a>
       <a class="btn btn-ghost" href="#lo-trinh">Xem lộ trình</a>
@@ -253,10 +254,6 @@ footer p{font-size:11.5px;letter-spacing:.24em;text-transform:uppercase}
       <div class="aud reveal">
         <h3>Người mới bắt đầu</h3>
         <p>Chưa từng học makeup bài bản, muốn tự trang điểm đẹp và chuẩn cho bản thân — tự tin trong mọi dịp mà không phụ thuộc ai.</p>
-      </div>
-      <div class="aud reveal">
-        <h3>Makeup Artist muốn nâng cao</h3>
-        <p>Đã làm nghề nhưng muốn nâng tay nghề, chuẩn hóa layout cao cấp, học tư duy và signature look ở đẳng cấp sân khấu, pageant.</p>
       </div>
       <div class="aud reveal">
         <h3>Người muốn theo nghề</h3>
@@ -394,7 +391,6 @@ footer p{font-size:11.5px;letter-spacing:.24em;text-transform:uppercase}
         <li><b>Chuẩn mực sân khấu, không phải lý thuyết.</b> Kay makeup cho Miss Cosmo International, Hoa Hậu Việt Nam, Miss Grand Vietnam và các show của Đỗ Long, Adrian Anh Tuấn. Bạn học đúng thứ Kay dùng ngoài nghề.</li>
         <li><b>1 kèm 1, đi theo tốc độ của bạn.</b> Không lớp đông, không ai bị bỏ lại. Lộ trình bám sát gương mặt và mục tiêu riêng của từng học viên.</li>
         <li><b>Thực hành trên mẫu thật.</b> Học tới đâu làm tới đó, Kay đứng cạnh chỉnh từng nét — thứ mà học online không có được.</li>
-        <li><b>Không chỉ dạy kỹ thuật.</b> Kay chia sẻ tư duy nghề, cách đọc khách hàng và định hướng để bạn tự đi được sau khóa học.</li>
       </ul>
     </div>
   </div>
@@ -411,14 +407,14 @@ footer p{font-size:11.5px;letter-spacing:.24em;text-transform:uppercase}
       <div class="tu feature reveal">
         <div class="tag">Được chọn nhiều nhất</div>
         <h3>Signature Masterclass</h3>
-        <p class="who">Full 8 module. Cho người theo nghề &amp; MUA muốn học bài bản toàn diện.</p>
-        <div class="price">từ 25.000.000<small>đ</small></div>
-        <div class="fmt">8 buổi · ~3.5h/buổi · mẫu thật</div>
+        <p class="who">Full 8 module. Cho người muốn học bài bản, toàn diện.</p>
+        <div class="price">30.000.000<small>đ</small></div>
+        <div class="fmt">3 tháng · 1:1 · mẫu thật</div>
         <ul>
           <li>Trọn 8 module + Signature look</li>
           <li>Thực hành mẫu thật mỗi buổi</li>
-          <li>Định hướng nghề &amp; xây portfolio</li>
           <li>Chỉ nhận 4 học viên mỗi tháng</li>
+          <li class="gift">Tặng bảng má hồng 9 ô Moonslice</li>
         </ul>
         <a class="btn" href="#dang-ky">Đăng ký giữ chỗ</a>
       </div>
@@ -427,11 +423,12 @@ footer p{font-size:11.5px;letter-spacing:.24em;text-transform:uppercase}
         <h3>Personal Glow</h3>
         <p class="who">Bản rút gọn. Cho người muốn tự makeup đẹp cho chính mình.</p>
         <div class="price">từ 8.000.000<small>đ</small></div>
-        <div class="fmt">4 buổi · ~2.5h/buổi · mẫu thật</div>
+        <div class="fmt">5 buổi · ~2.5h/buổi · mẫu thật</div>
         <ul>
           <li>Nền, mắt, chân mày, môi</li>
           <li>Look đi tiệc &amp; dịp đặc biệt</li>
           <li>Cầm tay chỉ việc theo gương mặt bạn</li>
+          <li class="gift">Tặng bộ cọ cá nhân</li>
         </ul>
         <a class="btn btn-ghost" style="border-color:var(--gold);color:var(--taupe)" href="#dang-ky">Đăng ký giữ chỗ</a>
       </div>

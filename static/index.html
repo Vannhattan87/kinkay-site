@@ -91,7 +91,8 @@ nav.solid .burger{color:var(--espresso);text-shadow:none}
   text-shadow:0 2px 24px rgba(26,15,8,.55);margin-bottom:22px}
 .hero-inner .sub{max-width:480px;margin:0 0 34px;font-size:clamp(15px,1.8vw,17.5px);color:var(--sand);
   text-shadow:0 1px 8px rgba(26,15,8,.5)}
-.hero-badge{display:inline-flex;align-items:center;gap:9px;margin-bottom:22px;padding:8px 17px;
+.hero-badge-row{display:block}
+.hero-badge{display:inline-flex;align-items:center;gap:9px;margin-top:30px;padding:8px 17px;
   border:1px solid rgba(196,168,130,.65);border-radius:100px;font-size:11px;letter-spacing:.16em;
   text-transform:uppercase;color:var(--cream);background:rgba(26,15,8,.28);
   backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);transition:.3s;text-shadow:none}
@@ -420,7 +421,6 @@ footer p{font-size:11.5px;letter-spacing:.24em;text-transform:uppercase}
 <header class="hero" id="top">
   <div class="bg"></div>
   <div class="hero-inner">
-    <a class="hero-badge" href="masterclass/" data-t="masterclass.badge">Đang nhận học viên · Masterclass 1:1</a>
     <div class="wordmark">
       <span class="wm-name">KINKAY</span>
       <span class="wm-rule"></span>
@@ -429,6 +429,7 @@ footer p{font-size:11.5px;letter-spacing:.24em;text-transform:uppercase}
     <p class="sub" data-t="hero.sub">Makeup &amp; hair styling — sắc nét, sang, và vẫn là chính bạn.</p>
     <a class="btn" href="#booking" data-t="hero.cta">Đặt lịch với Kay</a>
     <a class="btn btn-ghost" href="#portfolio" data-t="hero.scroll">Xem portfolio</a>
+    <div class="hero-badge-row"><a class="hero-badge" href="masterclass/" data-t="masterclass.badge">Đang nhận học viên · Masterclass 1:1</a></div>
   </div>
 </header>
 
@@ -442,13 +443,12 @@ footer p{font-size:11.5px;letter-spacing:.24em;text-transform:uppercase}
       <div class="eyebrow" data-t="masterclass.eyebrow">KINKAY Education</div>
       <h2 data-t="masterclass.heading">Personal Makeup Masterclass</h2>
     </div>
-    <p class="mclass-intro reveal in" data-t="masterclass.intro">Học 1 kèm 1 trực tiếp với Kay — lộ trình cá nhân hóa, từ người mới đến Makeup Artist muốn nâng cao. Cùng một chuẩn mực Kay mang lên sân khấu hoa hậu, giờ truyền lại cho bạn.</p>
+    <p class="mclass-intro reveal in" data-t="masterclass.intro">Học 1 kèm 1 trực tiếp với Kay — lộ trình cá nhân hóa theo đúng trình độ, gương mặt và mục tiêu của bạn.</p>
     <div class="mclass-points reveal in">
       <span data-t="masterclass.p1">1 kèm 1, dạy trực tiếp bởi Kay</span>
       <span data-t="masterclass.p2">Lộ trình cá nhân hóa theo trình độ</span>
       <span data-t="masterclass.p3">8 module: từ tư duy đến signature look</span>
       <span data-t="masterclass.p4">Thực hành trên mẫu thật mỗi buổi</span>
-      <span data-t="masterclass.p5">Định hướng nghề &amp; xây portfolio</span>
     </div>
     <div class="mclass-cta reveal in">
       <a class="btn" href="masterclass/" data-t="masterclass.cta">Xem lộ trình &amp; học phí</a>
