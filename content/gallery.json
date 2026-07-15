@@ -93,7 +93,9 @@
         "/assets/img/party/party_004.jpg",
         "/assets/img/party/party_005.jpg",
         "/assets/img/img_0253.jpg",
-        "/assets/img/img_0254.jpg"
+        "/assets/img/img_0254.jpg",
+        "/assets/img/IMG_0688.JPG",
+        "/assets/img/incollage_save.JPG"
       ]
     },
     {
@@ -115,7 +117,12 @@
         "/assets/img/img_0259.jpg",
         "/assets/img/img_0263.jpg",
         "/assets/img/img_0264.jpg",
-        "/assets/img/img_0273.jpg"
+        "/assets/img/img_0273.jpg",
+        "/assets/img/incollage_save 2.JPG",
+        "/assets/img/incollage_save 3.JPG",
+        "/assets/img/incollage_save 4.JPG",
+        "/assets/img/incollage_save 5.JPG",
+        "/assets/img/incollage_save 6.JPG"
       ]
     },
     {
@@ -139,16 +146,16 @@
       ]
     },
     {
+      "slug": "transformation",
       "label_vi": "Transformation",
+      "label_en": "transformation",
       "images": [
         "/assets/img/img_0269.jpg",
         "/assets/img/img_0267.jpg",
         "/assets/img/img_0268.jpg",
         "/assets/img/img_0262.jpg",
         "/assets/img/img_0266.jpg"
-      ],
-      "slug": "transformation",
-      "label_en": "transformation"
+      ]
     }
   ]
 }
