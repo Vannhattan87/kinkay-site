@@ -1,3 +1,5 @@
 node_modules/
 site/
 .DS_Store
+content/porfolio picture/
+._*
