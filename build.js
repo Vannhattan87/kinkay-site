@@ -120,6 +120,20 @@ const og = (title, desc, url, image, type) =>
   + `<meta name="twitter:description" content="${esc(desc)}"><meta name="twitter:image" content="${image}">`
   + '<meta name="theme-color" content="#1A0F08">';
 
+const blogSchema = (p, url, ogImg) => '<script type="application/ld+json">' + JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": p.title,
+  "description": p.excerpt,
+  "image": ogImg,
+  "datePublished": p.date,
+  "dateModified": p.date,
+  "inLanguage": "vi-VN",
+  "author": { "@type": "Person", "name": "Kay", "url": "https://kinkay.vn/#kay" },
+  "publisher": { "@type": "Organization", "name": "KINKAY", "logo": { "@type": "ImageObject", "url": "https://kinkay.vn/apple-touch-icon.png" } },
+  "mainEntityOfPage": { "@type": "WebPage", "@id": url }
+}) + '</script>';
+
 function frontmatter(raw) {
   const m = raw.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/);
   const meta = {};
@@ -159,7 +173,7 @@ for (const p of posts) {
   const html = `<!DOCTYPE html>
 <html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(p.title)} | KINKAY</title><meta name="description" content="${esc(p.excerpt)}">
-${og(p.title, p.excerpt, url, ogImg, 'article')}${ICONS}${FONTS}${GA}<style>${CSS}</style></head><body>
+${og(p.title, p.excerpt, url, ogImg, 'article')}${blogSchema(p, url, ogImg)}${ICONS}${FONTS}${GA}<style>${CSS}</style></head><body>
 ${bar('./', '← Blog')}
 <article class="post">
   <div class="date eyebrow">${p.date_display}</div>
