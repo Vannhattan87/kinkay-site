@@ -1,7 +1,7 @@
 ---
 title: Giá makeup cô dâu ở TP.HCM bao nhiêu? Kay nói thẳng
 date: 2026-07-20
-cover: /assets/uploads/68e707c1-b7f1-4bcb-bc74-048df93ec040.jpeg
+cover: /assets/uploads/IMG_1115.JPG
 excerpt: Câu đầu tiên cô dâu nào cũng hỏi. Mình trả lời thẳng con số, và nói luôn thứ gì làm giá lên xuống.
 ---
 
