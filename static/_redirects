@@ -1,0 +1,4 @@
+# Link gọn cho TikTok — Kay dán link ngắn, hệ thống tự chuyển sang link đầy đủ có UTM để đo trên Google Analytics
+/tiktok         https://kinkay.vn/?utm_source=tiktok&utm_medium=bio                                    301
+/tiktok-ghim    https://kinkay.vn/?utm_source=tiktok&utm_medium=caption&utm_campaign=video_ghim         301
+/tiktok-video   https://kinkay.vn/?utm_source=tiktok&utm_medium=caption&utm_campaign=video_moi          301
