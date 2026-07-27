@@ -501,6 +501,15 @@ footer p{font-size:11.5px;letter-spacing:.24em;text-transform:uppercase}
   var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:.12});
   document.querySelectorAll('.reveal').forEach(function(e){io.observe(e);});
 })();
+/* GA4 events */
+function track(name,params){ if(typeof gtag==='function') gtag('event',name,params||{}); }
+(function(){
+  document.querySelectorAll('.reg-ch a').forEach(function(a){
+    var h=a.getAttribute('href')||'';
+    var m = h.indexOf('zalo')>-1 ? 'zalo' : (h.indexOf('instagram')>-1 ? 'instagram' : (h.indexOf('mailto')===0 ? 'email' : 'other'));
+    a.addEventListener('click',function(){ track('booking_click',{method:m,source:'masterclass'}); });
+  });
+})();
 /* IG deep link */
 (function(){
   var ig=document.getElementById('igLink');
@@ -519,6 +528,7 @@ footer p{font-size:11.5px;letter-spacing:.24em;text-transform:uppercase}
     var name=f.name.value.trim(),phone=f.phone.value.trim(),goal=f.goal.value,note=f.note.value.trim();
     var body='Ho ten: '+name+'\nSDT/Zalo: '+phone+'\nMuc tieu: '+goal+'\nGhi chu: '+note+'\n\n(Gui tu kinkay.vn/masterclass)';
     var url='mailto:kinkay20t@gmail.com?subject='+encodeURIComponent('Dang ky KINKAY Masterclass - '+name)+'&body='+encodeURIComponent(body);
+    track('generate_lead',{method:'form',source:'masterclass',goal:goal});
     location.href=url;
   });
 })();

@@ -205,6 +205,7 @@ window.CONTENT = {
       { label: "Zalo", href: "https://zalo.me/0933953179", handle: "0933 953 179" },
       { label: "Instagram", href: "https://instagram.com/kinkay.official", handle: "@kinkay.official" },
       { label: "TikTok", href: "https://tiktok.com/@kinkay.official", handle: "@kinkay.official" },
+      { label: "Facebook", href: "https://www.facebook.com/missTram.99/", handle: "Kin Kay" },
       { label: "Email", href: "mailto:kinkay20t@gmail.com", handle: "kinkay20t@gmail.com" }
     ]
   },
