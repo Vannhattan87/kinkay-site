@@ -3,3 +3,12 @@ site/
 .DS_Store
 content/porfolio picture/
 ._*
+
+# Google Drive File Stream rac (repo nam tren H:\My Drive tu 27/07/2026)
+desktop.ini
+**/desktop.ini
+.tmp.drivedownload/
+.tmp.driveupload/
+*.gdoc
+*.gsheet
+*.gslides
