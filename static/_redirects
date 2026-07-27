@@ -1,6 +1,7 @@
 # Link gọn cho TikTok — Kay dán link ngắn, hệ thống tự chuyển sang link đầy đủ có UTM để đo trên Google Analytics
-# 27/07/2026: đích đổi từ trang chủ sang landing /tiktok/ (nút Zalo). Giữ nguyên UTM để GA4 vẫn đo được nguồn.
-# Lưu ý: đích PHẢI có dấu / cuối (/tiktok/) — nếu bỏ dấu / sẽ trùng chính luật này và gây vòng lặp.
-/tiktok         https://kinkay.vn/tiktok/?utm_source=tiktok&utm_medium=bio                                    301
-/tiktok-ghim    https://kinkay.vn/tiktok/?utm_source=tiktok&utm_medium=caption&utm_campaign=video_ghim         301
-/tiktok-video   https://kinkay.vn/tiktok/?utm_source=tiktok&utm_medium=caption&utm_campaign=video_moi          301
+# 27/07/2026: đã thử trỏ vào landing /tiktok/ rồi bỏ. Lý do: trình duyệt trong app TikTok chặn
+# link zalo.me (hiện "TikTok can't open this page directly"), nên nút Zalo trên landing vô dụng
+# đúng ở nơi cần nó nhất. Giữ đích là trang chủ.
+/tiktok         https://kinkay.vn/?utm_source=tiktok&utm_medium=bio                                    301
+/tiktok-ghim    https://kinkay.vn/?utm_source=tiktok&utm_medium=caption&utm_campaign=video_ghim         301
+/tiktok-video   https://kinkay.vn/?utm_source=tiktok&utm_medium=caption&utm_campaign=video_moi          301
