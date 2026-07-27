@@ -198,11 +198,13 @@ window.CONTENT = {
       vi: "Nhắn Kay ngày, giờ và dịp của bạn. Kay phản hồi trong ngày.",
       en: "Send Kay your date, time and occasion. She replies within the day."
     },
-    cta: { vi: "Nhắn Kay trên Instagram", en: "Message Kay on Instagram" },
+    cta: { vi: "Nhắn Zalo cho Kay", en: "Message Kay on Zalo" },
+    cta2: { vi: "Hoặc nhắn Instagram", en: "Or message on Instagram" },
+    hint: { vi: "Zalo 0933 953 179 — Kay trả lời nhanh nhất ở đây", en: "Zalo 0933 953 179 — fastest way to reach Kay" },
     channels: [
+      { label: "Zalo", href: "https://zalo.me/0933953179", handle: "0933 953 179" },
       { label: "Instagram", href: "https://instagram.com/kinkay.official", handle: "@kinkay.official" },
       { label: "TikTok", href: "https://tiktok.com/@kinkay.official", handle: "@kinkay.official" },
-      { label: "Facebook", href: "https://www.facebook.com/missTram.99/", handle: "Kin Kay" },
       { label: "Email", href: "mailto:kinkay20t@gmail.com", handle: "kinkay20t@gmail.com" }
     ]
   },

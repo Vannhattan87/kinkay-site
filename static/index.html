@@ -267,6 +267,10 @@ nav.solid .burger{color:var(--espresso);text-shadow:none}
 /* BOOKING */
 .booking{background:var(--sand);text-align:center}
 .booking .sub{max-width:430px;margin:0 auto 34px;color:var(--taupe)}
+.book-hint{font-size:12.5px;color:var(--taupe);margin-top:14px}
+.btn-alt{display:inline-block;margin-top:16px;padding:13px 30px;border:1px solid rgba(139,107,82,.42);
+  border-radius:2px;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--taupe);transition:.28s}
+.btn-alt:hover{border-color:var(--gold);color:var(--espresso)}
 .channels{display:flex;flex-wrap:wrap;gap:10px 28px;justify-content:center;margin-top:38px}
 .channels a{font-size:13.5px;color:var(--taupe);border-bottom:1px solid transparent;transition:.25s}
 .channels a:hover{color:var(--espresso);border-color:var(--gold)}
@@ -334,8 +338,7 @@ footer p{font-size:11.5px;letter-spacing:.24em;text-transform:uppercase}
    },
    "sameAs": [
     "https://www.instagram.com/kinkay.official/",
-    "https://www.tiktok.com/@kinkay.official",
-    "https://www.facebook.com/missTram.99/"
+    "https://www.tiktok.com/@kinkay.official"
    ],
    "hasOfferCatalog": {
     "@type": "OfferCatalog",
@@ -688,8 +691,10 @@ Ngồi vào ghế KINKAY, bạn nhận được tư vấn thật — bằng con 
       <h2 data-t="booking.heading">Đặt lịch</h2>
     </div>
     <p class="sub reveal in" data-t="booking.sub">Nhắn Kay ngày, giờ và dịp của bạn. Kay phản hồi trong ngày.</p>
-    <a class="btn" id="bookCta" href="https://www.instagram.com/kinkay.official/" rel="noopener" data-t="booking.cta">Nhắn Kay trên Instagram</a>
-    <div class="channels" id="channels"><a href="https://instagram.com/kinkay.official" rel="noopener" data-ch="Instagram">Instagram · <b>@kinkay.official</b></a><a href="https://tiktok.com/@kinkay.official" target="_blank" rel="noopener" data-ch="TikTok">TikTok · <b>@kinkay.official</b></a><a href="https://www.facebook.com/missTram.99/" target="_blank" rel="noopener" data-ch="Facebook">Facebook · <b>Kin Kay</b></a><a href="mailto:kinkay20t@gmail.com" target="_blank" rel="noopener" data-ch="Email">Email · <b>kinkay20t@gmail.com</b></a></div>
+    <a class="btn" id="bookCta" href="https://zalo.me/0933953179" rel="noopener" data-t="booking.cta">Nhắn Zalo cho Kay</a>
+    <p class="book-hint reveal in" data-t="booking.hint">Zalo 0933 953 179 — Kay trả lời nhanh nhất ở đây</p>
+    <a class="btn-alt reveal in" id="bookCta2" href="https://www.instagram.com/kinkay.official/" rel="noopener" data-t="booking.cta2">Hoặc nhắn Instagram</a>
+    <div class="channels" id="channels"><a href="https://zalo.me/0933953179" target="_blank" rel="noopener" data-ch="Zalo">Zalo · <b>0933 953 179</b></a><a href="https://instagram.com/kinkay.official" rel="noopener" data-ch="Instagram">Instagram · <b>@kinkay.official</b></a><a href="https://tiktok.com/@kinkay.official" target="_blank" rel="noopener" data-ch="TikTok">TikTok · <b>@kinkay.official</b></a><a href="mailto:kinkay20t@gmail.com" target="_blank" rel="noopener" data-ch="Email">Email · <b>kinkay20t@gmail.com</b></a></div>
   </div>
 </section>
 
@@ -908,10 +913,21 @@ function appLink(e, scheme, web){
   location.href = scheme;
   setTimeout(()=>{ if(Date.now()-t < 1600 && !document.hidden) location.href = web; }, 1200);
 }
+const ZALO_WEB = 'https://zalo.me/0933953179';
+function track(name, params){ if(typeof gtag==='function') gtag('event', name, params||{}); }
+
 const bookBtn = document.getElementById('bookCta');
-bookBtn.href = IG_WEB;
-bookBtn.removeAttribute('target');
-bookBtn.addEventListener('click', e=>appLink(e, IG_APP, IG_WEB));
+if(bookBtn){
+  bookBtn.href = ZALO_WEB;
+  bookBtn.setAttribute('target','_blank');
+  bookBtn.addEventListener('click', ()=>track('booking_click', {method:'zalo', source:'home'}));
+}
+const bookBtn2 = document.getElementById('bookCta2');
+if(bookBtn2){
+  bookBtn2.href = IG_WEB;
+  bookBtn2.removeAttribute('target');
+  bookBtn2.addEventListener('click', e=>{ track('booking_click', {method:'instagram', source:'home'}); appLink(e, IG_APP, IG_WEB); });
+}
 document.getElementById('channels').innerHTML = C.booking.channels.map(ch=>
   `<a href="${ch.href}" target="_blank" rel="noopener" data-ch="${ch.label}">${ch.label} · <b>${ch.handle}</b></a>`).join('');
 const igCh = document.querySelector('#channels a[data-ch="Instagram"]');
