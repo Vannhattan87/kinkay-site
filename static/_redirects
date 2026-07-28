@@ -5,3 +5,11 @@
 /tiktok         https://kinkay.vn/?utm_source=tiktok&utm_medium=bio                                    301
 /tiktok-ghim    https://kinkay.vn/?utm_source=tiktok&utm_medium=caption&utm_campaign=video_ghim         301
 /tiktok-video   https://kinkay.vn/?utm_source=tiktok&utm_medium=caption&utm_campaign=video_moi          301
+
+# 28/07/2026: bài "layout trang điểm mùa đông" trước đây có slug đầy dấu tiếng Việt vì CMS
+# lấy thẳng tiêu đề làm tên file. Đã đổi sang slug ASCII. Giữ 301 cho link cũ đã phát tán.
+# Khai cả bản có dấu, bản percent-encode và bản .html vì mỗi nơi copy link ra một kiểu.
+/blog/layout-trang-điểm-mùa-đông-rạng-rỡ-và-nổi-bật-từ-kinkay        /blog/layout-trang-diem-mua-dong   301
+/blog/layout-trang-điểm-mùa-đông-rạng-rỡ-và-nổi-bật-từ-kinkay.html   /blog/layout-trang-diem-mua-dong   301
+/blog/layout-trang-%C4%91i%E1%BB%83m-m%C3%B9a-%C4%91%C3%B4ng-r%E1%BA%A1ng-r%E1%BB%A1-v%C3%A0-n%E1%BB%95i-b%E1%BA%ADt-t%E1%BB%AB-kinkay        /blog/layout-trang-diem-mua-dong   301
+/blog/layout-trang-%C4%91i%E1%BB%83m-m%C3%B9a-%C4%91%C3%B4ng-r%E1%BA%A1ng-r%E1%BB%A1-v%C3%A0-n%E1%BB%95i-b%E1%BA%ADt-t%E1%BB%AB-kinkay.html   /blog/layout-trang-diem-mua-dong   301

@@ -168,7 +168,7 @@ fs.rmSync(blogDir, { recursive: true, force: true });
 fs.mkdirSync(blogDir, { recursive: true });
 
 for (const p of posts) {
-  const url = `https://kinkay.vn/blog/${p.slug}.html`;
+  const url = `https://kinkay.vn/blog/${encodeURI(p.slug)}`;
   const ogImg = `https://kinkay.vn/${p.cover}`;
   const html = `<!DOCTYPE html>
 <html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
@@ -182,12 +182,18 @@ ${bar('./', '← Blog')}
   ${p.html}
   <div class="cta-box">
     <p>Bạn muốn một look như vậy cho dịp của mình? Kể Kay nghe — Kay tư vấn trước khi book.</p>
-    <a class="btn" href="https://www.instagram.com/kinkay.official/" id="bookCta">Nhắn Kay trên Instagram</a>
+    <a class="btn" href="https://zalo.me/0933953179" id="bookCta" target="_blank" rel="noopener">Nhắn Zalo cho Kay</a>
+    <p class="cta-alt"><a href="https://www.instagram.com/kinkay.official/" id="bookCtaIg" rel="noopener">Hoặc nhắn Instagram</a></p>
   </div>
 </article>
 ${FOOT}
 <script>
-document.getElementById('bookCta').addEventListener('click',function(e){
+function track(n,p){ if(typeof gtag==='function') gtag('event',n,p||{}); }
+document.getElementById('bookCta').addEventListener('click',function(){
+  track('booking_click',{method:'zalo',source:'blog'});
+});
+document.getElementById('bookCtaIg').addEventListener('click',function(e){
+  track('booking_click',{method:'instagram',source:'blog'});
   e.preventDefault();var t=Date.now();location.href='instagram://user?username=kinkay.official';
   setTimeout(function(){if(Date.now()-t<1600&&!document.hidden)location.href='https://www.instagram.com/kinkay.official/';},1200);
 });
@@ -197,7 +203,7 @@ document.getElementById('bookCta').addEventListener('click',function(e){
 }
 console.log('blog:', posts.length, 'bài');
 
-const cards = posts.map(p => `<a class="pcard" href="${p.slug}.html">
+const cards = posts.map(p => `<a class="pcard" href="${encodeURI(p.slug)}">
   <img src="../${p.cover}" alt="${esc(p.title)}" loading="lazy">
   <div class="in"><div class="date">${p.date_display}</div><h2>${esc(p.title)}</h2><p>${esc(p.excerpt)}</p></div>
 </a>`).join('\n');
@@ -216,14 +222,25 @@ fs.writeFileSync(path.join(blogDir, 'index.html'), index);
 const mini = posts.slice(0, 3).map(p => ({ slug: p.slug, title: p.title, date: p.date_display, cover: p.cover, excerpt: p.excerpt }));
 fs.writeFileSync(path.join(SITE, 'bloglist.js'), 'window.BLOG=' + JSON.stringify(mini) + ';');
 // ---------- 5. sitemap.xml ----------
-const today = new Date().toISOString().slice(0, 10);
-const urls = ['https://kinkay.vn/', 'https://kinkay.vn/masterclass/', 'https://kinkay.vn/blog/']
-  .concat(posts.map(p => `https://kinkay.vn/blog/${p.slug}.html`));
+// lastmod phải là ngày sửa THẬT của từng trang. Trước đây gán ngày build cho tất cả,
+// nên mỗi lần deploy là khai "vừa sửa hết" — Google học được là lastmod của site này
+// không đáng tin rồi bỏ qua luôn. Bài blog lấy date trong frontmatter, trang tĩnh lấy mtime file.
+const mtime = f => {
+  try { return fs.statSync(f).mtime.toISOString().slice(0, 10); }
+  catch (e) { return new Date().toISOString().slice(0, 10); }
+};
+// URL không có đuôi .html: site bật pretty URL nên /blog/abc.html bị 301 sang /blog/abc.
+// Sitemap và canonical phải khai đích cuối, không khai URL bị chuyển hướng.
+const entries = [
+  { loc: 'https://kinkay.vn/',            lastmod: mtime('static/index.html') },
+  { loc: 'https://kinkay.vn/masterclass/', lastmod: mtime('static/masterclass/index.html') },
+  { loc: 'https://kinkay.vn/blog/',        lastmod: posts.length ? posts[0].date : mtime('static/index.html') }
+].concat(posts.map(p => ({ loc: `https://kinkay.vn/blog/${encodeURI(p.slug)}`, lastmod: p.date })));
 const sitemap = '<?xml version="1.0" encoding="UTF-8"?>\n' +
   '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
-  urls.map(u => `  <url><loc>${u}</loc><lastmod>${today}</lastmod></url>`).join('\n') +
+  entries.map(e => `  <url><loc>${e.loc}</loc><lastmod>${e.lastmod}</lastmod></url>`).join('\n') +
   '\n</urlset>\n';
 fs.writeFileSync(path.join(SITE, 'sitemap.xml'), sitemap);
-console.log('sitemap.xml:', urls.length, 'url');
+console.log('sitemap.xml:', entries.length, 'url');
 console.log('bloglist.js OK — BUILD XONG');
 })();

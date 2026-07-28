@@ -1,7 +1,7 @@
 ---
 title: Layout Trang Điểm Mùa Đông Rạng Rỡ Và Nổi Bật Từ Kinkay
 date: 2026-07-18
-cover: /assets/uploads/incollage_save 4.JPG
+cover: /assets/uploads/incollage_save_4.JPG
 excerpt: Layout trang điểm mới nhất từ Kinkay
 ---
 

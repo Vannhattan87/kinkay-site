@@ -12,6 +12,14 @@ logo_url: https://kinkay.vn/apple-touch-icon.png
 media_folder: "static/assets/uploads"
 public_folder: "/assets/uploads"
 
+# 28/07/2026: bắt buộc slug ASCII không dấu. Trước đây CMS lấy thẳng tiêu đề tiếng Việt
+# làm tên file, sinh ra URL kiểu /blog/layout-trang-điểm-mùa-đông-... — sai chuẩn sitemap
+# và Google Search Console báo lỗi. clean_accents khử dấu, encoding ascii chặn ký tự lạ.
+slug:
+  encoding: "ascii"
+  clean_accents: true
+  sanitize_replacement: "-"
+
 collections:
   - name: "blog"
     label: "Bài viết Blog"

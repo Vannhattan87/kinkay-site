@@ -1,0 +1,5 @@
+# Cloudflare Pages đọc file này. netlify.toml KHÔNG được đọc — site chạy trên
+# Cloudflare Pages (xem functions/auth.js), nên block [[headers]] trong netlify.toml
+# chưa bao giờ có tác dụng. Giữ noindex cho trang admin CMS ở đây.
+/admin/*
+  X-Robots-Tag: noindex, nofollow
