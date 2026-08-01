@@ -89,7 +89,8 @@ nav.solid .burger{color:var(--espresso);text-shadow:none}
 @keyframes fadeUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:none}}
 .hero-inner .wordmark{font-size:clamp(46px,8vw,80px);color:var(--cream);
   text-shadow:0 2px 24px rgba(26,15,8,.55);margin-bottom:22px}
-.hero-inner .sub{max-width:480px;margin:0 0 34px;font-size:clamp(15px,1.8vw,17.5px);color:var(--sand);
+.hero-inner .sub{max-width:520px;margin:0 0 34px;font-size:clamp(15px,1.8vw,17.5px);color:var(--sand);
+  font-family:inherit;font-weight:400;line-height:1.55;letter-spacing:0;
   text-shadow:0 1px 8px rgba(26,15,8,.5)}
 .hero-badge-row{display:block}
 .hero-badge{display:inline-flex;align-items:center;gap:9px;margin-top:30px;padding:8px 17px;
@@ -318,9 +319,20 @@ footer p{font-size:11.5px;letter-spacing:.24em;text-transform:uppercase}
    "priceRange": "$$$",
    "address": {
     "@type": "PostalAddress",
-    "addressLocality": "Thành phố Hồ Chí Minh",
+    "addressLocality": "Phường Tân Hưng, Thành phố Hồ Chí Minh",
+    "addressRegion": "TP.HCM",
     "addressCountry": "VN"
    },
+   "hasMap": "https://www.google.com/maps?cid=12668502302416420281",
+   "openingHoursSpecification": [
+    {
+     "@type": "OpeningHoursSpecification",
+     "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],
+     "opens": "08:00",
+     "closes": "20:00"
+    }
+   ],
+   "availableLanguage": ["vi","en"],
    "areaServed": [
     { "@type": "City", "name": "Thành phố Hồ Chí Minh" },
     { "@type": "City", "name": "Quận 7, TP.HCM" },
@@ -339,7 +351,8 @@ footer p{font-size:11.5px;letter-spacing:.24em;text-transform:uppercase}
    "sameAs": [
     "https://www.instagram.com/kinkay.official/",
     "https://www.tiktok.com/@kinkay.official",
-    "https://www.facebook.com/missTram.99/"
+    "https://www.facebook.com/missTram.99/",
+    "https://www.google.com/maps?cid=12668502302416420281"
    ],
    "hasOfferCatalog": {
     "@type": "OfferCatalog",
@@ -380,6 +393,7 @@ footer p{font-size:11.5px;letter-spacing:.24em;text-transform:uppercase}
    "@type": "Person",
    "@id": "https://kinkay.vn/#kay",
    "name": "Kay",
+   "alternateName": ["Kin Kay", "Kay KINKAY"],
    "jobTitle": "Makeup Artist",
    "worksFor": {
     "@id": "https://kinkay.vn/#business"
@@ -433,7 +447,7 @@ footer p{font-size:11.5px;letter-spacing:.24em;text-transform:uppercase}
       <span class="wm-rule"></span>
       <span class="wm-sub" data-t="hero.tagline">a beauty atelier</span>
     </div>
-    <p class="sub" data-t="hero.sub">Makeup &amp; hair styling — sắc nét, sang, và vẫn là chính bạn.</p>
+    <h1 class="sub" data-t="hero.sub">Makeup cô dâu &amp; trang điểm dự tiệc tại TP.HCM — sắc nét, sang, và vẫn là chính bạn.</h1>
     <a class="btn" href="#booking" data-t="hero.cta">Đặt lịch với Kay</a>
     <a class="btn btn-ghost" href="#portfolio" data-t="hero.scroll">Xem portfolio</a>
     <div class="hero-badge-row"><a class="hero-badge" href="masterclass/" data-t="masterclass.badge">Đang nhận học viên · Masterclass 1:1</a></div>
@@ -670,15 +684,15 @@ Ngồi vào ghế KINKAY, bạn nhận được tư vấn thật — bằng con 
     </div>
     <p class="journal-sub reveal in" data-t="journal.sub">Bí quyết makeup, hậu trường show và guide cho cô dâu — từ ghế làm việc của Kay.</p>
     <div class="jgrid" id="jGrid">
-    <a class="jcard reveal in" href="blog/nen-glow-nhin-gan-van-la-da.html" style="transition-delay:0ms">
+    <a class="jcard reveal in" href="blog/nen-glow-nhin-gan-van-la-da" style="transition-delay:0ms">
       <img src="assets/img/beautyqueen/beautyqueen_001.jpg" alt="Vì sao lớp nền glow của KINKAY nhìn gần vẫn là da?" loading="lazy">
       <div class="in"><div class="jdate">Tháng 7, 2026</div><h3>Vì sao lớp nền glow của KINKAY nhìn gần vẫn là da?</h3><p>Câu trả lời không nằm ở cây phấn nào xịn hơn. Nó nằm ở thứ tự làm việc.</p></div>
     </a>
-    <a class="jcard reveal in" href="blog/trial-makeup-truoc-ngay-cuoi-bao-lau.html" style="transition-delay:110ms">
+    <a class="jcard reveal in" href="blog/trial-makeup-truoc-ngay-cuoi-bao-lau" style="transition-delay:110ms">
       <img src="assets/img/bridal/bridal_003.jpg" alt="Nên trial makeup trước ngày cưới bao lâu?" loading="lazy">
       <div class="in"><div class="jdate">Tháng 7, 2026</div><h3>Nên trial makeup trước ngày cưới bao lâu?</h3><p>Trial không phải để 'xem thử cho biết'. Nó là buổi làm việc quan trọng nhất trước ngày cưới của bạn.</p></div>
     </a>
-    <a class="jcard reveal in" href="blog/mot-ngay-backstage-cua-kay.html" style="transition-delay:220ms">
+    <a class="jcard reveal in" href="blog/mot-ngay-backstage-cua-kay" style="transition-delay:220ms">
       <img src="assets/img/beautyqueen/beautyqueen_003.jpg" alt="Một ngày backstage: makeup cho pageant khác gì makeup cho cô dâu?" loading="lazy">
       <div class="in"><div class="jdate">Tháng 6, 2026</div><h3>Một ngày backstage: makeup cho pageant khác gì makeup cho cô dâu?</h3><p>Backstage pageant dạy mình những thứ không trường lớp nào dạy — và khách của mình hưởng hết.</p></div>
     </a></div>
@@ -833,7 +847,7 @@ function videoEmbed(url){
 function renderJournal(){
   if(!window.BLOG || !document.getElementById('jGrid')) return;
   document.getElementById('jGrid').innerHTML = window.BLOG.map((p,i)=>`
-    <a class="jcard reveal" href="blog/${p.slug}.html" style="transition-delay:${i*110}ms">
+    <a class="jcard reveal" href="blog/${p.slug}" style="transition-delay:${i*110}ms">
       <img src="${p.cover}" alt="${p.title}" loading="lazy">
       <div class="in"><div class="jdate">${p.date}</div><h3>${p.title}</h3><p>${p.excerpt}</p></div>
     </a>`).join('');

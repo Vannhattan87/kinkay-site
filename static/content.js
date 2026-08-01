@@ -17,8 +17,8 @@ window.CONTENT = {
   hero: {
     tagline: { vi: "a beauty atelier", en: "a beauty atelier" },
     sub: {
-      vi: "Makeup & hair styling — sắc nét, sang, và vẫn là chính bạn.",
-      en: "Makeup & hair styling — sculpted, luxurious, and still unmistakably you."
+      vi: "Makeup cô dâu & trang điểm dự tiệc tại TP.HCM — sắc nét, sang, và vẫn là chính bạn.",
+      en: "Bridal makeup & event hair styling in Ho Chi Minh City — sculpted, luxurious, and still unmistakably you."
     },
     cta: { vi: "Đặt lịch với Kay", en: "Book with Kay" },
     scroll: { vi: "Xem portfolio", en: "View portfolio" }
