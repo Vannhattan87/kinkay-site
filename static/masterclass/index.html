@@ -503,11 +503,28 @@ footer p{font-size:11.5px;letter-spacing:.24em;text-transform:uppercase}
 })();
 /* GA4 events */
 function track(name,params){ if(typeof gtag==='function') gtag('event',name,params||{}); }
+
+/* generate_lead chỉ đếm MỘT lần mỗi phiên. Cùng cơ chế với trang chủ, dùng chung
+   khoá 'kk_lead' trong sessionStorage nên khách đi từ trang chủ sang đây cũng không bị đếm hai lần. */
+var _leadSent = false;
+function leadOnce(params){
+  if(_leadSent) return;
+  try{
+    if(sessionStorage.getItem('kk_lead')){ _leadSent = true; return; }
+    sessionStorage.setItem('kk_lead','1');
+  }catch(e){ /* riêng tư/chặn storage: dùng cờ bộ nhớ */ }
+  _leadSent = true;
+  track('generate_lead', params);
+}
+
 (function(){
   document.querySelectorAll('.reg-ch a').forEach(function(a){
     var h=a.getAttribute('href')||'';
     var m = h.indexOf('zalo')>-1 ? 'zalo' : (h.indexOf('instagram')>-1 ? 'instagram' : (h.indexOf('mailto')===0 ? 'email' : 'other'));
-    a.addEventListener('click',function(){ track('booking_click',{method:m,source:'masterclass'}); });
+    a.addEventListener('click',function(){
+      track('booking_click',{method:m,source:'masterclass'});
+      if(m!=='other') leadOnce({lead_type:m+'_click',contact_channel:m,service_type:'masterclass',source:'masterclass'});
+    });
   });
 })();
 /* IG deep link */
@@ -528,7 +545,8 @@ function track(name,params){ if(typeof gtag==='function') gtag('event',name,para
     var name=f.name.value.trim(),phone=f.phone.value.trim(),goal=f.goal.value,note=f.note.value.trim();
     var body='Ho ten: '+name+'\nSDT/Zalo: '+phone+'\nMuc tieu: '+goal+'\nGhi chu: '+note+'\n\n(Gui tu kinkay.vn/masterclass)';
     var url='mailto:kinkay20t@gmail.com?subject='+encodeURIComponent('Dang ky KINKAY Masterclass - '+name)+'&body='+encodeURIComponent(body);
-    track('generate_lead',{method:'form',source:'masterclass',goal:goal});
+    leadOnce({lead_type:'form_submit',contact_channel:'website_form',service_type:'masterclass',
+              form_id:'regForm',method:'form',source:'masterclass',goal:goal});
     location.href=url;
   });
 })();
