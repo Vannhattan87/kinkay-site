@@ -567,6 +567,7 @@ function leadOnce(params){
   var panel=document.getElementById('regDone');
   var box=document.getElementById('regMsg');
   var btnCopy=document.getElementById('regCopy');
+  var zaloOpened=false;   // chi tu mo Zalo MOT lan, tranh bam gui nhieu lan ra nhieu tab
 
   function buildMsg(){
     var note=f.note.value.trim();
@@ -610,13 +611,18 @@ function leadOnce(params){
         panel.querySelector('.rd-sub').innerHTML='Trình duyệt không cho tự sao chép. Bạn <b>bôi đen và copy</b> nội dung dưới, rồi dán vào Zalo của Kay.';
       });
     }
-    window.open(ZALO,'_blank','noopener');
+    if(!zaloOpened){ window.open(ZALO,'_blank','noopener'); zaloOpened=true; }
     if(panel && panel.scrollIntoView) panel.scrollIntoView({behavior:'smooth',block:'center'});
   });
   if(btnCopy) btnCopy.addEventListener('click',function(){
     copy(box.value).then(function(){
       btnCopy.textContent='Đã sao chép';
       setTimeout(function(){ btnCopy.textContent='Sao chép lại'; },1800);
+    }).catch(function(){
+      // trinh duyet chan clipboard: boi den san de khach chi can Ctrl+C, khong de nut im lang
+      try{ box.focus(); box.select(); box.setSelectionRange(0, box.value.length); }catch(e){}
+      btnCopy.textContent='Nhấn Ctrl+C để chép';
+      setTimeout(function(){ btnCopy.textContent='Sao chép lại'; },2600);
     });
   });
   var openZalo=document.getElementById('regZalo');
