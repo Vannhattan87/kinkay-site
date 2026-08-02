@@ -172,6 +172,18 @@ h1,h2,h3{font-family:var(--display);font-weight:500}
 .reg-form textarea{resize:vertical;min-height:74px}
 .reg-form .btn{width:100%;border:none;text-align:center}
 .reg-form .fine{font-size:11.5px;color:var(--taupe);margin-top:14px;text-align:center;line-height:1.6}
+.reg-done{margin-top:18px;background:var(--paper);border:1px solid var(--gold);border-radius:6px;padding:24px 22px}
+.reg-done[hidden]{display:none}
+.rd-title{font-family:var(--display);font-size:19px;font-weight:500;color:var(--espresso);margin-bottom:7px}
+.rd-sub{font-size:13.5px;color:var(--taupe);line-height:1.7;margin-bottom:14px}
+.rd-sub b{color:var(--espresso);font-weight:500}
+.reg-done textarea{width:100%;font-family:var(--body);font-size:13px;font-weight:300;color:var(--espresso);
+  border:1px solid var(--sand);border-radius:4px;padding:12px;background:var(--cream);resize:vertical;line-height:1.6}
+.rd-actions{display:flex;gap:10px;align-items:center;margin-top:14px;flex-wrap:wrap}
+.rd-copy{background:none;border:1px solid var(--gold);color:var(--espresso);border-radius:2px;padding:14px 22px;
+  font-family:var(--body);font-size:12px;font-weight:500;letter-spacing:.16em;text-transform:uppercase;cursor:pointer;
+  transition:background .2s,color .2s}
+.rd-copy:hover{background:var(--gold);color:var(--ink)}
 
 /* footer */
 footer{background:var(--ink);color:var(--taupe);text-align:center;padding:52px 20px 60px}
@@ -478,9 +490,19 @@ footer p{font-size:11.5px;letter-spacing:.24em;text-transform:uppercase}
         </select>
         <label for="rf-note">Ghi chú thêm</label>
         <textarea id="rf-note" name="note" placeholder="Trình độ hiện tại, thời gian mong muốn học..."></textarea>
-        <button class="btn" type="submit">Gửi đăng ký</button>
-        <p class="fine">Nhấn gửi sẽ mở email soạn sẵn tới Kay. Bạn cũng có thể nhắn thẳng qua Instagram hoặc Zalo ở bên.</p>
+        <button class="btn" type="submit">Gửi cho Kay qua Zalo</button>
+        <p class="fine">Nhấn gửi sẽ mở Zalo của Kay và tự sao chép nội dung đăng ký, bạn chỉ cần dán vào và gửi. Hoặc nhắn thẳng qua Instagram ở bên.</p>
       </form>
+
+      <div class="reg-done" id="regDone" hidden>
+        <p class="rd-title">Đã sao chép nội dung đăng ký</p>
+        <p class="rd-sub">Cửa sổ Zalo của Kay vừa mở. Bạn chỉ cần <b>dán</b> vào khung chat rồi gửi. Kay phản hồi trong ngày.</p>
+        <textarea id="regMsg" readonly rows="6" aria-label="Nội dung đăng ký để gửi cho Kay"></textarea>
+        <div class="rd-actions">
+          <a class="btn" id="regZalo" href="https://zalo.me/0933953179" target="_blank" rel="noopener">Mở Zalo của Kay</a>
+          <button class="rd-copy" type="button" id="regCopy">Sao chép lại</button>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -536,18 +558,70 @@ function leadOnce(params){
     setTimeout(function(){if(Date.now()-t<1600&&!document.hidden)location.href='https://www.instagram.com/kinkay.official/';},1200);
   });
 })();
-/* form -> mailto */
+/* form -> Zalo. Truoc day dung mailto: may khong co app mail thi khach khong gui duoc gi
+   nhung GA4 van dem mot lead. Gio sao chep noi dung roi mo thang Zalo. */
 (function(){
   var f=document.getElementById('regForm');
   if(!f)return;
+  var ZALO='https://zalo.me/0933953179';
+  var panel=document.getElementById('regDone');
+  var box=document.getElementById('regMsg');
+  var btnCopy=document.getElementById('regCopy');
+
+  function buildMsg(){
+    var note=f.note.value.trim();
+    return 'Chào Kay, em muốn đăng ký Personal Makeup Masterclass 1:1.'
+      +'\nHọ tên: '+f.name.value.trim()
+      +'\nSĐT/Zalo: '+f.phone.value.trim()
+      +'\nMục tiêu: '+f.goal.value
+      +(note?('\nGhi chú: '+note):'')
+      +'\n(Gửi từ kinkay.vn/masterclass)';
+  }
+  function copy(text){
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      try{ return navigator.clipboard.writeText(text); }catch(e){}
+    }
+    return new Promise(function(res,rej){
+      try{
+        var ta=document.createElement('textarea');
+        ta.value=text; ta.setAttribute('readonly','');
+        ta.style.position='fixed'; ta.style.top='-1000px';
+        document.body.appendChild(ta); ta.select(); ta.setSelectionRange(0,text.length);
+        var ok=document.execCommand('copy');
+        document.body.removeChild(ta);
+        ok?res():rej(new Error('copy failed'));
+      }catch(e){ rej(e); }
+    });
+  }
   f.addEventListener('submit',function(e){
     e.preventDefault();
-    var name=f.name.value.trim(),phone=f.phone.value.trim(),goal=f.goal.value,note=f.note.value.trim();
-    var body='Ho ten: '+name+'\nSDT/Zalo: '+phone+'\nMuc tieu: '+goal+'\nGhi chu: '+note+'\n\n(Gui tu kinkay.vn/masterclass)';
-    var url='mailto:kinkay20t@gmail.com?subject='+encodeURIComponent('Dang ky KINKAY Masterclass - '+name)+'&body='+encodeURIComponent(body);
+    if(!f.name.value.trim()||!f.phone.value.trim()) return;   // trinh duyet da co required, day la lop chan thu hai
+    var msg=buildMsg();
     leadOnce({lead_type:'form_submit',contact_channel:'website_form',service_type:'masterclass',
-              form_id:'regForm',method:'form',source:'masterclass',goal:goal});
-    location.href=url;
+              form_id:'regForm',method:'zalo_handoff',source:'masterclass',goal:f.goal.value});
+    if(box) box.value=msg;
+    if(panel){
+      panel.hidden=false;
+      copy(msg).then(function(){
+        panel.querySelector('.rd-title').textContent='Đã sao chép nội dung đăng ký';
+      }).catch(function(){
+        // khong sao chep duoc: van hien noi dung de khach tu copy tay
+        panel.querySelector('.rd-title').textContent='Copy nội dung dưới đây rồi gửi cho Kay';
+        panel.querySelector('.rd-sub').innerHTML='Trình duyệt không cho tự sao chép. Bạn <b>bôi đen và copy</b> nội dung dưới, rồi dán vào Zalo của Kay.';
+      });
+    }
+    window.open(ZALO,'_blank','noopener');
+    if(panel && panel.scrollIntoView) panel.scrollIntoView({behavior:'smooth',block:'center'});
+  });
+  if(btnCopy) btnCopy.addEventListener('click',function(){
+    copy(box.value).then(function(){
+      btnCopy.textContent='Đã sao chép';
+      setTimeout(function(){ btnCopy.textContent='Sao chép lại'; },1800);
+    });
+  });
+  var openZalo=document.getElementById('regZalo');
+  if(openZalo) openZalo.addEventListener('click',function(){
+    track('booking_click',{method:'zalo',source:'masterclass_after_form'});
   });
 })();
 </script>
