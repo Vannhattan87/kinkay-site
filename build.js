@@ -1,4 +1,4 @@
-// KINKAY site builder — chạy trên Netlify (npm run build)
+// KINKAY site builder — chạy trên Cloudflare Pages (npm run build)
 // static/ -> site/ (copy nguyên trạng), rồi sinh gallery.js, blog/, bloglist.js từ content/
 const fs = require('fs');
 const path = require('path');
