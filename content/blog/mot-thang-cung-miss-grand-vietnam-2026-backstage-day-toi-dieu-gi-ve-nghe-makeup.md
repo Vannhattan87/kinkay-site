@@ -1,5 +1,5 @@
 ---
-title: 'Một tháng cùng Miss Grand Vietnam 2026: backstage dạy tôi điều gì về nghề makeup'
+title: Backstage Miss Grand Vietnam 2026 dạy tôi điều gì về nghề makeup
 date: 2026-08-04
 cover: /assets/uploads/kinkay-mgv2026-san-khau-chung-ket.jpg
 excerpt: Một tháng đi cùng Miss Grand Vietnam 2026 trong ekip Quân Nguyễn & Pu Lê. Những gì tôi học được ở backstage, khách ngồi ghế KINKAY đều được hưởng.
@@ -53,6 +53,6 @@ Hành trình khép lại, thứ đọng lại là kỷ niệm và sự trưởng
 
 Hẹn gặp ở những mùa sau.
 
----
+***
 
 Đọc thêm: [Một ngày backstage: makeup cho pageant khác gì makeup cho cô dâu?](/blog/mot-ngay-backstage-cua-kay)
