@@ -109,12 +109,27 @@ nav.solid .burger{color:var(--espresso);text-shadow:none}
 .btn-ghost{background:none;border:1px solid var(--sand);color:var(--sand);margin-left:14px}
 .btn-ghost:hover{border-color:var(--gold);color:var(--gold);background:none;box-shadow:none}
 
-/* sticky mobile CTA */
-.mcta{display:none;position:fixed;left:0;right:0;bottom:0;z-index:48;background:var(--gold);color:var(--ink);
-  text-align:center;padding:15px 16px;font-family:var(--body);font-weight:500;font-size:13.5px;
-  letter-spacing:.2em;text-transform:uppercase;box-shadow:0 -4px 18px rgba(26,15,8,.25);
-  transform:translateY(110%);transition:transform .4s}
+/* sticky CTA — mobile: thanh full-width dưới đáy; desktop: viên nổi góc phải */
+.mcta{display:flex;position:fixed;z-index:48;box-shadow:0 6px 26px rgba(26,15,8,.3);
+  transform:translateY(160%);transition:transform .4s;overflow:hidden;
+  right:26px;bottom:26px;border-radius:3px;left:auto}
 .mcta.show{transform:none}
+.mcta a{display:block;font-family:var(--body);font-weight:500;font-size:13px;
+  letter-spacing:.2em;text-transform:uppercase;text-align:center;padding:15px 26px;
+  transition:.25s;text-shadow:none!important;white-space:nowrap}
+.mcta .mcta-main{background:var(--gold);color:var(--ink)!important}
+.mcta .mcta-main:hover{background:var(--cream);color:var(--espresso)!important}
+.mcta .mcta-alt{background:var(--ink);color:var(--sand)!important;font-size:12px;padding-left:20px;padding-right:20px}
+.mcta .mcta-alt:hover{color:var(--gold)!important}
+
+/* CTA sau khối dịch vụ — bắt khách ngay lúc ý định cao nhất */
+.inline-cta{background:var(--ink);color:var(--cream);text-align:center;padding:54px 22px;
+  border-top:1px solid rgba(196,168,130,.28)}
+.inline-cta p{font-family:var(--body);font-size:15px;line-height:1.75;color:var(--sand);
+  max-width:520px;margin:0 auto 24px}
+.inline-cta .btn{margin:0}
+.inline-cta .inline-hint{font-size:12px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--gold);margin:18px auto 0}
 
 /* CREDITS */
 .credits{background:var(--ink);color:var(--sand);padding:38px 0;overflow:hidden}
@@ -296,7 +311,11 @@ footer p{font-size:11.5px;letter-spacing:.24em;text-transform:uppercase}
   .btn-ghost{margin-left:0;margin-top:12px}
   .section{padding:76px 0}
   .credits span.item{border-right:none;padding:0 10px}
-  .mcta{display:block}
+  .mcta{left:0;right:0;bottom:0;border-radius:0;box-shadow:0 -4px 18px rgba(26,15,8,.25)}
+  .mcta a{letter-spacing:.12em;font-size:12.5px;padding:15px 10px;min-width:0}
+  .mcta .mcta-main{flex:1}
+  .mcta .mcta-alt{flex:0 0 auto;padding-left:16px;padding-right:16px;font-size:11.5px}
+  .inline-cta{padding:44px 18px}
   .vid{flex:0 0 66vw}
   footer{padding-bottom:96px}
 }
@@ -434,7 +453,7 @@ footer p{font-size:11.5px;letter-spacing:.24em;text-transform:uppercase}
     <li><a href="#services" data-t="nav.services">Dịch vụ</a></li>
     <li><a href="#about" data-t="nav.about">Về Kay</a></li>
     <li><a href="blog/" data-t="nav.blog">Blog</a></li>
-    <li><a class="nav-book" href="#booking" data-t="nav.book">Đặt lịch</a></li>
+    <li><a class="nav-book" id="navBook" href="https://zalo.me/0933953179" target="_blank" rel="noopener" data-t="nav.book">Đặt lịch</a></li>
     <li><button class="lang-btn" id="langBtn">EN</button></li>
   </ul>
 </nav>
@@ -448,13 +467,16 @@ footer p{font-size:11.5px;letter-spacing:.24em;text-transform:uppercase}
       <span class="wm-sub" data-t="hero.tagline">a beauty atelier</span>
     </div>
     <h1 class="sub" data-t="hero.sub">Makeup cô dâu &amp; trang điểm dự tiệc tại TP.HCM — sắc nét, sang, và vẫn là chính bạn.</h1>
-    <a class="btn" href="#booking" data-t="hero.cta">Đặt lịch với Kay</a>
+    <a class="btn" id="heroCta" href="#services" data-t="hero.cta">Đặt lịch với Kay</a>
     <a class="btn btn-ghost" href="#portfolio" data-t="hero.scroll">Xem portfolio</a>
     <div class="hero-badge-row"><a class="hero-badge" href="masterclass/" data-t="masterclass.badge">Đang nhận học viên · Masterclass 1:1</a></div>
   </div>
 </header>
 
-<a class="mcta" id="mcta" href="#booking" data-t="hero.cta">Đặt lịch với Kay</a>
+<div class="mcta" id="mcta">
+  <a class="mcta-main" id="mctaZalo" href="https://zalo.me/0933953179" target="_blank" rel="noopener" data-t="cta.sticky">Nhắn Zalo cho Kay</a>
+  <a class="mcta-alt" id="mctaAlt" href="#services" data-t="cta.stickyAlt">Dịch vụ</a>
+</div>
 
 <div class="credits" id="credits"><div class="wrap"><span class="item">Miss Cosmo Vietnam</span><span class="item">Miss Cosmo International</span><span class="item">Hoa Hậu Việt Nam</span><span class="item">Miss Grand Vietnam</span><span class="item">Aquafina Vietnam Int'l Fashion Week</span><span class="item">DCM Design</span><span class="item">Đỗ Long Design</span><span class="item">Adrian Anh Tuấn Shows</span><span class="item">Vietnam Wedding Fest</span></div></div>
 
@@ -648,6 +670,12 @@ footer p{font-size:11.5px;letter-spacing:.24em;text-transform:uppercase}
     <p class="svc-note reveal in" data-t="services.note">Studio tại Phường Tân Hưng, TP.HCM (by appointment) · Nhận lịch toàn quốc, phụ phí di chuyển báo trước khi xác nhận. Giá chi tiết và combo — nhắn Kay để nhận menu đầy đủ.</p>
   </div>
 </section>
+
+<div class="inline-cta">
+  <p data-t="cta.afterPriceText">Ngày của bạn còn trống không? Nhắn Kay để nhận menu giá đầy đủ và giữ lịch.</p>
+  <a class="btn" id="afterPriceCta" href="https://zalo.me/0933953179" target="_blank" rel="noopener" data-t="cta.afterPriceBtn">Nhắn Zalo cho Kay</a>
+  <p class="inline-hint" data-t="cta.afterPriceHint">Zalo 0933 953 179 · Kay phản hồi trong ngày</p>
+</div>
 
 <section class="section kit" id="kit">
   <div class="wrap">
@@ -982,9 +1010,34 @@ document.querySelectorAll('#channels a').forEach(a=>{
 const igCh = document.querySelector('#channels a[data-ch="Instagram"]');
 if(igCh){ igCh.removeAttribute('target'); igCh.addEventListener('click', e=>appLink(e, IG_APP, IG_WEB)); }
 
-/* sticky CTA mobile — chỉ cuộn tới #booking, không phải conversion */
-const mctaBtn = document.getElementById('mcta');
-if(mctaBtn) mctaBtn.addEventListener('click', ()=>track('cta_scroll', {location:'sticky_mobile', source:'home'}));
+/* sticky CTA — nút chính giờ mở Zalo thẳng (conversion thật), nút phụ chỉ cuộn.
+   Trước 05/08/2026 cả thanh chỉ là anchor #booking nên không bao giờ tạo lead. */
+const mctaZalo = document.getElementById('mctaZalo');
+if(mctaZalo) mctaZalo.addEventListener('click', ()=>{
+  track('booking_click', {method:'zalo', source:'sticky'});
+  leadOnce({lead_type:'zalo_click', contact_channel:'zalo', service_type:'unknown', source:'sticky'});
+});
+const mctaAlt = document.getElementById('mctaAlt');
+if(mctaAlt) mctaAlt.addEventListener('click', ()=>track('cta_scroll', {location:'sticky_alt', source:'home'}));
+
+/* CTA ngay sau khối dịch vụ — điểm ý định cao nhất trên trang */
+const afterPrice = document.getElementById('afterPriceCta');
+if(afterPrice) afterPrice.addEventListener('click', ()=>{
+  track('booking_click', {method:'zalo', source:'after_price'});
+  leadOnce({lead_type:'zalo_click', contact_channel:'zalo', service_type:'unknown', source:'after_price'});
+});
+
+/* nút Đặt lịch trên thanh nav — người bấm ở đây đã chủ động tìm cách liên hệ */
+const navBook = document.getElementById('navBook');
+if(navBook) navBook.addEventListener('click', ()=>{
+  track('booking_click', {method:'zalo', source:'nav'});
+  leadOnce({lead_type:'zalo_click', contact_channel:'zalo', service_type:'unknown', source:'nav'});
+});
+
+/* CTA hero — cố ý chỉ cuộn tới #services, không mở Zalo:
+   khách vừa vào trang chưa xem portfolio/giá, đẩy thẳng sang chat sẽ tạo click rác. */
+const heroCta = document.getElementById('heroCta');
+if(heroCta) heroCta.addEventListener('click', ()=>track('cta_scroll', {location:'hero', source:'home'}));
 
 /* nav + sticky CTA */
 const nav = document.getElementById('nav'), mcta = document.getElementById('mcta');

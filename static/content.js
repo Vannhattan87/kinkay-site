@@ -14,6 +14,19 @@ window.CONTENT = {
     blog: { vi: "Blog", en: "Blog" },
     book: { vi: "Đặt lịch", en: "Book Now" }
   },
+  cta: {
+    sticky: { vi: "Nhắn Zalo cho Kay", en: "Message Kay on Zalo" },
+    stickyAlt: { vi: "Dịch vụ", en: "Services" },
+    afterPriceText: {
+      vi: "Ngày của bạn còn trống không? Nhắn Kay để nhận menu giá đầy đủ và giữ lịch.",
+      en: "Is your date still open? Message Kay for the full price menu and to hold your slot."
+    },
+    afterPriceBtn: { vi: "Nhắn Zalo cho Kay", en: "Message Kay on Zalo" },
+    afterPriceHint: {
+      vi: "Zalo 0933 953 179 · Kay phản hồi trong ngày",
+      en: "Zalo 0933 953 179 · Kay replies within the day"
+    }
+  },
   hero: {
     tagline: { vi: "a beauty atelier", en: "a beauty atelier" },
     sub: {
