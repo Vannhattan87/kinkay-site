@@ -300,6 +300,35 @@ function moKhoiChonLook(){ $('tuychinh').classList.add('on'); }
 const MODEL="https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task";
 let fileset=null, delegateDung=null;
 
+// ---------------------------------------------------------------------------
+// CHE DO CHAN DOAN — mo trang voi ?debug=1 de bat.
+// 08/08/2026: sau hai lan va truot (ghim GPU, roi lui ve CPU) van khong nhan ra khuon mat
+// tren dien thoai cua Tan. Ngung doan. Khoi nay in ra so lieu that de doc bang anh chup
+// man hinh, vi may khach o xa va khong co console.
+// Khach binh thuong khong bao gio thay khoi nay.
+// ---------------------------------------------------------------------------
+const DEBUG = /[?&]debug=1/.test(location.search);
+let dbgEl=null, dbg={};
+if(DEBUG){
+ dbgEl=document.createElement('pre');
+ dbgEl.style.cssText='position:fixed;left:0;right:0;bottom:0;z-index:99;margin:0;padding:10px 12px;'
+  +'background:rgba(26,15,8,.94);color:#E8DDD0;font:11px/1.5 ui-monospace,monospace;'
+  +'white-space:pre-wrap;max-height:46vh;overflow:auto';
+ document.addEventListener('DOMContentLoaded',()=>document.body.appendChild(dbgEl));
+ if(document.body) document.body.appendChild(dbgEl);
+}
+function ghi(k,v){ if(!DEBUG)return; dbg[k]=v; if(dbgEl)
+ dbgEl.textContent=Object.entries(dbg).map(([a,b])=>a+': '+b).join('\n'); }
+if(DEBUG){
+ ghi('may', navigator.userAgent.slice(0,120));
+ ghi('man hinh', screen.width+'x'+screen.height+' dpr='+devicePixelRatio);
+ ghi('canvas filter', (()=>{try{const c=document.createElement('canvas').getContext('2d');
+   c.filter='blur(2px)'; return c.filter==='blur(2px)'?'co ho tro':'KHONG HO TRO';}catch(e){return 'loi';}})());
+ ghi('WebGL2', !!document.createElement('canvas').getContext('webgl2'));
+ window.addEventListener('error', ev=>ghi('loi trang', String(ev.message).slice(0,140)));
+ window.addEventListener('unhandledrejection', ev=>ghi('promise loi', String(ev.reason).slice(0,140)));
+}
+
 // runningMode khai NGAY luc tao, khong tao o IMAGE roi setOptions sang VIDEO.
 // Tren mot so may Android, doi runningMode sau khi tao lam bo nhan dien im lang: khong nem
 // loi nhung tra ve 0 khuon mat mai mai.
@@ -310,17 +339,24 @@ async function taoLmk(delegate, runningMode){
   runningMode:runningMode||"IMAGE", numFaces:1 });
 }
 
+let dangBoot=null;
 async function boot(){
  if(ready)return true;
+ if(dangBoot)return dangBoot;          // bam hai lan thi khong tai mo hinh hai lan
+ dangBoot=(async()=>{
  say('Đang tải công cụ, lần đầu hơi lâu một chút…');
  for(const d of ['GPU','CPU']){
+  const t0=performance.now();
   try{
    lmk=await taoLmk(d);
-   delegateDung=d; ready=true; return true;
-  }catch(e){ /* thu tiep CPU */ }
+   ghi('tao bo nhan dien', d+' OK sau '+Math.round(performance.now()-t0)+'ms');
+   delegateDung=d; ready=true; dangBoot=null; return true;
+  }catch(e){ ghi('tao '+d+' that bai', String(e&&e.message||e).slice(0,140)); }
  }
  say('Máy này chưa chạy được công cụ thử look. Nhắn Zalo cho Kay, Kay tư vấn trực tiếp.');
- return false;
+ dangBoot=null; return false;
+ })();
+ return dangBoot;
 }
 
 // Doi sang CPU giua chung. Goi trong HAI truong hop:
@@ -374,8 +410,15 @@ function loop(){ if(mode!=='camera'||!video)return;
  if(W){ if(cv.width!==W){cv.width=W;cv.height=H;}
   ctx.drawImage(video,0,0,W,H);
   try{
-   const r=lmk.detectForVideo(video,performance.now());
+   const t0=performance.now();
+   const r=lmk.detectForVideo(video,t0);
    loiLienTiep=0;
+   if(DEBUG && (khongThayMat%15===0 || (r.faceLandmarks&&r.faceLandmarks.length))){
+    ghi('video', W+'x'+H+' | canvas '+cv.width+'x'+cv.height+' | readyState '+video.readyState);
+    ghi('delegate', delegateDung);
+    ghi('ket qua', 'so mat='+((r.faceLandmarks&&r.faceLandmarks.length)||0)
+      +' | '+Math.round(performance.now()-t0)+'ms | frame khong thay='+khongThayMat);
+   }
    if(r.faceLandmarks&&r.faceLandmarks.length){
     khongThayMat=0; hide(); paint(r.faceLandmarks[0],W,H);
    }else{
@@ -389,6 +432,7 @@ function loop(){ if(mode!=='camera'||!video)return;
     }
    }
   }catch(e){
+   ghi('loi nhan dien', String(e&&e.message||e).slice(0,140));
    if(++loiLienTiep===15){
     luiVeCPU().then(ok=>{
      if(!ok&&!daBaoLoi){ daBaoLoi=true;
@@ -398,9 +442,14 @@ function loop(){ if(mode!=='camera'||!video)return;
   } }
  rafId=requestAnimationFrame(loop);
 }
-$('btnPhoto').onclick=async()=>{ if(await boot()) $('file').click(); };
-$('file').onchange=e=>{
- const f=e.target.files[0]; if(!f||!lmk)return;
+// 08/08/2026 — KHONG await TRUOC KHI MO HOP CHON ANH.
+// Android chan mo hop chon file neu da di qua mot khoang await: quyen tuong tac cua nguoi
+// dung het han. Truoc day boot() nhanh nen con lot; tu khi boot thu GPU roi thu CPU thi
+// cham han, va nut "Tai anh len" chet hoan toan. Mo hop chon NGAY, tai mo hinh song song.
+$('btnPhoto').onclick=()=>{ boot(); $('file').click(); };
+$('file').onchange=async e=>{
+ const f=e.target.files[0]; if(!f)return;
+ if(!await boot())return;   // cho mo hinh tai xong, luc nay await la an toan
  if(rafId)cancelAnimationFrame(rafId);
  if(video&&video.srcObject){video.srcObject.getTracks().forEach(t=>t.stop());video=null;$('btnCam').textContent='Bật camera';}
  mode='photo'; cv.classList.add('noflip'); say('Đang xử lý ảnh…');
@@ -414,6 +463,7 @@ function drawPhoto(){ if(!photo)return;
  const W=photo.naturalWidth,H=photo.naturalHeight;
  cv.width=W;cv.height=H;ctx.drawImage(photo,0,0,W,H);
  try{const r=lmk.detect(photo);
+  ghi('anh', W+'x'+H+' | delegate '+delegateDung+' | so mat='+((r.faceLandmarks&&r.faceLandmarks.length)||0));
   if(r.faceLandmarks&&r.faceLandmarks.length)paint(r.faceLandmarks[0],W,H);
   // Khong thay mat ma dang chay GPU: thu lai bang CPU truoc khi trach tam anh.
   // luiVeCPU() tu goi lai drawPhoto(), va no da doi delegateDung nen khong lap vo tan.
