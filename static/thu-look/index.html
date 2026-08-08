@@ -228,6 +228,15 @@ function paint(lm,W,H){
  const L=LOOKS[cur], base=(+amt.value/100)*L.k;
  const eL=P(lm,EDGE_L,W,H), eR=P(lm,EDGE_R,W,H);
  const fw=D(eL,eR), b=Math.max(1.5,fw*0.014);
+ // 08/08/2026 — CHOT CHAN. Neu be ngang khuon mat khong phai so huu han thi moi phep tinh
+ // phia sau deu thanh NaN, va createRadialGradient nem loi lam chet ca ham ve. Truoc day
+ // khong co chot nay nen loi do bi dem nham thanh "loi nhan dien".
+ if(!isFinite(fw)||fw<=0){
+  ghi('be ngang mat hong','fw='+fw+' | so diem='+(lm&&lm.length)
+    +' | diem'+EDGE_L+'='+JSON.stringify(lm&&lm[EDGE_L])
+    +' | W='+W+' H='+H+' | doDam='+amt.value);
+  return;
+ }
  if(L2.width!==W){L2.width=W;L2.height=H;}
 
  clr(); lc.filter='blur('+b*0.75+'px)'; lc.fillStyle=L.lip;
@@ -244,7 +253,8 @@ function paint(lm,W,H){
    const cx=(a.x+b2.x)/2, cy=(a.y+b2.y)/2;
    const mo=P(lm,s.mouth,W,H), ey=P(lm,s.eye,W,H);
    const ang=Math.atan2(ey.y-mo.y, ey.x-mo.x);
-   const ry=fw*0.098, rx=fw*0.150*s.f;
+   const ry=Math.max(1,fw*0.098), rx=Math.max(1,fw*0.150*(isFinite(s.f)?s.f:1));
+   if(!isFinite(cx)||!isFinite(cy)||!isFinite(ang)) return;   // bo qua ma hong, khong nem loi
    lc.save(); lc.translate(cx,cy); lc.rotate(ang); lc.scale(rx/ry,1);
    const g=lc.createRadialGradient(0,0,0,0,0,ry);
    g.addColorStop(0,rgba(col,1)); g.addColorStop(0.45,rgba(col,0.62)); g.addColorStop(1,rgba(col,0));
@@ -420,7 +430,12 @@ function loop(){ if(mode!=='camera'||!video)return;
       +' | '+Math.round(performance.now()-t0)+'ms | frame khong thay='+khongThayMat);
    }
    if(r.faceLandmarks&&r.faceLandmarks.length){
-    khongThayMat=0; hide(); paint(r.faceLandmarks[0],W,H);
+    // paint() co try/catch RIENG. Truoc day no nam chung catch voi detectForVideo, nen mot
+    // loi ve mau bi dem thanh "loi nhan dien" va keo theo ca co che lui ve CPU — chinh cai
+    // do lam ca ngay 08/08 dieu tra sai huong. Hai viec khac nhau thi phai tach ra.
+    khongThayMat=0; hide();
+    try{ paint(r.faceLandmarks[0],W,H); }
+    catch(e){ ghi('loi ve', String(e&&e.message||e).slice(0,120)); }
    }else{
     khongThayMat++;
     // ~1.5 giay khong thay mat ma dang chay GPU: coi nhu GPU hong im lang, lui ve CPU.
@@ -453,14 +468,40 @@ $('file').onchange=async e=>{
  if(rafId)cancelAnimationFrame(rafId);
  if(video&&video.srcObject){video.srcObject.getTracks().forEach(t=>t.stop());video=null;$('btnCam').textContent='Bật camera';}
  mode='photo'; cv.classList.add('noflip'); say('Đang xử lý ảnh…');
- const img=new Image();
- img.onload=async()=>{ await doiSangMode('IMAGE'); khongThayMat=0; loiLienTiep=0; photo=img; hide(); moKhoiChonLook();
-  if(window.__kkTrack)window.__kkTrack('tryon_photo',{}); drawPhoto(); };
- img.onerror=()=>say('Không đọc được file ảnh này.');
- img.src=URL.createObjectURL(f);
+ ghi('file anh', f.name+' | '+(f.type||'khong ro dinh dang')+' | '+Math.round(f.size/1024)+'KB');
+
+ // 08/08/2026: dung createImageBitmap TRUOC, <img> chi la duong lui.
+ // Anh chup bang dien thoai Samsung doi moi thuong la HEIC/HEIF; the <img> khong giai ma
+ // duoc dinh dang do va chi nem onerror chung chung ("Khong doc duoc file anh nay"),
+ // trong khi createImageBitmap xu ly duoc nhieu dinh dang hon.
+ let anh=null;
+ try{ anh=await createImageBitmap(f); }
+ catch(e1){
+  ghi('createImageBitmap that bai', String(e1&&e1.message||e1).slice(0,120));
+  try{
+   anh=await new Promise((res,rej)=>{
+    const im=new Image();
+    im.onload=()=>res(im);
+    im.onerror=()=>rej(new Error('the <img> cung khong giai ma duoc'));
+    im.src=URL.createObjectURL(f);
+   });
+  }catch(e2){ ghi('the img that bai', String(e2&&e2.message||e2).slice(0,120)); }
+ }
+ if(!anh){
+  say(/hei[cf]/i.test(f.type||f.name)
+   ? 'Ảnh này ở định dạng HEIC nên trình duyệt chưa mở được. Chụp lại bằng chế độ JPEG, hoặc dùng nút Bật camera.'
+   : 'Không đọc được file ảnh này. Thử một ảnh khác, hoặc dùng nút Bật camera.');
+  return;
+ }
+ await doiSangMode('IMAGE'); khongThayMat=0; loiLienTiep=0;
+ photo=anh; hide(); moKhoiChonLook();
+ if(window.__kkTrack)window.__kkTrack('tryon_photo',{});
+ drawPhoto();
 };
 function drawPhoto(){ if(!photo)return;
- const W=photo.naturalWidth,H=photo.naturalHeight;
+ // photo co the la ImageBitmap (dung .width) hoac the <img> (dung .naturalWidth)
+ const W=photo.naturalWidth||photo.width, H=photo.naturalHeight||photo.height;
+ if(!W||!H){ say('Không đọc được kích thước ảnh. Thử ảnh khác nhé.'); return; }
  cv.width=W;cv.height=H;ctx.drawImage(photo,0,0,W,H);
  try{const r=lmk.detect(photo);
   ghi('anh', W+'x'+H+' | delegate '+delegateDung+' | so mat='+((r.faceLandmarks&&r.faceLandmarks.length)||0));
