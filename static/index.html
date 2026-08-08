@@ -776,13 +776,20 @@ function applyLang(){
     if(v && v[lang] !== undefined) el.textContent = v[lang];
   });
   document.getElementById('langBtn').textContent = lang==='vi' ? 'EN' : 'VI';
-  renderCredits(); renderSteps(); renderServices(); renderDecks(); renderTesti(); renderJournal(); observeReveals();
+  // 08/08/2026: chay tung ham trong try/catch rieng. Truoc day chung dung mot dong;
+  // renderCredits() nem loi mot cai la gia dich vu, portfolio, testimonial, journal
+  // deu khong render — trang van hien nhung mat het phan dong. Mot ham hong thi chi
+  // mat dung phan cua no, va loi van vao console de con lan ra.
+  [renderCredits, renderSteps, renderServices, renderDecks, renderTesti, renderJournal, observeReveals]
+    .forEach(function(fn){ try{ fn(); }catch(e){ console.error('[KINKAY] '+fn.name+' loi:', e); } });
 }
 document.getElementById('langBtn').onclick = ()=>{ lang = lang==='vi'?'en':'vi'; applyLang(); };
 
 /* credits — caption phải render lại theo ngôn ngữ, nên nằm trong applyLang() bên dưới */
 function renderCredits(){
-  document.getElementById('creditsCaption').textContent = C.credits.caption[lang];
+  // Giu nguyen chu trong HTML neu du lieu thieu caption, thay vi nem loi.
+  const cap = C.credits && C.credits.caption && C.credits.caption[lang];
+  if (cap) document.getElementById('creditsCaption').textContent = cap;
   document.querySelector('#credits .wrap').innerHTML =
     C.credits.items.map(t=>`<span class="item">${t}</span>`).join('');
 }

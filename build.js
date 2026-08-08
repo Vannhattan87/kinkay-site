@@ -275,6 +275,28 @@ const jcards = posts.slice(0, 3).map(p =>
 idxHtml = idxHtml.replace(JGRID_RE, (m, open) => open + jcards + '</div>');
 fs.writeFileSync(idxPath, idxHtml);
 console.log('jGrid trang chu:', posts.slice(0, 3).map(p => p.slug).join(', '));
+// ---------- 4c. gan van ban (?v=hash) cho cac file du lieu ----------
+// 08/08/2026. Su co that: sau khi deploy, trinh duyet nap index.html MOI nhung van dung
+// content.js CU trong cache. Ban cu thieu key credits.caption -> renderCredits() nem loi,
+// va vi no la ham DAU TIEN trong applyLang() nen moi thu phia sau chet theo: gia dich vu,
+// portfolio, testimonial, journal deu khong render. Trang khong trang, chi degrade am tham.
+//
+// Cach chua goc: gan hash noi dung vao URL. index.html moi se tro toi content.js?v=<hash moi>,
+// khong bao gio ghep duoc voi ban cu nua. Doi file -> doi hash -> trinh duyet bat buoc tai lai.
+const crypto = require('crypto');
+const DATA_JS = ['content.js', 'gallery.js', 'videos.js', 'services.js', 'bloglist.js'];
+let idx2 = fs.readFileSync(idxPath, 'utf8');
+for (const f of DATA_JS) {
+  const fp = path.join(SITE, f);
+  if (!fs.existsSync(fp)) continue;
+  const h = crypto.createHash('sha1').update(fs.readFileSync(fp)).digest('hex').slice(0, 8);
+  const re = new RegExp('src="' + f.replace('.', '\\.') + '(\\?v=[a-f0-9]+)?"', 'g');
+  if (!re.test(idx2)) { console.log('  (bo qua, trang chu khong nap ' + f + ')'); continue; }
+  idx2 = idx2.replace(re, 'src="' + f + '?v=' + h + '"');
+}
+fs.writeFileSync(idxPath, idx2);
+console.log('gan ?v=hash cho', DATA_JS.length, 'file du lieu');
+
 // ---------- 5. sitemap.xml ----------
 // lastmod phải là ngày sửa THẬT của từng trang. Trước đây gán ngày build cho tất cả,
 // nên mỗi lần deploy là khai "vừa sửa hết" — Google học được là lastmod của site này
