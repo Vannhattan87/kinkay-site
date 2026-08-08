@@ -46,8 +46,12 @@ text-transform:uppercase;cursor:pointer;font-weight:400;transition:background .2
 .btn.g{background:transparent;color:var(--espresso);border:1px solid rgba(44,24,16,.3)}
 .stage{position:relative;background:#1A0F08;border-radius:3px;overflow:hidden;aspect-ratio:3/4;
 display:flex;align-items:center;justify-content:center}
-#cv{width:100%;height:100%;object-fit:contain;transform:scaleX(-1)}
-#cv.noflip{transform:none}
+/* 08/08/2026: camera dien thoai tra ve khung ngang (vd 640x480) trong khi .stage la khung
+   doc 3/4. Voi object-fit:contain thi hinh bi ep thanh mot dai mong nam giua, mat khach
+   nho xiu — dung la cai Tan goi la "meo". Camera dung cover de lap day khung va cat bot
+   hai ben, mat van nam giua. Anh tai len van dung contain vi co the la anh toan than. */
+#cv{width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
+#cv.noflip{transform:none;object-fit:contain}
 .msg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;text-align:center;
 color:rgba(232,221,208,.78);font-size:13.5px;line-height:1.72}
 .msg.hide{display:none}
@@ -61,8 +65,13 @@ white-space:nowrap;font-weight:300}
 .ctl{display:flex;align-items:center;gap:12px;margin:14px 0 16px}
 .ctl label{font-size:12.5px;color:var(--taupe);white-space:nowrap}
 input[type=range]{flex:1;accent-color:var(--espresso)}
-.row{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:26px}
+.row{display:flex;gap:9px;flex-wrap:wrap;margin:16px 0 4px}
 .row .btn{flex:1;min-width:135px}
+/* Khoi chon look: mo di cho toi khi khach thuc su co gi de thu. Khong an han, de khach
+   nhin thay truoc la co gi o duoi, nhung khong bam nham vao thu chua dung luc. */
+.tuychinh{opacity:.42;pointer-events:none;transition:opacity .3s;margin-bottom:26px}
+.tuychinh.on{opacity:1;pointer-events:auto}
+.buoc2{font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--taupe);margin:20px 0 2px}
 .cta{background:var(--espresso);color:var(--cream);padding:28px 22px;text-align:center;margin:0 -18px}
 .cta h2{font-family:var(--display);font-weight:400;font-size:24px;margin-bottom:8px}
 .cta p{font-size:13.5px;color:var(--sand);margin-bottom:18px;line-height:1.7}
@@ -98,14 +107,22 @@ padding:12px 20px;border-radius:2px;font-size:13px;opacity:0;transition:opacity 
   <p class="lead">Sáu look Kay dùng ở hậu trường Miss Cosmo International, Hoa Hậu Việt Nam, Miss Grand Vietnam.
   Bật camera hoặc tải một tấm ảnh chân dung.</p>
 
-  <div class="stage"><canvas id="cv"></canvas><div class="msg" id="msg">Chọn một look, rồi bật camera hoặc tải ảnh lên.</div></div>
+  <div class="stage"><canvas id="cv"></canvas><div class="msg" id="msg">Bật camera hoặc tải một tấm ảnh lên để bắt đầu.</div></div>
 
-  <div class="looks" id="looks"></div>
-  <div class="ctl"><label for="amt">Độ đậm</label><input type="range" id="amt" min="0" max="100" value="58"></div>
+  <!-- 08/08/2026: DAO THU TU. Truoc day khach phai chon look TRUOC roi moi bat camera —
+       nguoc voi phan xa tu nhien la thay mat minh truoc da, nen nhieu nguoi vao roi khong
+       biet lam gi. Gio: nut bat camera nam ngay duoi khung hinh, phan chon look va do dam
+       nam duoi va bi lam mo cho toi khi thuc su co gi de thu. -->
   <div class="row">
     <button class="btn" id="btnCam">Bật camera</button>
     <button class="btn g" id="btnPhoto">Tải ảnh lên</button>
     <input type="file" id="file" accept="image/*" hidden>
+  </div>
+
+  <div class="tuychinh" id="tuychinh">
+    <p class="buoc2">Chọn look</p>
+    <div class="looks" id="looks"></div>
+    <div class="ctl"><label for="amt">Độ đậm</label><input type="range" id="amt" min="0" max="100" value="58"></div>
   </div>
 
   <p class="privacy">Ảnh và video xử lý ngay trên máy bạn. Không có gì được gửi đi hay lưu lại ở đâu cả.</p>
@@ -266,35 +283,97 @@ LOOKS.forEach((L,i)=>{const b=document.createElement('button');
 
 function say(t){msgEl.textContent=t;msgEl.classList.remove('hide');}
 function hide(){msgEl.classList.add('hide');}
+// Mo khoi chon look sau khi da co camera hoac anh. Truoc do khoi do bi lam mo va khong bam duoc.
+function moKhoiChonLook(){ $('tuychinh').classList.add('on'); }
+// 08/08/2026 — DELEGATE GPU LA NGUYEN NHAN CHINH LAM TRANG NAY CHET TREN DIEN THOAI.
+// Truoc day chi thu GPU. Tren nhieu may Android va iOS cu, GPU delegate khoi tao thanh cong
+// nhung den luc chay thi nem loi o TUNG frame — ma loi do bi nuot trong catch rong duoi loop(),
+// nen khach thay camera len binh thuong va khong co gi duoc ve. Khong bao loi, khong biet duong nao ma lan.
+// Gio: thu GPU truoc (nhanh hon tren may khoe), that bai thi tu dong lui ve CPU.
+const MODEL="https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task";
+let fileset=null, delegateDung=null;
+
+async function taoLmk(delegate){
+ if(!fileset) fileset=await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.21/wasm");
+ return FaceLandmarker.createFromOptions(fileset,{
+  baseOptions:{ modelAssetPath:MODEL, delegate:delegate },
+  runningMode:"IMAGE", numFaces:1 });
+}
+
 async function boot(){
  if(ready)return true;
- say('Đang tải mô hình nhận diện khuôn mặt…');
+ say('Đang tải công cụ, lần đầu hơi lâu một chút…');
+ for(const d of ['GPU','CPU']){
+  try{
+   lmk=await taoLmk(d);
+   delegateDung=d; ready=true; return true;
+  }catch(e){ /* thu tiep CPU */ }
+ }
+ say('Máy này chưa chạy được công cụ thử look. Nhắn Zalo cho Kay, Kay tư vấn trực tiếp.');
+ return false;
+}
+
+// Doi sang CPU giua chung khi GPU chay loi. Giu nguyen mode dang chay.
+let dangDoiCPU=false;
+async function luiVeCPU(){
+ if(dangDoiCPU||delegateDung==='CPU')return false;
+ dangDoiCPU=true;
  try{
-  const fs2=await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.21/wasm");
-  lmk=await FaceLandmarker.createFromOptions(fs2,{baseOptions:{
-   modelAssetPath:"https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
-   delegate:"GPU"},runningMode:"IMAGE",numFaces:1});
-  ready=true; return true;
- }catch(e){ say('Không tải được công cụ. Kiểm tra kết nối mạng rồi thử lại.'); return false; }
+  const moi=await taoLmk('CPU');
+  await moi.setOptions({runningMode: mode==='camera'?'VIDEO':'IMAGE'});
+  lmk=moi; delegateDung='CPU'; loiLienTiep=0; dangDoiCPU=false;
+  return true;
+ }catch(e){ dangDoiCPU=false; return false; }
 }
 $('btnCam').onclick=async()=>{
  if(!await boot())return;
  try{ say('Đang xin quyền camera…');
-  const st=await navigator.mediaDevices.getUserMedia({video:{width:{ideal:960},height:{ideal:720},facingMode:'user'}});
-  video=document.createElement('video'); video.srcObject=st; video.playsInline=true; video.muted=true;
+  // 08/08/2026: dien thoai xin khung DOC 480x640 thay vi 960x720 ngang.
+  // Hai ly do: khung doc khop voi .stage nen khong phai cat nhieu, va anh nho hon thi
+  // moi frame nhan dien nhe hon nhieu — day la thu chay 30 lan moi giay tren may khach.
+  const nhoGon = Math.min(screen.width, screen.height) <= 820;
+  const rangBuoc = nhoGon
+   ? {facingMode:'user', width:{ideal:480}, height:{ideal:640}, frameRate:{ideal:24,max:30}}
+   : {facingMode:'user', width:{ideal:960}, height:{ideal:720}};
+  let st;
+  try{ st=await navigator.mediaDevices.getUserMedia({video:rangBuoc}); }
+  catch(e){ st=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'}}); }
+  video=document.createElement('video'); video.srcObject=st;
+  video.playsInline=true; video.setAttribute('playsinline','');  // iOS can ca thuoc tinh, khong chi property
+  video.muted=true; video.setAttribute('muted','');
   await video.play(); await lmk.setOptions({runningMode:'VIDEO'});
-  mode='camera'; photo=null; cv.classList.remove('noflip'); hide();
+  loiLienTiep=0; khongThayMat=0; daBaoLoi=false;
+  mode='camera'; photo=null; cv.classList.remove('noflip'); hide(); moKhoiChonLook();
   $('btnCam').textContent='Camera đang bật';
   if(window.__kkTrack)window.__kkTrack('tryon_camera',{});
   loop();
  }catch(e){ say('Không mở được camera. Bạn có thể dùng nút "Tải ảnh lên" thay thế.'); }
 };
+// loiLienTiep: dem so frame lien tiep bi loi nhan dien. Truoc day catch rong nen loi bi nuot
+// hoan toan. Gio dem: 15 frame lien tiep loi thi lui ve CPU; van loi nua thi noi that voi khach.
+// khongThayMat: dem frame khong tim ra mat, de goi y khach thay vi de man hinh im lang.
+let loiLienTiep=0, khongThayMat=0, daBaoLoi=false;
+
 function loop(){ if(mode!=='camera'||!video)return;
  const W=video.videoWidth,H=video.videoHeight;
  if(W){ if(cv.width!==W){cv.width=W;cv.height=H;}
   ctx.drawImage(video,0,0,W,H);
-  try{const r=lmk.detectForVideo(video,performance.now());
-   if(r.faceLandmarks&&r.faceLandmarks.length)paint(r.faceLandmarks[0],W,H);}catch(e){} }
+  try{
+   const r=lmk.detectForVideo(video,performance.now());
+   loiLienTiep=0;
+   if(r.faceLandmarks&&r.faceLandmarks.length){
+    khongThayMat=0; hide(); paint(r.faceLandmarks[0],W,H);
+   }else if(++khongThayMat===45){
+    say('Chưa thấy khuôn mặt. Đưa mặt vào giữa khung, quay về phía có ánh sáng.');
+   }
+  }catch(e){
+   if(++loiLienTiep===15){
+    luiVeCPU().then(ok=>{
+     if(!ok&&!daBaoLoi){ daBaoLoi=true;
+      say('Máy này chưa chạy được phần nhận diện. Thử nút "Tải ảnh lên", hoặc nhắn Zalo để Kay tư vấn trực tiếp.'); }
+    });
+   }
+  } }
  rafId=requestAnimationFrame(loop);
 }
 $('btnPhoto').onclick=async()=>{ if(await boot()) $('file').click(); };
@@ -304,7 +383,7 @@ $('file').onchange=e=>{
  if(video&&video.srcObject){video.srcObject.getTracks().forEach(t=>t.stop());video=null;$('btnCam').textContent='Bật camera';}
  mode='photo'; cv.classList.add('noflip'); say('Đang xử lý ảnh…');
  const img=new Image();
- img.onload=async()=>{ await lmk.setOptions({runningMode:'IMAGE'}); photo=img; hide();
+ img.onload=async()=>{ await lmk.setOptions({runningMode:'IMAGE'}); photo=img; hide(); moKhoiChonLook();
   if(window.__kkTrack)window.__kkTrack('tryon_photo',{}); drawPhoto(); };
  img.onerror=()=>say('Không đọc được file ảnh này.');
  img.src=URL.createObjectURL(f);
