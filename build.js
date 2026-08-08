@@ -102,6 +102,17 @@ try {
 fs.writeFileSync(path.join(SITE, 'videos.js'), 'window.VIDEOS=' + JSON.stringify(VID) + ';');
 console.log('videos.js:', VID.length, 'video');
 
+// ---------- 3c. services.json -> services.js ----------
+// Bảng giá và danh sách dịch vụ sửa được từ trang admin, không cần đụng code.
+// show_prices=false thì mọi dòng giá biến mất khỏi web (quyết định thương mại, không phải kỹ thuật).
+let SVC = { show_prices: false, items: [] };
+try {
+  SVC = JSON.parse(fs.readFileSync('content/services.json', 'utf8'));
+  SVC.items = (SVC.items || []).filter(i => i && i.name);
+} catch (e) { console.log('services.json không có — bỏ qua'); }
+fs.writeFileSync(path.join(SITE, 'services.js'), 'window.SERVICES=' + JSON.stringify(SVC) + ';');
+console.log('services.js:', SVC.items.length, 'dịch vụ · hiện giá:', !!SVC.show_prices);
+
 // ---------- 4. blog ----------
 const CSS = fs.readFileSync('blog_theme.css', 'utf8');
 const FONTS = '<link rel="preconnect" href="https://fonts.googleapis.com">'
@@ -233,6 +244,8 @@ const mtime = f => {
 // Sitemap và canonical phải khai đích cuối, không khai URL bị chuyển hướng.
 const entries = [
   { loc: 'https://kinkay.vn/',            lastmod: mtime('static/index.html') },
+  { loc: 'https://kinkay.vn/thu-look/',    lastmod: mtime('static/thu-look/index.html') },
+  { loc: 'https://kinkay.vn/lich-cuoi/',   lastmod: mtime('static/lich-cuoi/index.html') },
   { loc: 'https://kinkay.vn/masterclass/', lastmod: mtime('static/masterclass/index.html') },
   { loc: 'https://kinkay.vn/blog/',        lastmod: posts.length ? posts[0].date : mtime('static/index.html') }
 ].concat(posts.map(p => ({ loc: `https://kinkay.vn/blog/${encodeURI(p.slug)}`, lastmod: p.date })));

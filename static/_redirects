@@ -1,10 +1,15 @@
 # Link gọn cho TikTok — Kay dán link ngắn, hệ thống tự chuyển sang link đầy đủ có UTM để đo trên Google Analytics
-# 27/07/2026: đã thử trỏ vào landing /tiktok/ rồi bỏ. Lý do: trình duyệt trong app TikTok chặn
-# link zalo.me (hiện "TikTok can't open this page directly"), nên nút Zalo trên landing vô dụng
-# đúng ở nơi cần nó nhất. Giữ đích là trang chủ.
-/tiktok         https://kinkay.vn/?utm_source=tiktok&utm_medium=bio                                    301
-/tiktok-ghim    https://kinkay.vn/?utm_source=tiktok&utm_medium=caption&utm_campaign=video_ghim         301
-/tiktok-video   https://kinkay.vn/?utm_source=tiktok&utm_medium=caption&utm_campaign=video_moi          301
+#
+# 27/07/2026: đã thử landing /tiktok/ rồi bỏ, vì trình duyệt trong app TikTok chặn link zalo.me
+# ("TikTok can't open this page directly") nên nút Zalo vô dụng đúng ở nơi cần nó nhất.
+#
+# 08/08/2026: trỏ lại vào trang công cụ /thu-look/. Khác lần trước ở chỗ: trang này KHÔNG phụ thuộc
+# vào link zalo.me. Nó dò user-agent, nhận ra trình duyệt trong app rồi hiện thẳng số điện thoại
+# dạng chữ để khách copy — đúng cách đã được xác nhận là chạy được. Nút Zalo tụt xuống hàng phụ.
+# Lý do đổi: 64.5K follower đang đổ vào trang chủ chung chung, engagement 2-3 giây.
+/tiktok         https://kinkay.vn/thu-look/?utm_source=tiktok&utm_medium=bio                            301
+/tiktok-ghim    https://kinkay.vn/thu-look/?utm_source=tiktok&utm_medium=caption&utm_campaign=video_ghim 301
+/tiktok-video   https://kinkay.vn/thu-look/?utm_source=tiktok&utm_medium=caption&utm_campaign=video_moi  301
 
 # 28/07/2026: bài "layout trang điểm mùa đông" trước đây có slug đầy dấu tiếng Việt vì CMS
 # lấy thẳng tiêu đề làm tên file. Đã đổi sang slug ASCII. Giữ 301 cho link cũ đã phát tán.

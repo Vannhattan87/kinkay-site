@@ -34,6 +34,31 @@ collections:
       - { label: "Mô tả ngắn", name: "excerpt", widget: "string", hint: "1-2 câu, hiện dưới tiêu đề trên trang Blog" }
       - { label: "Nội dung", name: "body", widget: "markdown", hint: "Viết như nói chuyện với khách. Dùng nút H2 cho tiêu đề mục." }
 
+  - name: "services"
+    label: "Dịch vụ & Bảng giá"
+    files:
+      - name: "services"
+        label: "Dịch vụ và giá"
+        file: "content/services.json"
+        fields:
+          - { label: "Hiện giá trên website", name: "show_prices", widget: "boolean", default: true, hint: "Tắt là toàn bộ dòng giá biến mất, chỉ còn nút nhắn Kay. Bật/tắt được bất cứ lúc nào, không cần sửa code." }
+          - { label: "Ghi chú dưới bảng giá", name: "currency_note", widget: "string", required: false }
+          - { label: "Ghi chú địa điểm", name: "location_note", widget: "text", required: false }
+          - { label: "Bridal — giá từ", name: "bridal_from", widget: "string", hint: "Dùng ở trang Lịch cưới. Ví dụ: 3.000.000đ" }
+          - { label: "Bridal — giá đến", name: "bridal_to", widget: "string" }
+          - { label: "Giá trial", name: "trial_price", widget: "string" }
+          - label: "Các dịch vụ"
+            name: "items"
+            widget: "list"
+            label_singular: "dịch vụ"
+            allow_add: true
+            collapsed: true
+            summary: "{{fields.name}} — {{fields.price}}"
+            fields:
+              - { label: "Tên dịch vụ", name: "name", widget: "string" }
+              - { label: "Mô tả", name: "desc", widget: "text" }
+              - { label: "Giá", name: "price", widget: "string", hint: "Gõ nguyên văn như muốn hiện trên web. Ví dụ: Từ 1.200.000đ" }
+
   - name: "settings"
     label: "Portfolio (ảnh)"
     files:
