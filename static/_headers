@@ -2,5 +2,77 @@
 # 03/08/2026: đã xoá netlify.toml khỏi repo — nó là tàn dư từ lần thử Netlify ban đầu,
 # chưa bao giờ có tác dụng, và làm người đọc tưởng nhầm site nằm trên Netlify.
 # Mọi rule header phải khai ở đây, không khai chỗ nào khác.
+#
+# 08/08/2026: bổ sung security headers. Trước đó file này chỉ có đúng rule noindex của /admin,
+# nghĩa là site không có CSP, không chống clickjacking, không HSTS.
+
+# ---------------------------------------------------------------------------
+# 1. Header cứng — áp cho mọi thứ, kể cả /admin và file ảnh.
+# ---------------------------------------------------------------------------
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+  X-Frame-Options: SAMEORIGIN
+  # camera=(self) vì /thu-look/ cần camera của khách. Đừng đổi thành camera=() —
+  # làm vậy là giết đúng trang công cụ đang nhận traffic TikTok.
+  Permissions-Policy: camera=(self), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()
+
+# ---------------------------------------------------------------------------
+# 2. CSP — CHỈ áp cho các trang công khai, KHÔNG áp cho /admin.
+#
+# Vì sao khai từng đường dẫn thay vì /* :  Cloudflare Pages gộp header của mọi rule khớp.
+# Nếu khai CSP ở /* rồi khai thêm CSP riêng cho /admin thì trình duyệt nhận HAI header CSP
+# và thực thi phần giao của cả hai, tức là chặt hơn cả hai — Sveltia CMS sẽ chết mà không
+# ai hiểu vì sao. Nên /admin cố tình không có CSP; nó đã được bảo vệ bằng X-Frame-Options: DENY
+# ở mục 3 và bằng ALLOWED_DOMAINS trong functions/auth.js.
+#
+# Nguồn ngoài mà site thật sự dùng, không có gì thừa:
+#   googletagmanager / google-analytics  : GA4 (G-HMVQB181BH)
+#   fonts.googleapis / fonts.gstatic     : Playfair Display, Be Vietnam Pro
+#   cdn.jsdelivr.net                     : MediaPipe tasks-vision 0.10.21 của /thu-look/
+#   storage.googleapis.com               : file model face_landmarker.task, cũng của /thu-look/
+#   youtube / tiktok                     : iframe nhúng ở phần Behind the Glam
+#
+# 'unsafe-inline' cho script vẫn phải giữ vì toàn bộ site viết theo kiểu script inline
+# trong từng trang. Bỏ được nó là nâng cấp thật, nhưng phải viết lại tất cả các trang trước.
+# 'wasm-unsafe-eval' là bắt buộc, MediaPipe chạy bằng WebAssembly.
+#
+# NẾU CÓ TRANG NÀO HỎNG SAU KHI DEPLOY: mở Console của trình duyệt, lỗi CSP ghi rõ nguồn nào
+# bị chặn — thêm đúng nguồn đó vào dòng dưới. Cách chữa cháy nhanh nhất là xoá nguyên khối
+# mục 2 này; site chạy lại như cũ ngay, chỉ mất lớp phòng thủ.
+# ---------------------------------------------------------------------------
+/
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://*.googletagmanager.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://*.google-analytics.com https://*.googletagmanager.com; media-src 'self' blob:; worker-src 'self' blob:; connect-src 'self' blob: data: https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com https://cdn.jsdelivr.net https://storage.googleapis.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://www.tiktok.com; frame-ancestors 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests
+
+/blog/*
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://*.googletagmanager.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://*.google-analytics.com https://*.googletagmanager.com; media-src 'self' blob:; worker-src 'self' blob:; connect-src 'self' blob: data: https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com https://cdn.jsdelivr.net https://storage.googleapis.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://www.tiktok.com; frame-ancestors 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests
+
+/masterclass/*
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://*.googletagmanager.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://*.google-analytics.com https://*.googletagmanager.com; media-src 'self' blob:; worker-src 'self' blob:; connect-src 'self' blob: data: https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com https://cdn.jsdelivr.net https://storage.googleapis.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://www.tiktok.com; frame-ancestors 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests
+
+/thu-look/*
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://*.googletagmanager.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://*.google-analytics.com https://*.googletagmanager.com; media-src 'self' blob:; worker-src 'self' blob:; connect-src 'self' blob: data: https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com https://cdn.jsdelivr.net https://storage.googleapis.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://www.tiktok.com; frame-ancestors 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests
+
+/lich-cuoi/*
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://*.googletagmanager.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://*.google-analytics.com https://*.googletagmanager.com; media-src 'self' blob:; worker-src 'self' blob:; connect-src 'self' blob: data: https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com https://cdn.jsdelivr.net https://storage.googleapis.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://www.tiktok.com; frame-ancestors 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests
+
+/danh-gia/*
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://*.googletagmanager.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://*.google-analytics.com https://*.googletagmanager.com; media-src 'self' blob:; worker-src 'self' blob:; connect-src 'self' blob: data: https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com https://cdn.jsdelivr.net https://storage.googleapis.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://www.tiktok.com; frame-ancestors 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests
+
+/chinh-sach-du-lieu/*
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://*.googletagmanager.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: https://*.google-analytics.com https://*.googletagmanager.com; connect-src 'self' https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com; frame-ancestors 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests
+
+/dieu-khoan/*
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://*.googletagmanager.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: https://*.google-analytics.com https://*.googletagmanager.com; connect-src 'self' https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com; frame-ancestors 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests
+
+# ---------------------------------------------------------------------------
+# 3. Admin — không CSP (xem giải thích ở mục 2), nhưng khoá chặt phần còn lại.
+# ---------------------------------------------------------------------------
 /admin/*
   X-Robots-Tag: noindex, nofollow
+  # DENY chứ không SAMEORIGIN: trang này giữ GitHub token, không có lý do gì để nó nằm
+  # trong iframe của bất kỳ ai, kể cả của chính kinkay.vn.
+  X-Frame-Options: DENY
+  Referrer-Policy: no-referrer
+  Cache-Control: no-store

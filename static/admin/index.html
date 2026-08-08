@@ -7,6 +7,13 @@
 <title>KINKAY Admin</title>
 </head>
 <body>
-<script src="https://unpkg.com/@sveltia/cms/dist/sveltia-cms.js" type="module"></script>
+<!-- 08/08/2026 — GHIM PHIÊN BẢN. Trước đây là "@sveltia/cms" không số, nghĩa là mỗi lần
+     mở trang admin là tải bản mới nhất từ CDN của người khác. Trang này giữ GitHub token,
+     nên bất kỳ bản mới nào bị chèn mã đều lấy được token đó. 0.181.1 là bản đang chạy
+     tại thời điểm ghim, nên ghim vào KHÔNG đổi gì về hành vi.
+     Muốn nâng cấp: đổi số ở đây, deploy, mở admin thử đăng bài. Không bao giờ quay lại @latest.
+     Bước tiếp theo (cần làm trên máy Tân, xem README): tải file về static/admin/ để tự host
+     và thêm SRI hash, cắt hẳn phụ thuộc vào unpkg. -->
+<script src="https://unpkg.com/@sveltia/cms@0.181.1/dist/sveltia-cms.js" type="module" crossorigin="anonymous"></script>
 </body>
 </html>

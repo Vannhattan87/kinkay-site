@@ -38,6 +38,15 @@ window.CONTENT = {
   },
   credits: {
     heading: { vi: "Selected Credits", en: "Selected Credits" },
+    // 08/08/2026: bắt buộc phải có dòng này. Dải tên trần đọc ra là "khách hàng / đối tác",
+    // trong khi thực tế Kay tham gia với tư cách thành viên ekip hậu trường. Luật Quảng cáo 2012
+    // Điều 8 cấm quảng cáo gây nhầm lẫn về uy tín và về tổ chức. Đây cũng là các nhãn hiệu
+    // được bảo hộ — mô tả trung thực công việc đã làm thì được, gợi ý tài trợ hay hợp tác thì không.
+    // Đừng xoá dòng này để trang gọn hơn.
+    caption: {
+      vi: "Kay tham gia ekip hậu trường tại",
+      en: "Kay has worked backstage at"
+    },
     items: [
       "Miss Cosmo Vietnam",
       "Miss Cosmo International",
@@ -223,6 +232,21 @@ window.CONTENT = {
     ]
   },
   footer: {
-    line: { vi: "KINKAY · a beauty atelier · HCMC", en: "KINKAY · a beauty atelier · HCMC" }
+    line: { vi: "KINKAY · a beauty atelier · HCMC", en: "KINKAY · a beauty atelier · HCMC" },
+
+    // 08/08/2026 — Nghị định 52/2013 Điều 27: website thương mại điện tử bán hàng phải công bố
+    // tên, địa chỉ, số điện thoại của chủ sở hữu. Trước đó footer chỉ có đúng một dòng thương hiệu.
+    //
+    // Tân cung cấp 08/08/2026: Thạch Bé Trâm. Dấu tiếng Việt do em thêm — Tân đối chiếu CCCD, khác thì sửa.
+    // Sửa ở đúng một chỗ này, tất cả các trang tự cập nhật theo.
+    //
+    // Khi nào có đăng ký hộ kinh doanh thì đổi dòng owner thành tên hộ KD + số ĐKKD + MST,
+    // rồi mới thông báo website với Bộ Công Thương tại online.gov.vn được.
+    owner: {
+      vi: "Chủ sở hữu website: Thạch Bé Trâm · Studio: Phường Tân Hưng, TP.HCM · 0933 953 179 · kinkay20t@gmail.com",
+      en: "Website owner: Thạch Bé Trâm · Studio: Tan Hung Ward, HCMC · 0933 953 179 · kinkay20t@gmail.com"
+    },
+    privacy: { vi: "Chính sách dữ liệu", en: "Data policy" },
+    terms:   { vi: "Điều khoản dịch vụ", en: "Terms of service" }
   }
 };

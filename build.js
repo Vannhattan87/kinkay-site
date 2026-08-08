@@ -121,7 +121,16 @@ const FONTS = '<link rel="preconnect" href="https://fonts.googleapis.com">'
 const ICONS = '<link rel="icon" type="image/png" href="../favicon.png">';
 const GA = '<script async src="https://www.googletagmanager.com/gtag/js?id=G-HMVQB181BH"></script>' +
   '<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","G-HMVQB181BH");</script>';
-const FOOT = '<footer>KINKAY · a beauty atelier · HCMC</footer>';
+// 08/08/2026: footer bài blog phải có thông tin chủ sở hữu (NĐ 52/2013 Điều 27) và link
+// tới chính sách dữ liệu + điều khoản. Style inline vì blog_theme.css dùng chung cho cả
+// trang index blog, không muốn đụng vào file css chỉ để thêm ba dòng.
+// Tân cung cấp 08/08/2026: Thạch Bé Trâm. Dấu tiếng Việt do em thêm — Tân đối chiếu CCCD, khác thì sửa.
+const FOOT = '<footer>KINKAY · a beauty atelier · HCMC'
+  + '<div style="margin-top:14px;font-size:11px;line-height:1.9;opacity:.8;text-transform:none;letter-spacing:.04em">'
+  + 'Chủ sở hữu website: Thạch Bé Trâm · Studio: Phường Tân Hưng, TP.HCM · 0933 953 179 · kinkay20t@gmail.com</div>'
+  + '<div style="margin-top:10px;font-size:11.5px;text-transform:none;letter-spacing:.1em">'
+  + '<a href="/chinh-sach-du-lieu/">Chính sách dữ liệu</a> · <a href="/dieu-khoan/">Điều khoản dịch vụ</a></div>'
+  + '</footer>';
 const bar = (back, label) => `<div class="bar"><a class="brand" href="../">KINKAY</a><a class="back" href="${back}">${label}</a></div>`;
 const og = (title, desc, url, image, type) =>
   `<link rel="canonical" href="${url}"><meta property="og:type" content="${type}"><meta property="og:url" content="${url}">`
@@ -232,6 +241,39 @@ fs.writeFileSync(path.join(blogDir, 'index.html'), index);
 
 const mini = posts.slice(0, 3).map(p => ({ slug: p.slug, title: p.title, date: p.date_display, cover: p.cover, excerpt: p.excerpt }));
 fs.writeFileSync(path.join(SITE, 'bloglist.js'), 'window.BLOG=' + JSON.stringify(mini) + ';');
+
+// ---------- 4b. sinh lai khoi Journal (#jGrid) trong site/index.html ----------
+// 08/08/2026. Van de: <div id="jGrid"> trong static/index.html chua 3 the <a> GO TAY,
+// dong bang tu thang 6-7/2026. Ham renderJournal() o cuoi trang co ghi de khoi nay, nhung
+// do la JavaScript chay khi trang da mo. Googlebot doc HTML tho TRUOC — no chi thay 3 bai cu.
+// He qua: trang chu la trang manh nhat cua site (gan het impression), nhung khong truyen
+// link noi bo cho bai nao moi, ke ca /blog/gia-makeup-co-dau-tphcm la bai duy nhat dang
+// an query thuong mai. Cang viet bai moi, lo hong cang to.
+// Day dung la loai loi da dinh hoi 01/08 voi link .html: sua JS ma quen ban pre-render la vo nghia.
+//
+// Cach lam: sau khi co posts, ghi de thang phan trong #jGrid cua site/index.html bang markup
+// sinh tu 3 bai moi nhat. Giu nguyen cau truc the hien tai de khong dung toi CSS.
+// Class co "in" (khac ban JS chi co "reveal") vi ban pre-render phai hien san khi chua co JS.
+const idxPath = path.join(SITE, 'index.html');
+let idxHtml = fs.readFileSync(idxPath, 'utf8');
+const JGRID_RE = /(<div class="jgrid" id="jGrid">)[\s\S]*?<\/a>\s*<\/div>/;
+if (!JGRID_RE.test(idxHtml)) {
+  // Fail to chu khong im lang. Neu ai do doi markup #jGrid ma build van chay, trang chu se
+  // am tham quay lai trang thai dong bang cu va khong ai biet trong nhieu tuan.
+  console.error('\n=========== BUILD DUNG ===========');
+  console.error('Khong tim thay khoi <div class="jgrid" id="jGrid">...</a></div> trong static/index.html.');
+  console.error('Ai do da doi markup muc Journal. Sua lai JGRID_RE trong build.js cho khop,');
+  console.error('dung bo qua — bo qua la trang chu quay ve trang thai hardcode cu.\n');
+  process.exit(1);
+}
+const jcards = posts.slice(0, 3).map((p, i) =>
+  `\n    <a class="jcard reveal in" href="blog/${encodeURI(p.slug)}" style="transition-delay:${i * 110}ms">` +
+  `\n      <img src="${p.cover}" alt="${esc(p.title)}" loading="lazy">` +
+  `\n      <div class="in"><div class="jdate">${p.date_display}</div><h3>${esc(p.title)}</h3><p>${esc(p.excerpt)}</p></div>` +
+  `\n    </a>`).join('');
+idxHtml = idxHtml.replace(JGRID_RE, (m, open) => open + jcards + '</div>');
+fs.writeFileSync(idxPath, idxHtml);
+console.log('jGrid trang chu:', posts.slice(0, 3).map(p => p.slug).join(', '));
 // ---------- 5. sitemap.xml ----------
 // lastmod phải là ngày sửa THẬT của từng trang. Trước đây gán ngày build cho tất cả,
 // nên mỗi lần deploy là khai "vừa sửa hết" — Google học được là lastmod của site này
@@ -247,6 +289,13 @@ const entries = [
   { loc: 'https://kinkay.vn/thu-look/',    lastmod: mtime('static/thu-look/index.html') },
   { loc: 'https://kinkay.vn/lich-cuoi/',   lastmod: mtime('static/lich-cuoi/index.html') },
   { loc: 'https://kinkay.vn/masterclass/', lastmod: mtime('static/masterclass/index.html') },
+  // 08/08/2026: bổ sung hai trang pháp lý mới.
+  // KHÔNG khai /danh-gia/ ở đây. Trang đó cố ý mang <meta name="robots" content="noindex">
+  // (nó chỉ là bước đệm chuyển hướng khách sang form đánh giá Google). Khai một URL noindex
+  // trong sitemap là tự mâu thuẫn — Search Console sẽ báo "Submitted URL marked noindex"
+  // và làm bẩn thêm báo cáo Coverage vốn đã khó đọc của site này.
+  { loc: 'https://kinkay.vn/chinh-sach-du-lieu/', lastmod: mtime('static/chinh-sach-du-lieu/index.html') },
+  { loc: 'https://kinkay.vn/dieu-khoan/',  lastmod: mtime('static/dieu-khoan/index.html') },
   { loc: 'https://kinkay.vn/blog/',        lastmod: posts.length ? posts[0].date : mtime('static/index.html') }
 ].concat(posts.map(p => ({ loc: `https://kinkay.vn/blog/${encodeURI(p.slug)}`, lastmod: p.date })));
 const sitemap = '<?xml version="1.0" encoding="UTF-8"?>\n' +
