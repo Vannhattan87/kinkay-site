@@ -256,7 +256,9 @@ fs.writeFileSync(path.join(SITE, 'bloglist.js'), 'window.BLOG=' + JSON.stringify
 // Class co "in" (khac ban JS chi co "reveal") vi ban pre-render phai hien san khi chua co JS.
 const idxPath = path.join(SITE, 'index.html');
 let idxHtml = fs.readFileSync(idxPath, 'utf8');
-const JGRID_RE = /(<div class="jgrid" id="jGrid">)[\s\S]*?<\/a>\s*<\/div>/;
+// 08/08/2026 (dot 3): khoi Journal doi tu luoi anh sang danh sach chu (.jlist/.jrow)
+// de cat chieu cao trang chu. Van giu link noi bo toi bai blog — day moi la thu dang can.
+const JGRID_RE = /(<div class="jlist" id="jGrid">)[\s\S]*?<\/a>\s*<\/div>/;
 if (!JGRID_RE.test(idxHtml)) {
   // Fail to chu khong im lang. Neu ai do doi markup #jGrid ma build van chay, trang chu se
   // am tham quay lai trang thai dong bang cu va khong ai biet trong nhieu tuan.
@@ -266,11 +268,10 @@ if (!JGRID_RE.test(idxHtml)) {
   console.error('dung bo qua — bo qua la trang chu quay ve trang thai hardcode cu.\n');
   process.exit(1);
 }
-const jcards = posts.slice(0, 3).map((p, i) =>
-  `\n    <a class="jcard reveal in" href="blog/${encodeURI(p.slug)}" style="transition-delay:${i * 110}ms">` +
-  `\n      <img src="${p.cover}" alt="${esc(p.title)}" loading="lazy">` +
-  `\n      <div class="in"><div class="jdate">${p.date_display}</div><h3>${esc(p.title)}</h3><p>${esc(p.excerpt)}</p></div>` +
-  `\n    </a>`).join('');
+const jcards = posts.slice(0, 3).map(p =>
+  `\n    <a class="jrow" href="blog/${encodeURI(p.slug)}">` +
+  `<span class="jd">${p.date_display}</span>` +
+  `<span class="jt">${esc(p.title)}</span></a>`).join('');
 idxHtml = idxHtml.replace(JGRID_RE, (m, open) => open + jcards + '</div>');
 fs.writeFileSync(idxPath, idxHtml);
 console.log('jGrid trang chu:', posts.slice(0, 3).map(p => p.slug).join(', '));

@@ -6,13 +6,26 @@ window.CONTENT = {
   nav: {
     approach: { vi: "Phương pháp", en: "Approach" },
     portfolio: { vi: "Portfolio", en: "Portfolio" },
-    video: { vi: "Video", en: "Video" },
+    tryon: { vi: "Thử look", en: "Try a look" },
     testi: { vi: "Cảm nhận", en: "Reviews" },
     masterclass: { vi: "Học 1:1", en: "Class" },
     services: { vi: "Dịch vụ", en: "Services" },
     about: { vi: "Về Kay", en: "About Kay" },
     blog: { vi: "Blog", en: "Blog" },
     book: { vi: "Đặt lịch", en: "Book Now" }
+  },
+  // 08/08/2026 (dot 3): khoi dan sang hai trang cong cu tren trang chu.
+  tools: {
+    eyebrow: { vi: "Công cụ miễn phí", en: "Free tools" },
+    heading: { vi: "Thử trước khi đặt", en: "Try before you book" },
+    t1: { vi: "Thử look của Kay", en: "Try Kay's looks" },
+    d1: { vi: "Sáu look Kay dùng ở hậu trường, thử ngay bằng camera. Ảnh không rời khỏi máy bạn.",
+          en: "Six looks Kay uses backstage — try them with your camera. Nothing leaves your device." },
+    go:  { vi: "Thử ngay →", en: "Try it →" },
+    t2: { vi: "Lịch đếm ngược ngày cưới", en: "Wedding countdown" },
+    d2: { vi: "Nhập ngày cưới, nhận lộ trình riêng: mốc nào làm gì, còn bao nhiêu ngày.",
+          en: "Enter your wedding date and get a personal beauty timeline — what to do, and when." },
+    go2: { vi: "Xem lộ trình →", en: "See the timeline →" }
   },
   cta: {
     sticky: { vi: "Nhắn Zalo cho Kay", en: "Message Kay on Zalo" },

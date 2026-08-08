@@ -327,6 +327,27 @@ footer .foot-links .sep{padding:0 10px;opacity:.6}
   .vid{flex:0 0 66vw}
   footer{padding-bottom:96px}
 }
+/* 08/08/2026 — Journal dang danh sach chu (thay luoi anh 1011px).
+   Giu link noi bo toi bai blog, nhung ton it chieu cao hon nhieu. */
+.svc-price{margin-top:13px;padding-top:11px;border-top:1px solid rgba(44,24,16,.14);
+font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--espresso)}
+.jlist{max-width:780px;margin:0 auto;border-top:1px solid rgba(44,24,16,.12)}
+.jrow{display:flex;gap:18px;align-items:baseline;padding:15px 2px;
+border-bottom:1px solid rgba(44,24,16,.12);transition:padding-left .18s}
+.jrow:hover{padding-left:8px}
+.jd{flex:0 0 auto;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--taupe);min-width:104px}
+.jt{font-size:15.5px;line-height:1.5}
+@media(max-width:620px){.jrow{flex-direction:column;gap:5px}.jd{min-width:0}}
+
+/* Khoi cong cu — dan sang /thu-look/ va /lich-cuoi/ */
+.tool-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(268px,1fr));gap:18px;max-width:840px;margin:0 auto}
+.tool{display:block;border:1px solid rgba(44,24,16,.18);padding:26px 24px 22px;background:var(--paper);
+transition:border-color .2s,transform .2s}
+.tool:hover{border-color:var(--taupe);transform:translateY(-2px)}
+.tool h3{font-family:var(--display);font-weight:400;font-size:22px;margin-bottom:9px}
+.tool p{font-size:14px;color:var(--taupe);line-height:1.65;margin-bottom:16px}
+.tool-go{font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--espresso)}
+
 </style>
 <script type="application/ld+json">
 {
@@ -455,11 +476,11 @@ footer .foot-links .sep{padding:0 10px;opacity:.6}
   <ul id="menu">
     <li><a href="#approach" data-t="nav.approach">Phương pháp</a></li>
     <li><a href="#portfolio" data-t="nav.portfolio">Portfolio</a></li>
-    <li><a href="#masterclass" data-t="nav.masterclass">Học 1:1</a></li>
-    <li><a href="#videos" data-t="nav.video">Video</a></li>
+    <li><a href="/thu-look/" data-t="nav.tryon">Thử look</a></li>
     <li><a href="#testimonials" data-t="nav.testi">Cảm nhận</a></li>
     <li><a href="#services" data-t="nav.services">Dịch vụ</a></li>
     <li><a href="#about" data-t="nav.about">Về Kay</a></li>
+    <li><a href="masterclass/" data-t="nav.masterclass">Học 1:1</a></li>
     <li><a href="blog/" data-t="nav.blog">Blog</a></li>
     <li><a class="nav-book" id="navBook" href="https://zalo.me/0933953179" target="_blank" rel="noopener" data-t="nav.book">Đặt lịch</a></li>
     <li><button class="lang-btn" id="langBtn">EN</button></li>
@@ -487,55 +508,6 @@ footer .foot-links .sep{padding:0 10px;opacity:.6}
 </div>
 
 <div class="credits" id="credits"><p class="credits-cap" id="creditsCaption">Kay tham gia ekip hậu trường tại</p><div class="wrap"><span class="item">Miss Cosmo Vietnam</span><span class="item">Miss Cosmo International</span><span class="item">Hoa Hậu Việt Nam</span><span class="item">Miss Grand Vietnam</span><span class="item">Aquafina Vietnam Int'l Fashion Week</span><span class="item">DCM Design</span><span class="item">Đỗ Long Design</span><span class="item">Adrian Anh Tuấn Shows</span><span class="item">Vietnam Wedding Fest</span></div></div>
-
-<section class="section mclass" id="masterclass">
-  <div class="wrap">
-    <div class="section-head reveal in">
-      <div class="eyebrow" data-t="masterclass.eyebrow">KINKAY Education</div>
-      <h2 data-t="masterclass.heading">Personal Makeup Masterclass</h2>
-    </div>
-    <p class="mclass-intro reveal in" data-t="masterclass.intro">Học 1 kèm 1 trực tiếp với Kay — lộ trình cá nhân hóa theo đúng trình độ, gương mặt và mục tiêu của bạn.</p>
-    <div class="mclass-points reveal in">
-      <span data-t="masterclass.p1">1 kèm 1, dạy trực tiếp bởi Kay</span>
-      <span data-t="masterclass.p2">Lộ trình cá nhân hóa theo trình độ</span>
-      <span data-t="masterclass.p3">8 module: từ tư duy đến signature look</span>
-      <span data-t="masterclass.p4">Thực hành trên mẫu thật mỗi buổi</span>
-    </div>
-    <div class="mclass-cta reveal in">
-      <a class="btn" href="masterclass/" data-t="masterclass.cta">Xem lộ trình &amp; học phí</a>
-      <a class="btn btn-ghost" href="masterclass/#dang-ky" data-t="masterclass.cta2">Đăng ký giữ chỗ</a>
-    </div>
-  </div>
-</section>
-
-<section class="section approach" id="approach">
-  <div class="wrap">
-    <div class="section-head reveal in">
-      <div class="eyebrow">KINKAY</div>
-      <h2 data-t="approach.heading">The KINKAY Approach</h2>
-    </div>
-    <p class="approach-intro reveal in" data-t="approach.intro">Không có công thức chung cho mọi gương mặt. Chỉ có một cách làm đúng: bắt đầu từ chính bạn.</p>
-    <div class="steps" id="steps">
-    <div class="step reveal in" style="transition-delay:0ms">
-      <div class="num">01</div>
-      <h3>READ</h3>
-      <h4>Đọc gương mặt</h4>
-      <p>Trước khi chạm cọ, Kay đọc khuôn mặt: cấu trúc xương, tông da, nét nào là nét đắt giá nhất của bạn.</p>
-    </div>
-    <div class="step reveal in" style="transition-delay:120ms">
-      <div class="num">02</div>
-      <h3>SKIN</h3>
-      <h4>Nền da là nền tảng</h4>
-      <p>Da căng bóng, mỏng nhẹ, nhìn gần vẫn là da. Lớp nền đẹp nhất là lớp nền người ta không nhận ra.</p>
-    </div>
-    <div class="step reveal in" style="transition-delay:240ms">
-      <div class="num">03</div>
-      <h3>SCULPT</h3>
-      <h4>Sắc mà vẫn là mình</h4>
-      <p>Đường nét sắc, có chiều sâu — nhưng soi gương bạn vẫn nhận ra chính mình, phiên bản tự tin nhất.</p>
-    </div></div>
-  </div>
-</section>
 
 <section class="section" id="portfolio">
   <div class="wrap">
@@ -603,54 +575,7 @@ footer .foot-links .sep{padding:0 10px;opacity:.6}
   </div>
 </section>
 
-<section class="section videos" id="videos">
-  <div class="wrap">
-    <div class="section-head reveal in">
-      <div class="eyebrow">Backstage</div>
-      <h2 data-t="videos.heading">Behind the Glam</h2>
-    </div>
-    <p class="videos-sub reveal in" data-t="videos.sub">Kay trong hậu trường — cùng nghệ sĩ và khách của KINKAY.</p>
-    <div class="vid-row" id="vidRow">
-  <div class="vid">
-    <video src="assets/video/video_01.mp4" poster="assets/video/poster_01.jpg" controls="" playsinline="" preload="none"></video>
-  </div>
-  <div class="vid">
-    <video src="assets/video/video_02.mp4" poster="assets/video/poster_02.jpg" controls="" playsinline="" preload="none"></video>
-  </div>
-  <div class="vid">
-    <video src="assets/video/video_03.mp4" poster="assets/video/poster_03.jpg" controls="" playsinline="" preload="none"></video>
-  </div>
-  <div class="vid">
-    <video src="assets/video/video_04.mp4" poster="assets/video/poster_04.jpg" controls="" playsinline="" preload="none"></video>
-  </div>
-  <div class="vid">
-    <video src="assets/video/video_05.mp4" poster="assets/video/poster_05.jpg" controls="" playsinline="" preload="none"></video>
-  </div></div>
-  </div>
-</section>
 
-<section class="section testi" id="testimonials">
-  <div class="wrap">
-    <div class="section-head reveal in">
-      <div class="eyebrow">KINKAY</div>
-      <h2 data-t="testimonials.heading">Khách nói về Kay</h2>
-    </div>
-    <div class="testi-grid" id="testiGrid">
-    <div class="tcard reveal in" style="transition-delay:0ms">
-      <p>“Make kiểu gì mà xuống khách sạn người ta tưởng tui hoa hậu, chạy tới xin chụp hình.”</p>
-      <div class="who">Khách makeup sự kiện</div>
-    </div>
-    <div class="tcard reveal in" style="transition-delay:120ms">
-      <p>“Cảm ơn bà Kin Kay đã cho tui với mẹ tui những bộ tóc đẹp trong ngày đám cưới của tui.”</p>
-      <div class="who">Cô dâu — bridal hair</div>
-    </div>
-    <div class="tcard reveal in" style="transition-delay:240ms">
-      <p>“Ai cũng nhìn, ai cũng khen. Quá đã.”</p>
-      <div class="who">Khách makeup tiệc</div>
-    </div></div>
-    <p class="testi-note reveal in" data-t="testimonials.note">Trích nguyên văn tin nhắn khách gửi Kay</p>
-  </div>
-</section>
 
 <section class="section services" id="services">
   <div class="wrap">
@@ -685,16 +610,83 @@ footer .foot-links .sep{padding:0 10px;opacity:.6}
   <p class="inline-hint" data-t="cta.afterPriceHint">Zalo 0933 953 179 · Kay phản hồi trong ngày</p>
 </div>
 
-<section class="section kit" id="kit">
+<section class="section testi" id="testimonials">
   <div class="wrap">
     <div class="section-head reveal in">
-      <div class="eyebrow">In the bag</div>
-      <h2 data-t="kit.heading">Kay's Kit</h2>
+      <div class="eyebrow">KINKAY</div>
+      <h2 data-t="testimonials.heading">Khách nói về Kay</h2>
     </div>
-    <p class="kit-sub reveal in" data-t="kit.sub">Những thương hiệu luôn có trong túi đồ nghề của Kay.</p>
-    <div class="kit-row reveal in" id="kitRow"><span>NARS</span><span>M·A·C</span><span>Charlotte Tilbury</span><span>YSL Beauty</span><span>Tom Ford</span><span>Chanel</span><span>Bobbi Brown</span><span>Clinique</span></div>
+    <div class="testi-grid" id="testiGrid">
+    <div class="tcard reveal in" style="transition-delay:0ms">
+      <p>“Make kiểu gì mà xuống khách sạn người ta tưởng tui hoa hậu, chạy tới xin chụp hình.”</p>
+      <div class="who">Khách makeup sự kiện</div>
+    </div>
+    <div class="tcard reveal in" style="transition-delay:120ms">
+      <p>“Cảm ơn bà Kin Kay đã cho tui với mẹ tui những bộ tóc đẹp trong ngày đám cưới của tui.”</p>
+      <div class="who">Cô dâu — bridal hair</div>
+    </div>
+    <div class="tcard reveal in" style="transition-delay:240ms">
+      <p>“Ai cũng nhìn, ai cũng khen. Quá đã.”</p>
+      <div class="who">Khách makeup tiệc</div>
+    </div></div>
+    <p class="testi-note reveal in" data-t="testimonials.note">Trích nguyên văn tin nhắn khách gửi Kay</p>
   </div>
 </section>
+<section class="section tools" id="tools">
+  <div class="wrap">
+    <div class="section-head reveal in">
+      <div class="eyebrow" style="color:var(--gold)" data-t="tools.eyebrow">Công cụ miễn phí</div>
+      <h2 data-t="tools.heading">Thử trước khi đặt</h2>
+    </div>
+    <div class="tool-grid">
+      <a class="tool reveal in" href="/thu-look/" id="toolTryOn">
+        <h3 data-t="tools.t1">Thử look của Kay</h3>
+        <p data-t="tools.d1">Sáu look Kay dùng ở hậu trường, thử ngay bằng camera. Ảnh không rời khỏi máy bạn.</p>
+        <span class="tool-go" data-t="tools.go">Thử ngay →</span>
+      </a>
+      <a class="tool reveal in" href="/lich-cuoi/" id="toolTimeline" style="transition-delay:110ms">
+        <h3 data-t="tools.t2">Lịch đếm ngược ngày cưới</h3>
+        <p data-t="tools.d2">Nhập ngày cưới, nhận lộ trình riêng: mốc nào làm gì, còn bao nhiêu ngày.</p>
+        <span class="tool-go" data-t="tools.go2">Xem lộ trình →</span>
+      </a>
+    </div>
+  </div>
+</section>
+<section class="section approach" id="approach">
+  <div class="wrap">
+    <div class="section-head reveal in">
+      <div class="eyebrow">KINKAY</div>
+      <h2 data-t="approach.heading">The KINKAY Approach</h2>
+    </div>
+    <p class="approach-intro reveal in" data-t="approach.intro">Không có công thức chung cho mọi gương mặt. Chỉ có một cách làm đúng: bắt đầu từ chính bạn.</p>
+    <div class="steps" id="steps">
+    <div class="step reveal in" style="transition-delay:0ms">
+      <div class="num">01</div>
+      <h3>READ</h3>
+      <h4>Đọc gương mặt</h4>
+      <p>Trước khi chạm cọ, Kay đọc khuôn mặt: cấu trúc xương, tông da, nét nào là nét đắt giá nhất của bạn.</p>
+    </div>
+    <div class="step reveal in" style="transition-delay:120ms">
+      <div class="num">02</div>
+      <h3>SKIN</h3>
+      <h4>Nền da là nền tảng</h4>
+      <p>Da căng bóng, mỏng nhẹ, nhìn gần vẫn là da. Lớp nền đẹp nhất là lớp nền người ta không nhận ra.</p>
+    </div>
+    <div class="step reveal in" style="transition-delay:240ms">
+      <div class="num">03</div>
+      <h3>SCULPT</h3>
+      <h4>Sắc mà vẫn là mình</h4>
+      <p>Đường nét sắc, có chiều sâu — nhưng soi gương bạn vẫn nhận ra chính mình, phiên bản tự tin nhất.</p>
+    </div></div>
+  </div>
+</section>
+
+
+
+
+
+
+
 
 <section class="section" id="about">
   <div class="wrap about-grid">
@@ -718,20 +710,10 @@ Ngồi vào ghế KINKAY, bạn nhận được tư vấn thật — bằng con 
       <div class="eyebrow">KINKAY</div>
       <h2 data-t="journal.heading">Journal</h2>
     </div>
-    <p class="journal-sub reveal in" data-t="journal.sub">Bí quyết makeup, hậu trường show và guide cho cô dâu — từ ghế làm việc của Kay.</p>
-    <div class="jgrid" id="jGrid">
-    <a class="jcard reveal in" href="blog/nen-glow-nhin-gan-van-la-da" style="transition-delay:0ms">
-      <img src="assets/img/beautyqueen/beautyqueen_001.jpg" alt="Vì sao lớp nền glow của KINKAY nhìn gần vẫn là da?" loading="lazy">
-      <div class="in"><div class="jdate">Tháng 7, 2026</div><h3>Vì sao lớp nền glow của KINKAY nhìn gần vẫn là da?</h3><p>Câu trả lời không nằm ở cây phấn nào xịn hơn. Nó nằm ở thứ tự làm việc.</p></div>
-    </a>
-    <a class="jcard reveal in" href="blog/trial-makeup-truoc-ngay-cuoi-bao-lau" style="transition-delay:110ms">
-      <img src="assets/img/bridal/bridal_003.jpg" alt="Nên trial makeup trước ngày cưới bao lâu?" loading="lazy">
-      <div class="in"><div class="jdate">Tháng 7, 2026</div><h3>Nên trial makeup trước ngày cưới bao lâu?</h3><p>Trial không phải để 'xem thử cho biết'. Nó là buổi làm việc quan trọng nhất trước ngày cưới của bạn.</p></div>
-    </a>
-    <a class="jcard reveal in" href="blog/mot-ngay-backstage-cua-kay" style="transition-delay:220ms">
-      <img src="assets/img/beautyqueen/beautyqueen_003.jpg" alt="Một ngày backstage: makeup cho pageant khác gì makeup cho cô dâu?" loading="lazy">
-      <div class="in"><div class="jdate">Tháng 6, 2026</div><h3>Một ngày backstage: makeup cho pageant khác gì makeup cho cô dâu?</h3><p>Backstage pageant dạy mình những thứ không trường lớp nào dạy — và khách của mình hưởng hết.</p></div>
-    </a></div>
+    <div class="jlist" id="jGrid">
+    <a class="jrow" href="blog/nen-glow-nhin-gan-van-la-da"><span class="jd">Tháng 7, 2026</span><span class="jt">Vì sao lớp nền glow của KINKAY nhìn gần vẫn là da?</span></a>
+    <a class="jrow" href="blog/trial-makeup-truoc-ngay-cuoi-bao-lau"><span class="jd">Tháng 7, 2026</span><span class="jt">Nên trial makeup trước ngày cưới bao lâu?</span></a>
+    <a class="jrow" href="blog/mot-ngay-backstage-cua-kay"><span class="jd">Tháng 6, 2026</span><span class="jt">Một ngày backstage: makeup cho pageant khác gì makeup cho cô dâu?</span></a></div>
     <div class="journal-more reveal in"><a class="btn-line" href="blog/" data-t="journal.all">Xem tất cả bài viết</a></div>
   </div>
 </section>
@@ -779,6 +761,7 @@ Ngồi vào ghế KINKAY, bạn nhận được tư vấn thật — bằng con 
 <script src="content.js"></script>
 <script src="gallery.js"></script>
 <script src="videos.js"></script>
+<script src="services.js"></script>
 <script src="bloglist.js"></script>
 <script>
 const C = window.CONTENT, G = window.GALLERY;
@@ -793,7 +776,7 @@ function applyLang(){
     if(v && v[lang] !== undefined) el.textContent = v[lang];
   });
   document.getElementById('langBtn').textContent = lang==='vi' ? 'EN' : 'VI';
-  renderCredits(); renderSteps(); renderServices(); renderDecks(); renderTesti(); renderKit(); renderJournal(); observeReveals();
+  renderCredits(); renderSteps(); renderServices(); renderDecks(); renderTesti(); renderJournal(); observeReveals();
 }
 document.getElementById('langBtn').onclick = ()=>{ lang = lang==='vi'?'en':'vi'; applyLang(); };
 
@@ -815,13 +798,25 @@ function renderSteps(){
     </div>`).join('');
 }
 
-/* services (không hiện giá) */
+/* services — dong gia lay tu window.SERVICES (sinh tu content/services.json).
+   Tat cong tac "Hien gia tren website" trong trang admin la moi dong gia bien mat,
+   khong can dung toi code. Ten dich vu trong services.json phai khop voi title tieng Anh
+   trong content.js de ghep dung gia; khong khop thi chi mat dong gia, khong vo layout. */
 function renderServices(){
-  document.getElementById('svcGrid').innerHTML = C.services.items.map((s,i)=>`
+  const S = window.SERVICES || {};
+  const show = !!S.show_prices;
+  const byName = {};
+  (S.items||[]).forEach(it=>{ if(it&&it.name) byName[String(it.name).trim().toLowerCase()] = it.price||''; });
+  document.getElementById('svcGrid').innerHTML = C.services.items.map((s,i)=>{
+    const key = String(s.title.en||s.title.vi||'').trim().toLowerCase();
+    const price = show ? (byName[key]||'') : '';
+    return `
     <div class="svc reveal" style="transition-delay:${i*100}ms">
       <h3>${s.title[lang]}</h3>
       <p>${s.desc[lang]}</p>
-    </div>`).join('');
+      ${price ? `<div class="svc-price">${price}</div>` : ''}
+    </div>`;
+  }).join('');
 }
 
 /* testimonials */
@@ -891,11 +886,8 @@ function videoEmbed(url){
 /* journal */
 function renderJournal(){
   if(!window.BLOG || !document.getElementById('jGrid')) return;
-  document.getElementById('jGrid').innerHTML = window.BLOG.map((p,i)=>`
-    <a class="jcard reveal" href="blog/${p.slug}" style="transition-delay:${i*110}ms">
-      <img src="${p.cover}" alt="${p.title}" loading="lazy">
-      <div class="in"><div class="jdate">${p.date}</div><h3>${p.title}</h3><p>${p.excerpt}</p></div>
-    </a>`).join('');
+  document.getElementById('jGrid').innerHTML = window.BLOG.map(p=>`
+    <a class="jrow" href="blog/${p.slug}"><span class="jd">${p.date}</span><span class="jt">${p.title}</span></a>`).join('');
 }
 
 /* kit */
@@ -1080,6 +1072,14 @@ function observeReveals(){
   }),{threshold:.12});
   document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
 }
+
+/* 08/08/2026 — do luot bam sang hai trang cong cu tu trang chu */
+['toolTryOn','toolTimeline'].forEach(function(id){
+  var el=document.getElementById(id); if(!el) return;
+  el.addEventListener('click',function(){
+    track('tool_click',{tool: id==='toolTryOn' ? 'thu_look' : 'lich_cuoi', source:'home'});
+  });
+});
 
 applyLang();
 </script>
