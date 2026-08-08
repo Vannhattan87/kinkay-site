@@ -237,7 +237,10 @@ function paint(lm,W,H){
     +' | W='+W+' H='+H+' | doDam='+amt.value);
   return;
  }
- if(L2.width!==W){L2.width=W;L2.height=H;}
+ // Lop ve L2 phai KHOP CA HAI CHIEU voi canvas chinh. Truoc day chi so sanh width:
+ // doi tu anh tai len (vd 640x853) sang camera (640x480) thi width giong nhau nen L2 giu
+ // nguyen chieu cao cu, ma put() lai drawImage(L2,0,0) — toan bo lop mau bi lech theo truc doc.
+ if(L2.width!==W||L2.height!==H){L2.width=W;L2.height=H;}
 
  clr(); lc.filter='blur('+b*0.75+'px)'; lc.fillStyle=L.lip;
  curve(lc,arr(lm,OUT,W,H)); lc.fill();
@@ -247,13 +250,18 @@ function paint(lm,W,H){
  clr();
  const nose=P(lm,NOSE,W,H), dL=D(nose,eL), dR=D(nose,eR), sum=dL+dR||1;
  const col=hex2rgb(L.blush);
- [{c:[50,116],eye:33,mouth:61,f:cl(2*dL/sum,0.18,1.15)},
-  {c:[280,345],eye:263,mouth:291,f:cl(2*dR/sum,0.18,1.15)}].forEach(s=>{
-   const a=P(lm,s.c[0],W,H), b2=P(lm,s.c[1],W,H);
-   const cx=(a.x+b2.x)/2, cy=(a.y+b2.y)/2;
-   const mo=P(lm,s.mouth,W,H), ey=P(lm,s.eye,W,H);
-   const ang=Math.atan2(ey.y-mo.y, ey.x-mo.x);
-   const ry=Math.max(1,fw*0.098), rx=Math.max(1,fw*0.150*(isFinite(s.f)?s.f:1));
+ // 08/08/2026 — DOI HUONG QUET MA HONG.
+// Truoc day ellipse xoay theo truc khoe mieng -> khoe mat, tuc la gan nhu THANG DUNG,
+// nen ma hong thanh mot vet chay tu mieng len thai duong. Da doi chieu bang cach chay
+// chinh doan code nay tren anh co dau that trong portfolio cua Kay va nhin ket qua: sai ro.
+// Gio: tam nam tren tao ma (diem 50 / 280), truc quet CHEO ra phia tai (diem 234 / 454),
+// dung huong danh ma hong that. Ban kinh giam nhe cho bot loang.
+ [{apple:50,  tai:EDGE_L, f:cl(2*dL/sum,0.18,1.15)},
+  {apple:280, tai:EDGE_R, f:cl(2*dR/sum,0.18,1.15)}].forEach(s=>{
+   const ap=P(lm,s.apple,W,H), tai=P(lm,s.tai,W,H);
+   const cx=ap.x+(tai.x-ap.x)*0.22, cy=ap.y+(tai.y-ap.y)*0.22;
+   const ang=Math.atan2(tai.y-ap.y, tai.x-ap.x);
+   const ry=Math.max(1,fw*0.085), rx=Math.max(1,fw*0.135*(isFinite(s.f)?s.f:1));
    if(!isFinite(cx)||!isFinite(cy)||!isFinite(ang)) return;   // bo qua ma hong, khong nem loi
    lc.save(); lc.translate(cx,cy); lc.rotate(ang); lc.scale(rx/ry,1);
    const g=lc.createRadialGradient(0,0,0,0,0,ry);
