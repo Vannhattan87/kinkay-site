@@ -281,6 +281,13 @@ LOOKS.forEach((L,i)=>{const b=document.createElement('button');
   if(mode==='photo')drawPhoto();};
  lookBox.appendChild(b);});
 
+// Doi giua che do anh tinh va che do video. Uu tien TAO LAI bo nhan dien o dung che do,
+// vi setOptions() sau khi tao la thu hay hong im lang tren dien thoai. setOptions chi la
+// duong lui khi tao lai that bai.
+async function doiSangMode(m){
+ try{ lmk = await taoLmk(delegateDung || 'CPU', m); }
+ catch(e){ try{ await lmk.setOptions({runningMode:m}); }catch(e2){} }
+}
 function say(t){msgEl.textContent=t;msgEl.classList.remove('hide');}
 function hide(){msgEl.classList.add('hide');}
 // Mo khoi chon look sau khi da co camera hoac anh. Truoc do khoi do bi lam mo va khong bam duoc.
@@ -293,11 +300,14 @@ function moKhoiChonLook(){ $('tuychinh').classList.add('on'); }
 const MODEL="https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task";
 let fileset=null, delegateDung=null;
 
-async function taoLmk(delegate){
+// runningMode khai NGAY luc tao, khong tao o IMAGE roi setOptions sang VIDEO.
+// Tren mot so may Android, doi runningMode sau khi tao lam bo nhan dien im lang: khong nem
+// loi nhung tra ve 0 khuon mat mai mai.
+async function taoLmk(delegate, runningMode){
  if(!fileset) fileset=await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.21/wasm");
  return FaceLandmarker.createFromOptions(fileset,{
   baseOptions:{ modelAssetPath:MODEL, delegate:delegate },
-  runningMode:"IMAGE", numFaces:1 });
+  runningMode:runningMode||"IMAGE", numFaces:1 });
 }
 
 async function boot(){
@@ -313,15 +323,19 @@ async function boot(){
  return false;
 }
 
-// Doi sang CPU giua chung khi GPU chay loi. Giu nguyen mode dang chay.
+// Doi sang CPU giua chung. Goi trong HAI truong hop:
+//   1. GPU nem loi lien tuc  (loiLienTiep)
+//   2. GPU KHONG nem loi nhung tra ve 0 khuon mat mai  (khongThayMat) — day moi la kieu
+//      hong pho bien tren dien thoai Android, va la thu da lam Tan thay "camera len ma
+//      khong ve gi" ngay 08/08. Bat theo exception thoi la khong du.
 let dangDoiCPU=false;
 async function luiVeCPU(){
  if(dangDoiCPU||delegateDung==='CPU')return false;
  dangDoiCPU=true;
  try{
-  const moi=await taoLmk('CPU');
-  await moi.setOptions({runningMode: mode==='camera'?'VIDEO':'IMAGE'});
-  lmk=moi; delegateDung='CPU'; loiLienTiep=0; dangDoiCPU=false;
+  const moi=await taoLmk('CPU', mode==='camera'?'VIDEO':'IMAGE');
+  lmk=moi; delegateDung='CPU'; loiLienTiep=0; khongThayMat=0; dangDoiCPU=false;
+  if(mode==='photo') drawPhoto();
   return true;
  }catch(e){ dangDoiCPU=false; return false; }
 }
@@ -341,7 +355,8 @@ $('btnCam').onclick=async()=>{
   video=document.createElement('video'); video.srcObject=st;
   video.playsInline=true; video.setAttribute('playsinline','');  // iOS can ca thuoc tinh, khong chi property
   video.muted=true; video.setAttribute('muted','');
-  await video.play(); await lmk.setOptions({runningMode:'VIDEO'});
+  await video.play();
+  await doiSangMode('VIDEO');
   loiLienTiep=0; khongThayMat=0; daBaoLoi=false;
   mode='camera'; photo=null; cv.classList.remove('noflip'); hide(); moKhoiChonLook();
   $('btnCam').textContent='Camera đang bật';
@@ -363,8 +378,15 @@ function loop(){ if(mode!=='camera'||!video)return;
    loiLienTiep=0;
    if(r.faceLandmarks&&r.faceLandmarks.length){
     khongThayMat=0; hide(); paint(r.faceLandmarks[0],W,H);
-   }else if(++khongThayMat===45){
-    say('Chưa thấy khuôn mặt. Đưa mặt vào giữa khung, quay về phía có ánh sáng.');
+   }else{
+    khongThayMat++;
+    // ~1.5 giay khong thay mat ma dang chay GPU: coi nhu GPU hong im lang, lui ve CPU.
+    // Khach khong bao gio thay buoc nay, ho chi thay lop trang diem hien ra cham hon mot chut.
+    if(khongThayMat===40 && delegateDung==='GPU'){ khongThayMat=0; luiVeCPU(); }
+    // Da chay CPU ma van khong thay mat: luc nay moi that su la khong co mat trong khung.
+    else if(khongThayMat===90){
+     say('Chưa thấy khuôn mặt. Đưa mặt vào giữa khung, quay về phía có ánh sáng.');
+    }
    }
   }catch(e){
    if(++loiLienTiep===15){
@@ -383,7 +405,7 @@ $('file').onchange=e=>{
  if(video&&video.srcObject){video.srcObject.getTracks().forEach(t=>t.stop());video=null;$('btnCam').textContent='Bật camera';}
  mode='photo'; cv.classList.add('noflip'); say('Đang xử lý ảnh…');
  const img=new Image();
- img.onload=async()=>{ await lmk.setOptions({runningMode:'IMAGE'}); photo=img; hide(); moKhoiChonLook();
+ img.onload=async()=>{ await doiSangMode('IMAGE'); khongThayMat=0; loiLienTiep=0; photo=img; hide(); moKhoiChonLook();
   if(window.__kkTrack)window.__kkTrack('tryon_photo',{}); drawPhoto(); };
  img.onerror=()=>say('Không đọc được file ảnh này.');
  img.src=URL.createObjectURL(f);
@@ -393,8 +415,11 @@ function drawPhoto(){ if(!photo)return;
  cv.width=W;cv.height=H;ctx.drawImage(photo,0,0,W,H);
  try{const r=lmk.detect(photo);
   if(r.faceLandmarks&&r.faceLandmarks.length)paint(r.faceLandmarks[0],W,H);
+  // Khong thay mat ma dang chay GPU: thu lai bang CPU truoc khi trach tam anh.
+  // luiVeCPU() tu goi lai drawPhoto(), va no da doi delegateDung nen khong lap vo tan.
+  else if(delegateDung==='GPU') luiVeCPU();
   else say('Không tìm thấy khuôn mặt. Thử ảnh chân dung nhìn thẳng, đủ sáng.');
- }catch(e){say('Chưa xử lý được ảnh này, thử ảnh khác nhé.');}
+ }catch(e){ if(delegateDung==='GPU') luiVeCPU(); else say('Chưa xử lý được ảnh này, thử ảnh khác nhé.'); }
 }
 amt.oninput=()=>{if(mode==='photo')drawPhoto();};
 </script>
