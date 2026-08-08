@@ -13,10 +13,15 @@
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   Strict-Transport-Security: max-age=31536000; includeSubDomains
-  X-Frame-Options: SAMEORIGIN
-  # camera=(self) vì /thu-look/ cần camera của khách. Đừng đổi thành camera=() —
-  # làm vậy là giết đúng trang công cụ đang nhận traffic TikTok.
-  Permissions-Policy: camera=(self), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()
+    # CO Y KHONG khai X-Frame-Options o day. Khai o /* roi khai DENY rieng cho /admin thi
+#   Cloudflare gop thanh "X-Frame-Options: SAMEORIGIN, DENY" - mot header di dang. Chrome
+  # van chan, nhung do la hanh vi rieng cua tung trinh duyet chu khong phai chuan.
+  # Trang cong khai da co frame-ancestors 'self' trong CSP o muc 2 - ban thay the hien dai
+  # cua X-Frame-Options va duoc uu tien hon khi ca hai cung co mat.
+  # /admin khong co CSP nen van giu X-Frame-Options rieng, xem muc 3.
+  # camera=(self) vi /thu-look/ can camera cua khach. Dung doi thanh camera=() -
+  # lam vay la giet dung trang cong cu dang nhan traffic TikTok.
+Permissions-Policy: camera=(self), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()
 
 # ---------------------------------------------------------------------------
 # 2. CSP — CHỈ áp cho các trang công khai, KHÔNG áp cho /admin.
