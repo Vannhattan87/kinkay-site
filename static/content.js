@@ -14,15 +14,11 @@ window.CONTENT = {
     blog: { vi: "Blog", en: "Blog" },
     book: { vi: "Đặt lịch", en: "Book Now" }
   },
-  // 08/08/2026 (dot 3): khoi dan sang hai trang cong cu tren trang chu.
+  // 08/08/2026 (dot 3): khoi cong cu. 09/08/2026 (dot 5): chi con banner /lich-cuoi/
+  // (the thu-look da go, the bang gia bi che "quê" — bo luon, bai gia co link o Journal).
   tools: {
-    eyebrow: { vi: "Công cụ miễn phí", en: "Free tools" },
-    heading: { vi: "Thử trước khi đặt", en: "Try before you book" },
-    // 09/08/2026: bo the /thu-look/ (Tan quyet dinh go cong cu AR), thay bang the dan sang bai bang gia.
-    t1: { vi: "Bảng giá thẳng thắn", en: "Straight-talk pricing" },
-    d1: { vi: "Kay nói thẳng con số cho makeup, combo và bridal — và thứ gì làm giá lên xuống.",
-          en: "Kay tells you the real numbers for makeup, combo and bridal — and what moves them." },
-    go:  { vi: "Xem bảng giá →", en: "See pricing →" },
+    eyebrow: { vi: "Công cụ miễn phí", en: "Free tool" },
+    heading: { vi: "Sắp cưới? Bắt đầu từ lộ trình", en: "Getting married? Start with the timeline" },
     t2: { vi: "Lịch đếm ngược ngày cưới", en: "Wedding countdown" },
     d2: { vi: "Nhập ngày cưới, nhận lộ trình riêng: mốc nào làm gì, còn bao nhiêu ngày.",
           en: "Enter your wedding date and get a personal beauty timeline — what to do, and when." },
@@ -177,6 +173,8 @@ window.CONTENT = {
   testimonials: {
     heading: { vi: "Khách nói về Kay", en: "What Clients Say" },
     note: { vi: "Trích nguyên văn tin nhắn khách gửi Kay", en: "Real messages sent to Kay, word for word" },
+    // 09/08/2026 (dot 5): CTA sang review Google — thay cho y tuong comment tren web.
+    gcta: { vi: "Bạn từng make với Kay? Để lại đánh giá trên Google →", en: "Had your makeup done by Kay? Leave a Google review →" },
     items: [
       {
         quote: {

@@ -356,14 +356,19 @@ background:rgba(26,15,8,.55);color:#FAF7F2;padding:4px 9px;pointer-events:none}
 .ba input[type=range]{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:ew-resize;margin:0;touch-action:none}
 .ba-cap{font-size:12.5px;color:var(--taupe);padding:10px 2px 0;text-align:center}
 
-/* Khoi cong cu — dan sang bai bang gia va /lich-cuoi/ (the thu-look da go 09/08/2026) */
-.tool-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(268px,1fr));gap:18px;max-width:840px;margin:0 auto}
-.tool{display:block;border:1px solid rgba(44,24,16,.18);padding:26px 24px 22px;background:var(--paper);
-transition:border-color .2s,transform .2s}
-.tool:hover{border-color:var(--taupe);transform:translateY(-2px)}
-.tool h3{font-family:var(--display);font-weight:400;font-size:22px;margin-bottom:9px}
-.tool p{font-size:14px;color:var(--taupe);line-height:1.65;margin-bottom:16px}
-.tool-go{font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--espresso)}
+/* Khoi cong cu — 09/08/2026 (dot 5): con MOT banner duy nhat cho /lich-cuoi/ */
+.tool-banner{display:flex;gap:24px;align-items:center;justify-content:space-between;flex-wrap:wrap;
+border:1px solid rgba(44,24,16,.18);background:var(--paper);padding:28px 30px;max-width:840px;margin:0 auto}
+.tool-banner h3{font-family:var(--display);font-weight:400;font-size:24px;margin-bottom:8px}
+.tool-banner p{font-size:14px;color:var(--taupe);line-height:1.65;max-width:52ch;margin:0}
+@media(max-width:620px){.tool-banner{padding:22px 20px}.tool-banner .btn{width:100%;justify-content:center}}
+
+/* 09/08/2026 (dot 5): approach + video hau truong nam trong section Ve Kay */
+.about-approach{margin-top:44px}
+.about-vids{margin-top:34px}
+.about-vidrow{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
+.about-vidrow .vid{flex:0 0 220px}
+@media(max-width:620px){.about-vidrow .vid{flex:0 0 44vw}}
 
 </style>
 <script type="application/ld+json">
@@ -490,12 +495,13 @@ transition:border-color .2s,transform .2s}
 <nav id="nav">
   <a class="brand" href="#top">KINKAY</a>
   <button class="burger" id="burger" aria-label="menu">☰</button>
+  <!-- 09/08/2026 (dot 5): thu tu nav khop thu tu section that tren trang;
+       "Phuong phap" bo — section approach da gop vao Ve Kay. -->
   <ul id="menu">
-    <li><a href="#approach" data-t="nav.approach">Phương pháp</a></li>
     <li><a href="#portfolio" data-t="nav.portfolio">Portfolio</a></li>
-    <li><a href="#testimonials" data-t="nav.testi">Cảm nhận</a></li>
     <li><a href="#services" data-t="nav.services">Dịch vụ</a></li>
     <li><a href="#about" data-t="nav.about">Về Kay</a></li>
+    <li><a href="#testimonials" data-t="nav.testi">Cảm nhận</a></li>
     <li><a href="masterclass/" data-t="nav.masterclass">Học 1:1</a></li>
     <li><a href="blog/" data-t="nav.blog">Blog</a></li>
     <li><a class="nav-book" id="navBook" href="https://zalo.me/0933953179" target="_blank" rel="noopener" data-t="nav.book">Đặt lịch</a></li>
@@ -637,74 +643,22 @@ transition:border-color .2s,transform .2s}
   <p class="inline-hint" data-t="cta.afterPriceHint">Zalo 0933 953 179 · Kay phản hồi trong ngày</p>
 </div>
 
-<section class="section testi" id="testimonials">
-  <div class="wrap">
-    <div class="section-head reveal in">
-      <div class="eyebrow">KINKAY</div>
-      <h2 data-t="testimonials.heading">Khách nói về Kay</h2>
-    </div>
-    <div class="testi-grid" id="testiGrid">
-    <div class="tcard reveal in" style="transition-delay:0ms">
-      <p>“Make kiểu gì mà xuống khách sạn người ta tưởng tui hoa hậu, chạy tới xin chụp hình.”</p>
-      <div class="who">Khách makeup sự kiện</div>
-    </div>
-    <div class="tcard reveal in" style="transition-delay:120ms">
-      <p>“Cảm ơn bà Kin Kay đã cho tui với mẹ tui những bộ tóc đẹp trong ngày đám cưới của tui.”</p>
-      <div class="who">Cô dâu — bridal hair</div>
-    </div>
-    <div class="tcard reveal in" style="transition-delay:240ms">
-      <p>“Ai cũng nhìn, ai cũng khen. Quá đã.”</p>
-      <div class="who">Khách makeup tiệc</div>
-    </div></div>
-    <p class="testi-note reveal in" data-t="testimonials.note">Trích nguyên văn tin nhắn khách gửi Kay</p>
-  </div>
-</section>
+<!-- 09/08/2026 (dot 5): section Cam nhan doi xuong ngay truoc Dat lich (cuoi trang). -->
 <section class="section tools" id="tools">
   <div class="wrap">
     <div class="section-head reveal in">
       <div class="eyebrow" style="color:var(--gold)" data-t="tools.eyebrow">Công cụ miễn phí</div>
-      <h2 data-t="tools.heading">Thử trước khi đặt</h2>
+      <h2 data-t="tools.heading">Sắp cưới? Bắt đầu từ lộ trình</h2>
     </div>
-    <div class="tool-grid">
-      <a class="tool reveal in" href="/blog/gia-makeup-co-dau-tphcm.html" id="toolPricing">
-        <h3 data-t="tools.t1">Bảng giá thẳng thắn</h3>
-        <p data-t="tools.d1">Kay nói thẳng con số cho makeup, combo và bridal — và thứ gì làm giá lên xuống.</p>
-        <span class="tool-go" data-t="tools.go">Xem bảng giá →</span>
-      </a>
-      <a class="tool reveal in" href="/lich-cuoi/" id="toolTimeline" style="transition-delay:110ms">
+    <!-- 09/08/2026 (dot 5): bo the "bang gia" (tro ra blog nhin lac quan giua khoi cong cu — Tan che, dung).
+         Khoi cong cu gio la MOT banner duy nhat cho /lich-cuoi/. Bai bang gia van co link o Journal. -->
+    <div class="tool-banner reveal in">
+      <div>
         <h3 data-t="tools.t2">Lịch đếm ngược ngày cưới</h3>
         <p data-t="tools.d2">Nhập ngày cưới, nhận lộ trình riêng: mốc nào làm gì, còn bao nhiêu ngày.</p>
-        <span class="tool-go" data-t="tools.go2">Xem lộ trình →</span>
-      </a>
+      </div>
+      <a class="btn" href="/lich-cuoi/" id="toolTimeline" data-t="tools.go2">Xem lộ trình →</a>
     </div>
-  </div>
-</section>
-<section class="section approach" id="approach">
-  <div class="wrap">
-    <div class="section-head reveal in">
-      <div class="eyebrow">KINKAY</div>
-      <h2 data-t="approach.heading">The KINKAY Approach</h2>
-    </div>
-    <p class="approach-intro reveal in" data-t="approach.intro">Không có công thức chung cho mọi gương mặt. Chỉ có một cách làm đúng: bắt đầu từ chính bạn.</p>
-    <div class="steps" id="steps">
-    <div class="step reveal in" style="transition-delay:0ms">
-      <div class="num">01</div>
-      <h3>READ</h3>
-      <h4>Đọc gương mặt</h4>
-      <p>Trước khi chạm cọ, Kay đọc khuôn mặt: cấu trúc xương, tông da, nét nào là nét đắt giá nhất của bạn.</p>
-    </div>
-    <div class="step reveal in" style="transition-delay:120ms">
-      <div class="num">02</div>
-      <h3>SKIN</h3>
-      <h4>Nền da là nền tảng</h4>
-      <p>Da căng bóng, mỏng nhẹ, nhìn gần vẫn là da. Lớp nền đẹp nhất là lớp nền người ta không nhận ra.</p>
-    </div>
-    <div class="step reveal in" style="transition-delay:240ms">
-      <div class="num">03</div>
-      <h3>SCULPT</h3>
-      <h4>Sắc mà vẫn là mình</h4>
-      <p>Đường nét sắc, có chiều sâu — nhưng soi gương bạn vẫn nhận ra chính mình, phiên bản tự tin nhất.</p>
-    </div></div>
   </div>
 </section>
 
@@ -729,6 +683,35 @@ Ngồi vào ghế KINKAY, bạn nhận được tư vấn thật — bằng con 
       <div class="about-sign" data-t="about.sign">— Kay, founder</div>
     </div>
   </div>
+  <!-- 09/08/2026 (dot 5): gop section "The KINKAY Approach" vao day (Tan yeu cau — rut ngan trang).
+       Giu nguyen id="steps" vi renderSteps() ve lai noi dung theo ngon ngu. -->
+  <div class="wrap about-approach">
+    <p class="approach-intro reveal in" data-t="approach.intro">Không có công thức chung cho mọi gương mặt. Chỉ có một cách làm đúng: bắt đầu từ chính bạn.</p>
+    <div class="steps" id="steps">
+    <div class="step reveal in" style="transition-delay:0ms">
+      <div class="num">01</div>
+      <h3>READ</h3>
+      <h4>Đọc gương mặt</h4>
+      <p>Trước khi chạm cọ, Kay đọc khuôn mặt: cấu trúc xương, tông da, nét nào là nét đắt giá nhất của bạn.</p>
+    </div>
+    <div class="step reveal in" style="transition-delay:120ms">
+      <div class="num">02</div>
+      <h3>SKIN</h3>
+      <h4>Nền da là nền tảng</h4>
+      <p>Da căng bóng, mỏng nhẹ, nhìn gần vẫn là da. Lớp nền đẹp nhất là lớp nền người ta không nhận ra.</p>
+    </div>
+    <div class="step reveal in" style="transition-delay:240ms">
+      <div class="num">03</div>
+      <h3>SCULPT</h3>
+      <h4>Sắc mà vẫn là mình</h4>
+      <p>Đường nét sắc, có chiều sâu — nhưng soi gương bạn vẫn nhận ra chính mình, phiên bản tự tin nhất.</p>
+    </div></div>
+    <!-- 09/08/2026 (dot 5): dua lai video hau truong cua Kay — toi da 2 clip, nam trong Ve Kay
+         thay vi section rieng (Tan hoi "video dau mat het roi"; dot 3 cat section, file van con). -->
+    <div id="videos" class="about-vids">
+      <div id="vidRow" class="about-vidrow"></div>
+    </div>
+  </div>
 </section>
 
 <section class="section journal" id="journal">
@@ -742,6 +725,34 @@ Ngồi vào ghế KINKAY, bạn nhận được tư vấn thật — bằng con 
     <a class="jrow" href="blog/trial-makeup-truoc-ngay-cuoi-bao-lau"><span class="jd">Tháng 7, 2026</span><span class="jt">Nên trial makeup trước ngày cưới bao lâu?</span></a>
     <a class="jrow" href="blog/mot-ngay-backstage-cua-kay"><span class="jd">Tháng 6, 2026</span><span class="jt">Một ngày backstage: makeup cho pageant khác gì makeup cho cô dâu?</span></a></div>
     <div class="journal-more reveal in"><a class="btn-line" href="blog/" data-t="journal.all">Xem tất cả bài viết</a></div>
+  </div>
+</section>
+
+<!-- 09/08/2026 (dot 5): Cam nhan doi ve day — social proof ngay truoc nut Dat lich.
+     Khong lam comment tren web (spam + khong ai tin loi khen tu-dang); thay bang CTA review Google. -->
+<section class="section testi" id="testimonials">
+  <div class="wrap">
+    <div class="section-head reveal in">
+      <div class="eyebrow">KINKAY</div>
+      <h2 data-t="testimonials.heading">Khách nói về Kay</h2>
+    </div>
+    <div class="testi-grid" id="testiGrid">
+    <div class="tcard reveal in" style="transition-delay:0ms">
+      <p>“Make kiểu gì mà xuống khách sạn người ta tưởng tui hoa hậu, chạy tới xin chụp hình.”</p>
+      <div class="who">Khách makeup sự kiện</div>
+    </div>
+    <div class="tcard reveal in" style="transition-delay:120ms">
+      <p>“Cảm ơn bà Kin Kay đã cho tui với mẹ tui những bộ tóc đẹp trong ngày đám cưới của tui.”</p>
+      <div class="who">Cô dâu — bridal hair</div>
+    </div>
+    <div class="tcard reveal in" style="transition-delay:240ms">
+      <p>“Ai cũng nhìn, ai cũng khen. Quá đã.”</p>
+      <div class="who">Khách makeup tiệc</div>
+    </div></div>
+    <p class="testi-note reveal in" data-t="testimonials.note">Trích nguyên văn tin nhắn khách gửi Kay</p>
+    <div class="reveal in" style="text-align:center;margin-top:26px">
+      <a class="btn-line" id="reviewCta" href="https://g.page/r/Cbm9vzO5j8-vEBE/review" target="_blank" rel="noopener" data-t="testimonials.gcta">Bạn từng make với Kay? Để lại đánh giá trên Google →</a>
+    </div>
   </div>
 </section>
 
@@ -902,6 +913,8 @@ function videoEmbed(url){
 (function(){
   var list = Array.isArray(window.VIDEOS) ? window.VIDEOS
            : (C.videos && C.videos.items ? C.videos.items.map(function(v){return v.src;}) : []);
+  // 09/08/2026 (dot 5): video nam trong Ve Kay, toi da 2 clip (dot 3 tung cat het section rieng).
+  list = list.slice(0, 2);
   var row=document.getElementById('vidRow');
   var sec=document.getElementById('videos');
   var html=list.map(function(item){
@@ -1109,13 +1122,17 @@ function observeReveals(){
 }
 
 /* 08/08/2026 — do luot bam tu khoi cong cu tren trang chu.
-   09/08/2026 — the thu-look thay bang the bang gia (toolPricing). */
-['toolPricing','toolTimeline'].forEach(function(id){
-  var el=document.getElementById(id); if(!el) return;
-  el.addEventListener('click',function(){
-    track('tool_click',{tool: id==='toolPricing' ? 'bang_gia' : 'lich_cuoi', source:'home'});
+   09/08/2026 (dot 5) — chi con banner /lich-cuoi/; them do luot bam CTA review Google. */
+(function(){
+  var el=document.getElementById('toolTimeline');
+  if(el) el.addEventListener('click',function(){
+    track('tool_click',{tool:'lich_cuoi',source:'home'});
   });
-});
+  var rv=document.getElementById('reviewCta');
+  if(rv) rv.addEventListener('click',function(){
+    track('review_click',{source:'home_testi'});
+  });
+})();
 
 applyLang();
 
