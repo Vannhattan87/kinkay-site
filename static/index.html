@@ -341,7 +341,8 @@ border-bottom:1px solid rgba(44,24,16,.12);transition:padding-left .18s}
 
 /* Before/After — 09/08/2026. Section tu an khi chua co cap anh (window.BEFOREAFTER rong).
    Keo thanh truot de so sanh; input range vo hinh phu len toan khung de keo duoc bang ngon tay. */
-.ba-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:18px;max-width:840px;margin:0 auto}
+/* 10/08/2026: minmax(250px,1fr) lam 1 the phinh nguyen 840px — gioi han 320px va can giua */
+.ba-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,320px));gap:18px;justify-content:center;max-width:840px;margin:0 auto}
 .ba-w{margin:0}
 .ba{position:relative;overflow:hidden;border:1px solid rgba(44,24,16,.18);background:var(--paper)}
 .ba img{display:block;width:100%;aspect-ratio:3/4;object-fit:cover;-webkit-user-drag:none;user-select:none}
