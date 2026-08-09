@@ -18,10 +18,11 @@ window.CONTENT = {
   tools: {
     eyebrow: { vi: "Công cụ miễn phí", en: "Free tools" },
     heading: { vi: "Thử trước khi đặt", en: "Try before you book" },
-    t1: { vi: "Thử look của Kay", en: "Try Kay's looks" },
-    d1: { vi: "Sáu look Kay dùng ở hậu trường, thử ngay bằng camera. Ảnh không rời khỏi máy bạn.",
-          en: "Six looks Kay uses backstage — try them with your camera. Nothing leaves your device." },
-    go:  { vi: "Thử ngay →", en: "Try it →" },
+    // 09/08/2026: bo the /thu-look/ (Tan quyet dinh go cong cu AR), thay bang the dan sang bai bang gia.
+    t1: { vi: "Bảng giá thẳng thắn", en: "Straight-talk pricing" },
+    d1: { vi: "Kay nói thẳng con số cho makeup, combo và bridal — và thứ gì làm giá lên xuống.",
+          en: "Kay tells you the real numbers for makeup, combo and bridal — and what moves them." },
+    go:  { vi: "Xem bảng giá →", en: "See pricing →" },
     t2: { vi: "Lịch đếm ngược ngày cưới", en: "Wedding countdown" },
     d2: { vi: "Nhập ngày cưới, nhận lộ trình riêng: mốc nào làm gì, còn bao nhiêu ngày.",
           en: "Enter your wedding date and get a personal beauty timeline — what to do, and when." },

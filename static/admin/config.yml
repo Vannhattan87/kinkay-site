@@ -59,6 +59,27 @@ collections:
               - { label: "Mô tả", name: "desc", widget: "text" }
               - { label: "Giá", name: "price", widget: "string", hint: "Gõ nguyên văn như muốn hiện trên web. Ví dụ: Từ 1.200.000đ" }
 
+  # 09/08/2026: muc Before/After tren trang chu. Chua co cap anh nao thi muc tu an tren web.
+  # Kay them cap dau tien la muc tu xuat hien — khong can sua code.
+  - name: "beforeafter"
+    label: "Before / After"
+    files:
+      - name: "beforeafter"
+        label: "Cặp ảnh Before / After"
+        file: "content/beforeafter.json"
+        fields:
+          - label: "Các cặp ảnh"
+            name: "items"
+            widget: "list"
+            label_singular: "cặp ảnh"
+            allow_add: true
+            collapsed: true
+            summary: "{{fields.caption}}"
+            fields:
+              - { label: "Ảnh BEFORE (trước khi makeup)", name: "before", widget: "image", media_folder: "/static/assets/img/beforeafter", public_folder: "/assets/img/beforeafter", hint: "Chụp thẳng mặt, đủ sáng, TRƯỚC khi chạm cọ. Nhớ xin phép khách trước khi đăng." }
+              - { label: "Ảnh AFTER (thành phẩm)", name: "after", widget: "image", media_folder: "/static/assets/img/beforeafter", public_folder: "/assets/img/beforeafter", hint: "Cùng khách, cùng góc chụp, cùng ánh sáng thì hiệu ứng mạnh nhất." }
+              - { label: "Chú thích", name: "caption", widget: "string", required: false, hint: "Ví dụ: Bridal — trial tháng 5" }
+
   - name: "settings"
     label: "Portfolio (ảnh)"
     files:

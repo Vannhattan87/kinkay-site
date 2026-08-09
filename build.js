@@ -10,7 +10,11 @@ const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>
 // ---------- 1. copy static -> site ----------
 fs.rmSync(SITE, { recursive: true, force: true });
 fs.cpSync('static', SITE, { recursive: true });
-console.log('copy static OK');
+// 09/08/2026: /thu-look/ da GO khoi site (quyet dinh cua Tan — cong cu AR kho dung, khong hieu qua,
+// thay bang muc Before/After tren trang chu). Thu muc static/thu-look co the van con trong repo
+// (sandbox khong xoa duoc file tren mount) nhung KHONG duoc len production. _redirects 301 ve /.
+fs.rmSync(path.join(SITE, 'thu-look'), { recursive: true, force: true });
+console.log('copy static OK (da loai thu-look)');
 
 // ---------- 2. resize ảnh upload quá lớn (sharp, optional) ----------
 (async () => {
@@ -65,6 +69,15 @@ for (const f of (fs.existsSync('content/blog') ? fs.readdirSync('content/blog') 
   if (m) checkRef(m[1], 'blog/' + f);
 }
 
+// 2b-5. anh before/after (09/08/2026)
+try {
+  const baRaw = JSON.parse(fs.readFileSync('content/beforeafter.json', 'utf8'));
+  for (const p of baRaw.items || []) {
+    checkRef(p && p.before, 'beforeafter.json (before)');
+    checkRef(p && p.after, 'beforeafter.json (after)');
+  }
+} catch (e) { /* chua co beforeafter.json - muc 3d xu ly */ }
+
 // 2b-4. hai file chi khac nhau hoa/thuong -> Windows chi giu duoc 1 ban, repo dirty vinh vien
 const walk = d => fs.readdirSync(d, { withFileTypes: true }).flatMap(e =>
   e.isDirectory() ? walk(path.join(d, e.name)) : [path.join(d, e.name)]);
@@ -112,6 +125,17 @@ try {
 } catch (e) { console.log('services.json không có — bỏ qua'); }
 fs.writeFileSync(path.join(SITE, 'services.js'), 'window.SERVICES=' + JSON.stringify(SVC) + ';');
 console.log('services.js:', SVC.items.length, 'dịch vụ · hiện giá:', !!SVC.show_prices);
+
+// ---------- 3d. beforeafter.json -> beforeafter.js ----------
+// 09/08/2026: muc Before/After tren trang chu (thay vai tro cua /thu-look/ da go).
+// Chua co cap anh nao thi section tu an — Kay them cap dau tien qua admin la tu xuat hien.
+let BA = { items: [] };
+try {
+  BA = JSON.parse(fs.readFileSync('content/beforeafter.json', 'utf8'));
+  BA.items = (BA.items || []).filter(p => p && p.before && p.after);
+} catch (e) { console.log('beforeafter.json không có — bỏ qua'); }
+fs.writeFileSync(path.join(SITE, 'beforeafter.js'), 'window.BEFOREAFTER=' + JSON.stringify(BA) + ';');
+console.log('beforeafter.js:', BA.items.length, 'cặp ảnh');
 
 // ---------- 4. blog ----------
 const CSS = fs.readFileSync('blog_theme.css', 'utf8');
@@ -284,7 +308,7 @@ console.log('jGrid trang chu:', posts.slice(0, 3).map(p => p.slug).join(', '));
 // Cach chua goc: gan hash noi dung vao URL. index.html moi se tro toi content.js?v=<hash moi>,
 // khong bao gio ghep duoc voi ban cu nua. Doi file -> doi hash -> trinh duyet bat buoc tai lai.
 const crypto = require('crypto');
-const DATA_JS = ['content.js', 'gallery.js', 'videos.js', 'services.js', 'bloglist.js'];
+const DATA_JS = ['content.js', 'gallery.js', 'videos.js', 'services.js', 'bloglist.js', 'beforeafter.js'];
 let idx2 = fs.readFileSync(idxPath, 'utf8');
 for (const f of DATA_JS) {
   const fp = path.join(SITE, f);
@@ -309,7 +333,7 @@ const mtime = f => {
 // Sitemap và canonical phải khai đích cuối, không khai URL bị chuyển hướng.
 const entries = [
   { loc: 'https://kinkay.vn/',            lastmod: mtime('static/index.html') },
-  { loc: 'https://kinkay.vn/thu-look/',    lastmod: mtime('static/thu-look/index.html') },
+  // 09/08/2026: /thu-look/ da go khoi sitemap — trang bi xoa, _redirects 301 ve trang chu.
   { loc: 'https://kinkay.vn/lich-cuoi/',   lastmod: mtime('static/lich-cuoi/index.html') },
   { loc: 'https://kinkay.vn/masterclass/', lastmod: mtime('static/masterclass/index.html') },
   // 08/08/2026: bổ sung hai trang pháp lý mới.

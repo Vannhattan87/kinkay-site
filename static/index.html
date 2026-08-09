@@ -339,7 +339,24 @@ border-bottom:1px solid rgba(44,24,16,.12);transition:padding-left .18s}
 .jt{font-size:15.5px;line-height:1.5}
 @media(max-width:620px){.jrow{flex-direction:column;gap:5px}.jd{min-width:0}}
 
-/* Khoi cong cu — dan sang /thu-look/ va /lich-cuoi/ */
+/* Before/After — 09/08/2026. Section tu an khi chua co cap anh (window.BEFOREAFTER rong).
+   Keo thanh truot de so sanh; input range vo hinh phu len toan khung de keo duoc bang ngon tay. */
+.ba-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:18px;max-width:840px;margin:0 auto}
+.ba-w{margin:0}
+.ba{position:relative;overflow:hidden;border:1px solid rgba(44,24,16,.18);background:var(--paper)}
+.ba img{display:block;width:100%;aspect-ratio:3/4;object-fit:cover;-webkit-user-drag:none;user-select:none}
+.ba .ba-top{position:absolute;inset:0;height:100%;clip-path:inset(0 calc(100% - var(--x,50%)) 0 0)}
+.ba .ba-bar{position:absolute;top:0;bottom:0;left:var(--x,50%);width:2px;background:#FAF7F2;box-shadow:0 0 8px rgba(0,0,0,.4);pointer-events:none}
+.ba .ba-knob{position:absolute;top:50%;left:var(--x,50%);transform:translate(-50%,-50%);width:34px;height:34px;border-radius:50%;
+background:#FAF7F2;color:var(--espresso);display:flex;align-items:center;justify-content:center;font-size:14px;
+box-shadow:0 2px 10px rgba(0,0,0,.35);pointer-events:none}
+.ba .ba-lbl{position:absolute;bottom:10px;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;
+background:rgba(26,15,8,.55);color:#FAF7F2;padding:4px 9px;pointer-events:none}
+.ba .ba-lbl.b{left:10px}.ba .ba-lbl.a{right:10px}
+.ba input[type=range]{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:ew-resize;margin:0;touch-action:none}
+.ba-cap{font-size:12.5px;color:var(--taupe);padding:10px 2px 0;text-align:center}
+
+/* Khoi cong cu — dan sang bai bang gia va /lich-cuoi/ (the thu-look da go 09/08/2026) */
 .tool-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(268px,1fr));gap:18px;max-width:840px;margin:0 auto}
 .tool{display:block;border:1px solid rgba(44,24,16,.18);padding:26px 24px 22px;background:var(--paper);
 transition:border-color .2s,transform .2s}
@@ -476,7 +493,6 @@ transition:border-color .2s,transform .2s}
   <ul id="menu">
     <li><a href="#approach" data-t="nav.approach">Phương pháp</a></li>
     <li><a href="#portfolio" data-t="nav.portfolio">Portfolio</a></li>
-    <li><a href="/thu-look/" data-t="nav.tryon">Thử look</a></li>
     <li><a href="#testimonials" data-t="nav.testi">Cảm nhận</a></li>
     <li><a href="#services" data-t="nav.services">Dịch vụ</a></li>
     <li><a href="#about" data-t="nav.about">Về Kay</a></li>
@@ -577,6 +593,17 @@ transition:border-color .2s,transform .2s}
 
 
 
+<section class="section" id="beforeafter" hidden>
+  <div class="wrap">
+    <div class="section-head reveal in">
+      <div class="eyebrow" style="color:var(--gold)">Khách thật của Kay</div>
+      <h2>Before / After</h2>
+    </div>
+    <div class="ba-grid" id="baGrid"></div>
+    <p class="svc-note" style="margin-top:22px">Kéo thanh giữa ảnh để so sánh. Ảnh khách thật, đăng với sự đồng ý của khách — không filter, không chỉnh da.</p>
+  </div>
+</section>
+
 <section class="section services" id="services">
   <div class="wrap">
     <div class="section-head reveal in">
@@ -639,10 +666,10 @@ transition:border-color .2s,transform .2s}
       <h2 data-t="tools.heading">Thử trước khi đặt</h2>
     </div>
     <div class="tool-grid">
-      <a class="tool reveal in" href="/thu-look/" id="toolTryOn">
-        <h3 data-t="tools.t1">Thử look của Kay</h3>
-        <p data-t="tools.d1">Sáu look Kay dùng ở hậu trường, thử ngay bằng camera. Ảnh không rời khỏi máy bạn.</p>
-        <span class="tool-go" data-t="tools.go">Thử ngay →</span>
+      <a class="tool reveal in" href="/blog/gia-makeup-co-dau-tphcm.html" id="toolPricing">
+        <h3 data-t="tools.t1">Bảng giá thẳng thắn</h3>
+        <p data-t="tools.d1">Kay nói thẳng con số cho makeup, combo và bridal — và thứ gì làm giá lên xuống.</p>
+        <span class="tool-go" data-t="tools.go">Xem bảng giá →</span>
       </a>
       <a class="tool reveal in" href="/lich-cuoi/" id="toolTimeline" style="transition-delay:110ms">
         <h3 data-t="tools.t2">Lịch đếm ngược ngày cưới</h3>
@@ -763,6 +790,7 @@ Ngồi vào ghế KINKAY, bạn nhận được tư vấn thật — bằng con 
 <script src="videos.js"></script>
 <script src="services.js"></script>
 <script src="bloglist.js"></script>
+<script src="beforeafter.js"></script>
 <script>
 const C = window.CONTENT, G = window.GALLERY;
 let lang = 'vi';
@@ -1080,15 +1108,66 @@ function observeReveals(){
   document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
 }
 
-/* 08/08/2026 — do luot bam sang hai trang cong cu tu trang chu */
-['toolTryOn','toolTimeline'].forEach(function(id){
+/* 08/08/2026 — do luot bam tu khoi cong cu tren trang chu.
+   09/08/2026 — the thu-look thay bang the bang gia (toolPricing). */
+['toolPricing','toolTimeline'].forEach(function(id){
   var el=document.getElementById(id); if(!el) return;
   el.addEventListener('click',function(){
-    track('tool_click',{tool: id==='toolTryOn' ? 'thu_look' : 'lich_cuoi', source:'home'});
+    track('tool_click',{tool: id==='toolPricing' ? 'bang_gia' : 'lich_cuoi', source:'home'});
   });
 });
 
 applyLang();
+
+/* 09/08/2026 — Before/After. Section an mac dinh (hidden), chi hien khi co it nhat 1 cap anh
+   trong window.BEFOREAFTER (Kay them qua admin, muc "Before / After"). */
+(function(){
+  var esc=function(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')};
+  var d=window.BEFOREAFTER||{};
+  var items=(d.items||[]).filter(function(p){return p&&p.before&&p.after});
+  var sec=document.getElementById('beforeafter'),g=document.getElementById('baGrid');
+  if(!items.length||!sec||!g)return;
+  sec.hidden=false;
+  g.innerHTML=items.map(function(p){
+    return '<figure class="ba-w"><div class="ba" style="--x:50%">'+
+      '<img src="'+esc(p.after)+'" alt="KINKAY — sau khi makeup'+(p.caption?' — '+esc(p.caption):'')+'" loading="lazy">'+
+      '<img class="ba-top" src="'+esc(p.before)+'" alt="KINKAY — trước khi makeup" loading="lazy">'+
+      '<span class="ba-bar"></span><span class="ba-knob">↔</span>'+
+      '<span class="ba-lbl b">Before</span><span class="ba-lbl a">After</span>'+
+      '<input type="range" min="0" max="100" value="50" aria-label="Kéo để so sánh before và after">'+
+      '</div>'+(p.caption?'<figcaption class="ba-cap">'+esc(p.caption)+'</figcaption>':'')+'</figure>';
+  }).join('');
+  var tracked=false;
+  g.querySelectorAll('.ba').forEach(function(el){
+    var r=el.querySelector('input');
+    r.addEventListener('input',function(){
+      el.style.setProperty('--x',r.value+'%');
+      if(!tracked){tracked=true;track('ba_drag',{source:'home'});}
+    });
+  });
+})();
+
+/* 09/08/2026 — di cu tu /thu-look/ (da go): trinh duyet trong app TikTok/IG/FB chan link zalo.me.
+   Voi khach vao tu in-app browser, hien thanh so dien thoai + nut copy o day trang. */
+(function(){
+  if(!/bytedancewebview|musical_ly|tiktok|FBAN|FBAV|Instagram/i.test(navigator.userAgent||''))return;
+  var b=document.createElement('div');
+  b.style.cssText='position:fixed;left:0;right:0;bottom:0;z-index:80;background:#1A0F08;color:#FAF7F2;'+
+    'padding:11px 14px;font-size:13px;display:flex;gap:12px;align-items:center;justify-content:center;'+
+    'flex-wrap:wrap;box-shadow:0 -4px 14px rgba(0,0,0,.3)';
+  b.innerHTML='<span>Zalo có thể không mở được trong app này — số của Kay: <b style="letter-spacing:.05em">0933 953 179</b></span>'+
+    '<button id="iabCopy" style="background:#C4A882;border:none;color:#1A0F08;padding:7px 14px;font-size:12px;'+
+    'letter-spacing:.1em;cursor:pointer;font-family:inherit">COPY SỐ</button>';
+  document.body.appendChild(b);
+  document.getElementById('iabCopy').addEventListener('click',function(){
+    var n='0933953179',btn=this;
+    function ok(){btn.textContent='ĐÃ COPY';
+      track('generate_lead',{lead_type:'contact',contact_channel:'phone_copy',source:'inapp_banner'});}
+    function fb(){var a=document.createElement('textarea');a.value=n;document.body.appendChild(a);a.select();
+      try{document.execCommand('copy');ok()}catch(e){}finally{a.remove()}}
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(n).then(ok,fb)}else{fb()}
+  });
+})();
 </script>
 
 

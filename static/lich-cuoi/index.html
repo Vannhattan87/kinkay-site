@@ -112,7 +112,7 @@ padding:12px 20px;border-radius:2px;font-size:13px;opacity:0;transition:opacity 
 
 <nav><div class="navin">
   <a class="logo" href="/">KINKAY</a>
-  <a class="navlink" href="/thu-look/">Thử look</a>
+  <a class="navlink" href="/blog/gia-makeup-co-dau-tphcm.html">Bảng giá</a>
 </div></nav>
 
 <div class="wrap">
@@ -136,6 +136,7 @@ padding:12px 20px;border-radius:2px;font-size:13px;opacity:0;transition:opacity 
   <div class="tl" id="tl"></div>
 
   <div class="share">
+    <button class="btn sm" id="send">Gửi lộ trình cho Kay qua Zalo</button>
     <button class="btn g sm" id="copy">Sao chép link lộ trình này</button>
     <button class="btn g sm" id="print">In ra giấy</button>
   </div>
@@ -184,7 +185,7 @@ padding:12px 20px;border-radius:2px;font-size:13px;opacity:0;transition:opacity 
     {o:150,h:'Tìm hiểu 2–3 makeup artist',p:'Xem portfolio, so phong cách, hỏi lịch trống. Trao đổi trước về ngày, địa điểm, số người cần makeup.'},
     {o:120,h:'Chốt makeup artist và đặt cọc',p:'Mốc quan trọng nhất trong cả lộ trình. Makeup artist tốt kín lịch mùa cưới rất sớm — chốt trễ là mất người mình thích.',key:1},
     {o:90,h:'Chốt váy cưới và áo dài',p:'Chốt váy trước khi thử makeup, để look trang điểm bám theo được tông váy và kiểu cổ.'},
-    {o:60,h:'Trial makeup',p:'Buổi thử để hình dung rõ diện mạo ngày cưới và chỉnh những chi tiết chưa hợp. Chụp ảnh lại dưới nhiều nguồn sáng.'},
+    {o:60,h:'Trial makeup',p:'Buổi thử để hình dung rõ diện mạo ngày cưới và chỉnh những chi tiết chưa hợp. Chụp ảnh lại dưới nhiều nguồn sáng.',trial:1},
     {o:30,h:'Chốt lịch trình chi tiết ngày cưới',p:'Giờ makeup, giờ đón dâu, giờ đãi tiệc. Gửi lịch cho tất cả các bên, không giữ trong đầu.'},
     {o:14,h:'Dừng thử mỹ phẩm và liệu trình mới',p:'Hai tuần cuối không thử sản phẩm lạ, không peel, không lăn kim. Da cần thời gian ổn định.'},
     {o:7,h:'Xác nhận lại với makeup artist',p:'Nhắn xác nhận ngày, giờ, địa điểm. Chốt luôn ai cần makeup thêm — mẹ, chị em, phù dâu.'},
@@ -238,13 +239,19 @@ padding:12px 20px;border-radius:2px;font-size:13px;opacity:0;transition:opacity 
         '<h3>'+s.h+tag+'</h3><p>'+s.p+'</p>'+
         (s.key?'<div class="key"><p>Kay nhận lịch cưới tại TP.HCM và các tỉnh. Nhắn để kiểm tra ngày '+fmt(W)+' còn trống không.</p>'+
           '<a class="btn sm" href="https://zalo.me/0933953179" data-k="1">Kiểm tra ngày này</a></div>':'')+
+        (s.trial?'<div class="key"><p>Đây là lúc đặt buổi trial với Kay'+
+          (S.show_prices&&S.trial_price?' — trial '+S.trial_price:'')+
+          '. Thử trước rồi, ngày cưới không còn bất ngờ.</p>'+
+          '<a class="btn sm" href="https://zalo.me/0933953179" data-k="trial">Đặt lịch trial với Kay</a></div>':'')+
         '</div>';
     });
     tl.innerHTML=html;
-    var k=tl.querySelector('[data-k]');
-    if(k)k.addEventListener('click',function(){
-      track('booking_click',{method:'zalo',source:'lich_cuoi_timeline'});
-      track('generate_lead',{lead_type:'contact',contact_channel:'zalo',service_type:'bridal'});
+    tl.querySelectorAll('[data-k]').forEach(function(k){
+      k.addEventListener('click',function(){
+        var src=k.getAttribute('data-k')==='trial'?'lich_cuoi_trial':'lich_cuoi_timeline';
+        track('booking_click',{method:'zalo',source:src});
+        track('generate_lead',{lead_type:'contact',contact_channel:'zalo',service_type:'bridal'});
+      });
     });
     var u=new URL(location.href); u.searchParams.set('ngay',iso(W));
     history.replaceState(null,'',u);
@@ -262,6 +269,22 @@ padding:12px 20px;border-radius:2px;font-size:13px;opacity:0;transition:opacity 
     if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(u).then(ok,fb)}else{fb()}
   };
   $('print').onclick=function(){track('timeline_print',{});window.print()};
+  var INAPP=/bytedancewebview|musical_ly|tiktok|FBAN|FBAV|Instagram/i.test(navigator.userAgent||'');
+  $('send').onclick=function(){
+    var W=parse(d.value);
+    var msg='Chào Kay, ngày cưới của mình là '+(W?fmt(W):'(chưa chọn)')+'. Lộ trình của mình: '+location.href+' — ngày đó Kay còn lịch không?';
+    var t=$('toast');
+    function after(){
+      track('booking_click',{method:'zalo',source:'lich_cuoi_send'});
+      track('generate_lead',{lead_type:'contact',contact_channel:'zalo',service_type:'bridal'});
+      if(INAPP){t.textContent='Đã sao chép tin nhắn — mở Zalo, nhắn số 0933 953 179 và dán vào';}
+      else{t.textContent='Đã sao chép tin nhắn — dán vào Zalo cho Kay nhé';window.open('https://zalo.me/0933953179','_blank');}
+      t.classList.add('on');setTimeout(function(){t.classList.remove('on');t.textContent='Đã sao chép link'},3600);
+    }
+    function fb(){var a=document.createElement('textarea');a.value=msg;document.body.appendChild(a);a.select();
+      try{document.execCommand('copy')}catch(e){}finally{a.remove()}after();}
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(msg).then(after,fb)}else{fb()}
+  };
   $('ctaZalo').addEventListener('click',function(){
     track('booking_click',{method:'zalo',source:'lich_cuoi_cta'});
     track('generate_lead',{lead_type:'contact',contact_channel:'zalo',service_type:'bridal'});
