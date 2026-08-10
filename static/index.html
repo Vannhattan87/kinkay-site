@@ -433,16 +433,40 @@ border:1px solid rgba(44,24,16,.18);background:var(--paper);padding:28px 30px;ma
     "itemListElement": [
      {
       "@type": "Offer",
+      "priceCurrency": "VND",
+      "priceSpecification": {
+       "@type": "PriceSpecification",
+       "priceCurrency": "VND",
+       "minPrice": 3000000,
+       "maxPrice": 6000000
+      },
+      "url": "https://kinkay.vn/blog/gia-makeup-co-dau-tphcm",
       "itemOffered": {
        "@type": "Service",
-       "name": "Makeup cô dâu"
+       "name": "Makeup cô dâu",
+       "description": "Trial trước ngày cưới + day-of trọn gói."
       }
      },
      {
       "@type": "Offer",
+      "priceCurrency": "VND",
+      "price": 1200000,
+      "url": "https://kinkay.vn/blog/gia-makeup-co-dau-tphcm",
       "itemOffered": {
        "@type": "Service",
-       "name": "Trang điểm dự tiệc & sự kiện"
+       "name": "Trang điểm dự tiệc & sự kiện",
+       "description": "Tiệc, sự kiện, photoshoot editorial."
+      }
+     },
+     {
+      "@type": "Offer",
+      "priceCurrency": "VND",
+      "price": 1800000,
+      "url": "https://kinkay.vn/blog/gia-makeup-co-dau-tphcm",
+      "itemOffered": {
+       "@type": "Service",
+       "name": "Full Glam Combo — makeup + hair",
+       "description": "Makeup + hair styling trọn gói cho tiệc, event, chụp hình cá nhân."
       }
      },
      {
@@ -456,7 +480,8 @@ border:1px solid rgba(44,24,16,.18);background:var(--paper);padding:28px 30px;ma
       "@type": "Offer",
       "itemOffered": {
        "@type": "Service",
-       "name": "Hair styling"
+       "name": "Hair styling",
+       "description": "Blowout, soft waves, updo — có trong Full Glam Combo."
       }
      }
     ]
@@ -636,7 +661,7 @@ border:1px solid rgba(44,24,16,.18);background:var(--paper);padding:28px 30px;ma
       <h3>Bridal</h3>
       <p>Trial trước ngày cưới + day-of trọn gói. Look cô dâu sắc nét mà vẫn là bạn trong ngày quan trọng nhất.</p>
     </div></div>
-    <p class="svc-note reveal in" data-t="services.note">Studio tại Phường Tân Hưng, TP.HCM (by appointment) · Nhận lịch toàn quốc, phụ phí di chuyển báo trước khi xác nhận. Giá chi tiết và combo — nhắn Kay để nhận menu đầy đủ.</p>
+    <p class="svc-note reveal in" data-t="services.note" data-t-html>Studio tại Phường Tân Hưng, TP.HCM (by appointment) · Nhận lịch toàn quốc, phụ phí di chuyển báo trước khi xác nhận. Giá trên đã gồm dặm trong nội thành; xem <a href="/blog/gia-makeup-co-dau-tphcm">bảng giá chi tiết và cách Kay tính giá</a>.</p>
   </div>
 </section>
 
@@ -815,7 +840,14 @@ function applyLang(){
   document.title = C.meta.title[lang];
   document.querySelectorAll('[data-t]').forEach(el=>{
     const v = get(el.dataset.t);
-    if(v && v[lang] !== undefined) el.textContent = v[lang];
+    if(!v || v[lang] === undefined) return;
+    // Mac dinh textContent — an toan, va 99% chuoi la van ban thuan.
+    // 10/08/2026: them data-t-html cho vai chuoi CAN chua the <a> (vi du ghi chu duoi khoi
+    // Dich vu tro sang bai bang gia). Chi bat cho tung phan tu mot, khong bat dai tra:
+    // noi dung den tu content.js do minh viet, nhung de mac dinh la innerHTML thi mot ngay
+    // nao do se co nguoi dan text khach vao day.
+    if(el.hasAttribute('data-t-html')) el.innerHTML = v[lang];
+    else el.textContent = v[lang];
   });
   document.getElementById('langBtn').textContent = lang==='vi' ? 'EN' : 'VI';
   // 08/08/2026: chay tung ham trong try/catch rieng. Truoc day chung dung mot dong;
@@ -856,15 +888,18 @@ function renderServices(){
   const show = !!S.show_prices;
   const byName = {};
   (S.items||[]).forEach(it=>{ if(it&&it.name) byName[String(it.name).trim().toLowerCase()] = it.price||''; });
-  document.getElementById('svcGrid').innerHTML = C.services.items.map((s,i)=>{
-    const key = String(s.title.en||s.title.vi||'').trim().toLowerCase();
-    const price = show ? (byName[key]||'') : '';
-    return `
-    <div class="svc reveal" style="transition-delay:${i*100}ms">
-      <h3>${s.title[lang]}</h3>
-      <p>${s.desc[lang]}</p>
-      ${price ? `<div class="svc-price">${price}</div>` : ''}
-    </div>`;
+  // 10/08/2026: build.js pre-render san khoi nay (muc 4b-2) de Googlebot doc duoc gia trong
+  // HTML tho. Ham nay van chay — no la duong doi ngon ngu VI/EN va la luoi an toan neu
+  // pre-render hong. Viet bang noi chuoi thay vi template literal de ma nguon HTML tho khong
+  // chua chuoi kieu ${...} — cong cu quet SEO doc nham do la placeholder chua render.
+  document.getElementById('svcGrid').innerHTML = C.services.items.map(function(s,i){
+    var key = String(s.title.en||s.title.vi||'').trim().toLowerCase();
+    var price = show ? (byName[key]||'') : '';
+    return '\n    <div class="svc reveal in" style="transition-delay:' + (i*100) + 'ms">'
+         + '\n      <h3>' + s.title[lang] + '</h3>'
+         + '\n      <p>' + s.desc[lang] + '</p>'
+         + (price ? '\n      <div class="svc-price">' + price + '</div>' : '')
+         + '\n    </div>';
   }).join('');
 }
 
@@ -934,11 +969,21 @@ function videoEmbed(url){
   });
 })();
 
-/* journal */
+/* journal
+   08/08/2026: build.js prerender san 3 bai moi nhat vao <div id="jGrid"> (xem muc 4b trong build.js).
+   10/08/2026: ham nay TRUOC DAY ghi de khoi do ngay khi trang load — thua, va khien chuoi
+   'blog/' + slug nam trong ma nguon HTML tho duoi dang template literal, bi cong cu quet SEO
+   doc nham thanh placeholder chua render. Gio chi chay khi jGrid RONG (build hong hoac
+   ai do sua markup) — tuc la mang luoi an toan, khong phai duong render chinh. */
 function renderJournal(){
-  if(!window.BLOG || !document.getElementById('jGrid')) return;
-  document.getElementById('jGrid').innerHTML = window.BLOG.map(p=>`
-    <a class="jrow" href="blog/${p.slug}"><span class="jd">${p.date}</span><span class="jt">${p.title}</span></a>`).join('');
+  var el = document.getElementById('jGrid');
+  if(!window.BLOG || !el) return;
+  if(el.querySelector('a')) return;            // build da prerender roi — khong dung toi
+  el.innerHTML = window.BLOG.map(function(p){
+    return '<a class="jrow" href="blog/' + encodeURI(p.slug) + '">'
+         + '<span class="jd">' + p.date + '</span>'
+         + '<span class="jt">' + p.title + '</span></a>';
+  }).join('');
 }
 
 /* kit */

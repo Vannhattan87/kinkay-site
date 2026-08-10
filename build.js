@@ -297,6 +297,52 @@ const jcards = posts.slice(0, 3).map(p =>
   `<span class="jd">${p.date_display}</span>` +
   `<span class="jt">${esc(p.title)}</span></a>`).join('');
 idxHtml = idxHtml.replace(JGRID_RE, (m, open) => open + jcards + '</div>');
+
+// ---------- 4b-2. pre-render gia dich vu vao #svcGrid ----------
+// 10/08/2026. Cung dung loai loi voi jGrid, chi khac cho: gia 1.200.000d / 1.800.000d /
+// 3.000.000-6.000.000d nam trong content/services.json va CHI duoc renderServices() gan vao
+// khi JavaScript chay. HTML tho ma Googlebot doc khong he co mot con so nao.
+// He qua do duoc: GSC tuan nay chi con DUNG 1 query thuong mai (tuan truoc 5), va 4/4 truy van
+// kieu "gia makeup co dau" khong ra kinkay.vn. Trang chu la trang co 43 view — nhieu nhat site —
+// nhung khach vao do khong thay gia; chi 4 nguoi mo bai blog gia.
+// Cach lam: sinh lai the <div class="svc"> tu content.js (thu tu + text) ghep gia tu services.json,
+// dung dung logic cua renderServices() de ban pre-render va ban JS khong lech nhau.
+if (SVC && SVC.show_prices) {
+  const SVCGRID_RE = /(<div class="svc-grid" id="svcGrid">)[\s\S]*?<\/div><\/div>/;
+  if (!SVCGRID_RE.test(idxHtml)) {
+    console.error('\n=========== BUILD DUNG ===========');
+    console.error('Khong tim thay khoi <div class="svc-grid" id="svcGrid">...</div></div> trong static/index.html.');
+    console.error('Ai do da doi markup muc Dich vu. Sua SVCGRID_RE trong build.js cho khop —');
+    console.error('bo qua la gia bien mat khoi HTML tho va Google lai khong thay gia nua.\n');
+    process.exit(1);
+  }
+  // Nap content.js bang sandbox nho. Khong dung require vi file viet cho trinh duyet (window.CONTENT).
+  const win = {};
+  new Function('window', fs.readFileSync(path.join(SITE, 'content.js'), 'utf8'))(win);
+  const svcItems = ((win.CONTENT || {}).services || {}).items || [];
+  if (!svcItems.length) {
+    console.error('\n=========== BUILD DUNG ===========');
+    console.error('content.js khong co CONTENT.services.items — khong pre-render duoc gia.\n');
+    process.exit(1);
+  }
+  const byName = {};
+  (SVC.items || []).forEach(it => { if (it && it.name) byName[String(it.name).trim().toLowerCase()] = it.price || ''; });
+  const svcCards = svcItems.map((s, i) => {
+    const key = String((s.title && (s.title.en || s.title.vi)) || '').trim().toLowerCase();
+    const price = byName[key] || '';
+    return `\n    <div class="svc reveal in" style="transition-delay:${i * 100}ms">` +
+      `\n      <h3>${esc(s.title.vi)}</h3>` +
+      `\n      <p>${esc(s.desc.vi)}</p>` +
+      (price ? `\n      <div class="svc-price">${esc(price)}</div>` : '') +
+      `\n    </div>`;
+  }).join('');
+  idxHtml = idxHtml.replace(SVCGRID_RE, (m, open) => open + svcCards + '</div>');
+  const missing = svcItems.filter(s => !byName[String((s.title && (s.title.en || s.title.vi)) || '').trim().toLowerCase()]);
+  console.log('svcGrid trang chu: pre-render', svcItems.length, 'dich vu · thieu gia:', missing.length);
+} else {
+  console.log('svcGrid trang chu: show_prices = false — khong pre-render gia (dung y do)');
+}
+
 fs.writeFileSync(idxPath, idxHtml);
 console.log('jGrid trang chu:', posts.slice(0, 3).map(p => p.slug).join(', '));
 // ---------- 4c. gan van ban (?v=hash) cho cac file du lieu ----------

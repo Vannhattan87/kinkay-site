@@ -9,10 +9,13 @@
 /tiktok-ghim    https://kinkay.vn/?utm_source=tiktok&utm_medium=caption&utm_campaign=video_ghim 301
 /tiktok-video   https://kinkay.vn/?utm_source=tiktok&utm_medium=caption&utm_campaign=video_moi  301
 
-# 09/08/2026: /thu-look/ gỡ khỏi site. 301 về trang chủ để giữ giá trị index đã có
-# (URL này đã được request indexing 08/08 và có link nội bộ được Google crawl).
-/thu-look/      https://kinkay.vn/  301
-/thu-look       https://kinkay.vn/  301
+# 09/08/2026: /thu-look/ gỡ khỏi site, ban đầu 301 về trang chủ để giữ giá trị index.
+# 10/08/2026: BỎ 301, chuyển sang 410 Gone — xem functions/thu-look/index.js.
+#   Lý do: 301 làm Google giữ URL cũ trong index. Kết quả: /thu-look/ trở thành kết quả
+#   kinkay.vn ĐẦU TIÊN cho truy vấn thương hiệu "KINKAY", đứng trên cả trang chủ, với
+#   snippet hứa một dịch vụ không còn tồn tại. Cần tín hiệu "chết hẳn", không phải "đổi chỗ".
+#   Redirect trong file này chạy TRƯỚC Functions, nên hai dòng 301 cũ phải bị gỡ thì
+#   functions/thu-look/index.js mới có cơ hội chạy. Đừng thêm lại.
 
 # 28/07/2026: bài "layout trang điểm mùa đông" trước đây có slug đầy dấu tiếng Việt vì CMS
 # lấy thẳng tiêu đề làm tên file. Đã đổi sang slug ASCII. Giữ 301 cho link cũ đã phát tán.

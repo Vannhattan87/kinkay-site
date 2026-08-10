@@ -109,8 +109,10 @@ window.CONTENT = {
   services: {
     heading: { vi: "Dịch vụ", en: "Services" },
     note: {
-      vi: "Studio tại Phường Tân Hưng, TP.HCM (by appointment) · Nhận lịch toàn quốc, phụ phí di chuyển báo trước khi xác nhận. Giá chi tiết và combo — nhắn Kay để nhận menu đầy đủ.",
-      en: "Studio in Tân Hưng Ward, HCMC (by appointment) · Bookings nationwide, travel fee quoted before confirming. For the full menu and combos, message Kay."
+      // 10/08/2026: gia da hien cong khai tren the dich vu, nen cau "nhan Kay de nhan menu"
+      // khong con dung nua. Doi thanh: gia da o day, va tro thang sang bai giai thich gia.
+      vi: "Studio tại Phường Tân Hưng, TP.HCM (by appointment) · Nhận lịch toàn quốc, phụ phí di chuyển báo trước khi xác nhận. Giá trên đã gồm dặm trong nội thành; xem <a href=\"/blog/gia-makeup-co-dau-tphcm\">bảng giá chi tiết và cách Kay tính giá</a>.",
+      en: "Studio in Tân Hưng Ward, HCMC (by appointment) · Bookings nationwide, travel fee quoted before confirming. Prices above include touch-ups within the city; see the <a href=\"/blog/gia-makeup-co-dau-tphcm\">full price breakdown</a>."
     },
     items: [
       {
