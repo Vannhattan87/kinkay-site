@@ -47,6 +47,10 @@ collections:
           - { label: "Bridal — giá từ", name: "bridal_from", widget: "string", hint: "Dùng ở trang Lịch cưới. Ví dụ: 3.000.000đ" }
           - { label: "Bridal — giá đến", name: "bridal_to", widget: "string" }
           - { label: "Giá trial", name: "trial_price", widget: "string" }
+          # 12/08/2026 (đợt A4): ưu đãi ngày thường. Mục đích thương mại là lấp lịch Thứ 2–Thứ 5
+          # mà không phải hạ giá cuối tuần. Tắt công tắc là dòng này biến mất khỏi trang chủ.
+          - { label: "Bật ưu đãi ngày thường", name: "offpeak_on", widget: "boolean", default: true, required: false, hint: "Tắt là dòng ưu đãi biến mất khỏi trang chủ ngay sau lần deploy kế tiếp." }
+          - { label: "Nội dung ưu đãi ngày thường", name: "offpeak_note", widget: "text", required: false, hint: "Ví dụ: Đặt lịch Thứ 2 – Thứ 5 (trừ mùa cưới cao điểm và ngày lễ) giảm 15% cho makeup và Full Glam Combo." }
           - label: "Các dịch vụ"
             name: "items"
             widget: "list"
@@ -58,6 +62,9 @@ collections:
               - { label: "Tên dịch vụ", name: "name", widget: "string" }
               - { label: "Mô tả", name: "desc", widget: "text" }
               - { label: "Giá", name: "price", widget: "string", hint: "Gõ nguyên văn như muốn hiện trên web. Ví dụ: Từ 1.200.000đ" }
+              # 12/08/2026 (đợt B1): mỗi dịch vụ có một trang riêng. Điền đường dẫn vào đây thì
+              # thẻ dịch vụ trên trang chủ bấm được và có thêm dòng "Xem chi tiết →".
+              - { label: "Trang chi tiết", name: "link", widget: "string", required: false, hint: "Đường dẫn trang riêng của dịch vụ. Ví dụ: /makeup-co-dau/ — để trống thì thẻ không bấm được." }
 
   # 09/08/2026: muc Before/After tren trang chu. Chua co cap anh nao thi muc tu an tren web.
   # Kay them cap dau tien la muc tu xuat hien — khong can sua code.
@@ -79,6 +86,59 @@ collections:
               - { label: "Ảnh BEFORE (trước khi makeup)", name: "before", widget: "image", media_folder: "/static/assets/img/beforeafter", public_folder: "/assets/img/beforeafter", hint: "Chụp thẳng mặt, đủ sáng, TRƯỚC khi chạm cọ. Nhớ xin phép khách trước khi đăng." }
               - { label: "Ảnh AFTER (thành phẩm)", name: "after", widget: "image", media_folder: "/static/assets/img/beforeafter", public_folder: "/assets/img/beforeafter", hint: "Cùng khách, cùng góc chụp, cùng ánh sáng thì hiệu ứng mạnh nhất." }
               - { label: "Chú thích", name: "caption", widget: "string", required: false, hint: "Ví dụ: Bridal — trial tháng 5" }
+
+  # 12/08/2026 (đợt A2): cảm nhận khách. Trước đây ba câu khen nằm cứng trong code, không tên,
+  # không mặt, không bằng chứng — ai cũng tự viết được, nên gần như không có sức thuyết phục.
+  # Giờ Kay tự thêm được, và mỗi cảm nhận có thể kèm TÊN, ẢNH KHÁCH và ẢNH CHỤP MÀN HÌNH tin nhắn gốc.
+  # Screenshot là thứ mạnh nhất: nó là bằng chứng, không phải lời quảng cáo.
+  - name: "testimonials"
+    label: "Cảm nhận khách"
+    files:
+      - name: "testimonials"
+        label: "Khách nói về Kay"
+        file: "content/testimonials.json"
+        fields:
+          - { label: "Ghi chú dưới khối cảm nhận", name: "note", widget: "string", required: false }
+          - label: "Các cảm nhận"
+            name: "items"
+            widget: "list"
+            label_singular: "cảm nhận"
+            allow_add: true
+            collapsed: true
+            summary: "{{fields.name}} {{fields.who}}"
+            fields:
+              - { label: "Lời khách nói", name: "quote", widget: "text", hint: "Chép NGUYÊN VĂN tin nhắn khách gửi. Đừng sửa cho hay hơn — chính chỗ vụng về mới làm người đọc tin." }
+              - { label: "Bản tiếng Anh (không bắt buộc)", name: "quote_en", widget: "text", required: false }
+              - { label: "Tên khách", name: "name", widget: "string", required: false, hint: "Tên hoặc biệt danh, ví dụ: Ngọc Anh. Phải xin phép khách trước. Để trống cũng được." }
+              - { label: "Dịp / vai trò", name: "who", widget: "string", required: false, hint: "Ví dụ: Cô dâu — tháng 6/2026, hoặc Khách makeup sự kiện" }
+              - { label: "Dịp / vai trò (tiếng Anh)", name: "who_en", widget: "string", required: false }
+              - { label: "Ảnh khách", name: "photo", widget: "image", required: false, media_folder: "/static/assets/img/testimonials", public_folder: "/assets/img/testimonials", hint: "Ảnh chân dung nhỏ, hiện tròn cạnh tên. Nhớ xin phép khách." }
+              - { label: "Ảnh chụp màn hình tin nhắn", name: "screenshot", widget: "image", required: false, media_folder: "/static/assets/img/testimonials", public_folder: "/assets/img/testimonials", hint: "Chụp màn hình tin nhắn gốc, NHỚ che tên và ảnh đại diện của khách. Đây là bằng chứng mạnh nhất trên cả trang." }
+
+  # 12/08/2026 (đợt B2): danh sách ekip cưới. Mục đích không chỉ là trang tin —
+  # mỗi đối tác được nêu tên là một lý do để họ đặt link ngược về kinkay.vn.
+  # Backlink có ngữ cảnh trong ngành cưới là thứ site này đang thiếu nhất.
+  - name: "partners"
+    label: "Đối tác cưới"
+    files:
+      - name: "partners"
+        label: "Ekip Kay tin dùng"
+        file: "content/partners.json"
+        fields:
+          - { label: "Đoạn mở đầu", name: "intro", widget: "text", required: false }
+          - label: "Danh sách đối tác"
+            name: "items"
+            widget: "list"
+            label_singular: "đối tác"
+            allow_add: true
+            collapsed: true
+            summary: "{{fields.category}} — {{fields.name}}"
+            fields:
+              - { label: "Tên", name: "name", widget: "string" }
+              - { label: "Loại", name: "category", widget: "select", required: false, options: ["Photographer", "Wedding planner", "Áo cưới", "Venue", "Quay phim", "Hoa & trang trí", "Khác"] }
+              - { label: "Ghi chú của Kay", name: "note", widget: "text", required: false, hint: "Một hai câu vì sao Kay giới thiệu họ. Viết thật, đừng viết như quảng cáo." }
+              - { label: "Website hoặc trang mạng xã hội", name: "url", widget: "string", required: false, hint: "Dán đầy đủ https://... Nhớ nhắn họ đặt link ngược về kinkay.vn/doi-tac/" }
+              - { label: "Logo (không bắt buộc)", name: "logo", widget: "image", required: false, media_folder: "/static/assets/img/partners", public_folder: "/assets/img/partners" }
 
   - name: "settings"
     label: "Portfolio (ảnh)"

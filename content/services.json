@@ -5,26 +5,32 @@
   "bridal_from": "3.000.000đ",
   "bridal_to": "6.000.000đ",
   "trial_price": "1.500.000đ",
+  "offpeak_on": true,
+  "offpeak_note": "Ưu đãi ngày thường: đặt lịch Thứ 2 – Thứ 5 (trừ mùa cưới cao điểm và ngày lễ) được giảm 15% cho dịch vụ makeup và Full Glam Combo. Bridal không áp dụng.",
   "items": [
     {
       "name": "Makeup",
       "desc": "Tiệc, sự kiện, photoshoot editorial. Da căng bóng, nét sắc, bền suốt sự kiện.",
-      "price": "Từ 1.200.000đ"
+      "price": "Từ 1.200.000đ",
+      "link": "/trang-diem-du-tiec/"
     },
     {
       "name": "Full Glam Combo",
       "desc": "Makeup + hair styling trọn gói cho tiệc, event, chụp hình cá nhân.",
-      "price": "Từ 1.800.000đ"
+      "price": "Từ 1.800.000đ",
+      "link": "/photoshoot-editorial/"
     },
     {
       "name": "Bridal",
       "desc": "Trial trước ngày cưới + day-of trọn gói. Look cô dâu sắc nét mà vẫn là bạn trong ngày quan trọng nhất.",
-      "price": "3.000.000 – 6.000.000đ"
+      "price": "3.000.000 – 6.000.000đ",
+      "link": "/makeup-co-dau/"
     },
     {
       "name": "Hair Styling",
       "desc": "Blowout, soft waves, updo cho tiệc và sự kiện.",
-      "price": "Có trong combo"
+      "price": "Có trong combo",
+      "link": "/hair-styling/"
     }
   ]
 }

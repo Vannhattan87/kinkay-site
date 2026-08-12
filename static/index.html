@@ -8,6 +8,12 @@
 <title>KINKAY — Makeup Cô Dâu &amp; Trang Điểm Dự Tiệc TP.HCM</title>
 <meta name="description" content="Makeup cô dâu, trang điểm dự tiệc và hair styling tại TP.HCM. Kay — makeup artist từ hậu trường Miss Cosmo International, Hoa Hậu Việt Nam. Nhận lịch toàn quốc.">
 <link rel="canonical" href="https://kinkay.vn/">
+<!-- 12/08/2026 (dot C1): trang tieng Anh rieng tai /en/. Nut EN tren nav van doi ngon ngu
+     tai cho (content.js) — nhung ban dich tai cho khong co URL rieng nen Google khong the
+     xep hang no. /en/ moi la trang di san duoc tiep khach expat va destination wedding. -->
+<link rel="alternate" hreflang="vi" href="https://kinkay.vn/">
+<link rel="alternate" hreflang="en" href="https://kinkay.vn/en/">
+<link rel="alternate" hreflang="x-default" href="https://kinkay.vn/">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://kinkay.vn/">
 <meta property="og:site_name" content="KINKAY">
@@ -373,6 +379,60 @@ border:1px solid rgba(44,24,16,.18);background:var(--paper);padding:28px 30px;ma
 .about-vidrow .vid{flex:0 0 220px}
 @media(max-width:620px){.about-vidrow .vid{flex:0 0 44vw}}
 
+/* ==========================================================================
+   12/08/2026 — đợt A + B. Ba nhóm bổ sung: thẻ dịch vụ bấm được, cảm nhận có
+   tên/ảnh/screenshot, và form "Kiểm tra ngày trống".
+   ========================================================================== */
+
+/* B1 — thẻ dịch vụ giờ là <a> trỏ sang trang riêng của dịch vụ đó */
+.svc{display:block}
+.svc-more{margin-top:12px;font-size:11.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--sand);opacity:.62;transition:.28s}
+.svc:hover .svc-more{opacity:1;color:var(--gold)}
+
+/* A2 — dòng tên khách + ảnh + ảnh chụp màn hình tin nhắn.
+   Ảnh và tên là tùy chọn: cảm nhận nào chưa xin được phép thì vẫn hiện như cũ. */
+.tby{display:flex;align-items:center;gap:11px;margin-top:16px}
+.tby img{width:42px;height:42px;border-radius:50%;object-fit:cover;flex:0 0 auto}
+.tby span{display:flex;flex-direction:column;line-height:1.35}
+.tby b{font-family:var(--body);font-weight:400;font-size:14px;color:var(--espresso);font-style:normal}
+.tby i{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--taupe);font-style:normal}
+.tshot{margin-top:16px;border:1px solid rgba(44,24,16,.16);border-radius:2px}
+
+/* A4 — dòng ưu đãi ngày thường, đặt ngay dưới bảng giá */
+.offpeak{max-width:640px;margin:26px auto 0;text-align:center;font-size:13.5px;line-height:1.7;
+  color:var(--sand);border:1px dashed rgba(196,168,130,.45);padding:16px 20px;border-radius:2px}
+.offpeak b{color:var(--gold);font-weight:400}
+
+/* A1 — FORM KIỂM TRA NGÀY TRỐNG.
+   Nền section Đặt lịch là --sand (sáng), nên ô nhập dùng nền --paper cho nổi. */
+.lead-form{max-width:700px;margin:34px auto 0;text-align:left}
+.ff{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+.fld{display:flex;flex-direction:column;gap:6px}
+.fld.full{grid-column:1/-1}
+.fld label{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--taupe)}
+.fld input,.fld select,.fld textarea{font-family:inherit;font-size:15px;font-weight:300;color:var(--espresso);
+  background:var(--paper);border:1px solid rgba(44,24,16,.2);border-radius:2px;padding:12px 13px;
+  transition:border-color .22s;width:100%}
+.fld input:focus,.fld select:focus,.fld textarea:focus{outline:none;border-color:var(--gold)}
+.fld textarea{resize:vertical;min-height:78px}
+.form-actions{margin-top:22px;text-align:center}
+.form-note{font-size:12.5px;color:var(--taupe);margin-top:14px;text-align:center}
+.form-msg{margin-top:18px;padding:16px 18px;border:1px solid var(--gold);background:var(--paper);
+  font-size:14.5px;line-height:1.65;display:none;text-align:left}
+.form-msg.on{display:block}
+.form-msg b{font-weight:500}
+.form-msg.form-err{border-color:#b4483c;color:#8f3025}
+.book-or{margin:30px 0 4px;font-size:11.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--taupe)}
+@media(max-width:620px){.ff{grid-template-columns:1fr}}
+
+/* điều hướng trong footer — mọi trang con đều có mặt ở đây trên MỌI trang.
+   Đây là cách rẻ nhất để 9 trang mới có link nội bộ từ trang chủ (trang mạnh nhất site). */
+footer .foot-nav{margin-top:22px;font-size:12px;line-height:2.15;letter-spacing:.05em;
+  text-transform:none;max-width:780px;margin-left:auto;margin-right:auto}
+footer .foot-nav a{opacity:.85}
+footer .foot-nav a:hover{color:var(--sand);opacity:1}
+footer .foot-nav .sep{padding:0 8px;opacity:.4}
+
 </style>
 <script type="application/ld+json">
 {
@@ -661,6 +721,10 @@ border:1px solid rgba(44,24,16,.18);background:var(--paper);padding:28px 30px;ma
       <h3>Bridal</h3>
       <p>Trial trước ngày cưới + day-of trọn gói. Look cô dâu sắc nét mà vẫn là bạn trong ngày quan trọng nhất.</p>
     </div></div>
+    <!-- 12/08/2026 (dot A4): uu dai ngay thuong. Bat/tat va sua noi dung tu trang admin
+         (muc "Dich vu & Bang gia" -> "Uu dai ngay thuong"). An mac dinh, JS mo ra khi bat.
+         Muc dich thuong mai: lap lich Thu 2-5 ma khong pha gia cuoi tuan. -->
+    <p class="offpeak reveal in" id="offpeakNote" hidden></p>
     <p class="svc-note reveal in" data-t="services.note" data-t-html>Studio tại Phường Tân Hưng, TP.HCM (by appointment) · Nhận lịch toàn quốc, phụ phí di chuyển báo trước khi xác nhận. Giá trên đã gồm dặm trong nội thành; xem <a href="/blog/gia-makeup-co-dau-tphcm">bảng giá chi tiết và cách Kay tính giá</a>.</p>
   </div>
 </section>
@@ -791,6 +855,65 @@ Ngồi vào ghế KINKAY, bạn nhận được tư vấn thật — bằng con 
       <h2 data-t="booking.heading">Đặt lịch</h2>
     </div>
     <p class="sub reveal in" data-t="booking.sub">Nhắn Kay ngày, giờ và dịp của bạn. Kay phản hồi trong ngày.</p>
+
+    <!-- 12/08/2026 (dot A1) — FORM KIEM TRA NGAY TRONG.
+         Truoc dot nay, muc Dat lich chi co mot nut Zalo. Hai hau qua: (1) GA4 chi dem duoc
+         "co nguoi bam", khong biet dip gi / ngay nao / ngan sach bao nhieu, nen khong the noi
+         trang co de ra deal that hay khong; (2) khach bam roi khong nhan thi mat hoan toan.
+         Form nay giai quyet ca hai ma van giu Zalo la kenh chinh: submit -> bat generate_lead
+         co tham so -> soan san tin nhan, copy vao clipboard -> mo Zalo cho khach dan.
+         Xu ly nam trong assets/page.js (KINKAY.leadForm) — dung chung voi cac trang dich vu. -->
+    <form class="lead-form reveal in" id="leadForm" novalidate>
+      <div class="ff">
+        <div class="fld">
+          <label for="lfName">Tên của bạn <span style="color:var(--gold)">*</span></label>
+          <input id="lfName" name="name" type="text" autocomplete="name" placeholder="Ví dụ: Ngọc Anh" required>
+        </div>
+        <div class="fld">
+          <label for="lfOccasion">Dịp <span style="color:var(--gold)">*</span></label>
+          <select id="lfOccasion" name="occasion" required>
+            <option value="">— Chọn dịp —</option>
+            <option>Cưới — ngày cưới</option>
+            <option>Cưới — chụp ảnh cưới / pre-wedding</option>
+            <option>Cưới — trial thử look</option>
+            <option>Tiệc / sự kiện</option>
+            <option>Chụp hình cá nhân / photoshoot</option>
+            <option>Ăn hỏi / đám hỏi</option>
+            <option>Mẹ cô dâu / người nhà</option>
+            <option>Khác</option>
+          </select>
+        </div>
+        <div class="fld">
+          <label for="lfDate">Ngày cần makeup</label>
+          <input id="lfDate" name="date" type="date">
+        </div>
+        <div class="fld">
+          <label for="lfPlace">Địa điểm</label>
+          <input id="lfPlace" name="place" type="text" placeholder="Ví dụ: Quận 7, hoặc tên khách sạn">
+        </div>
+        <div class="fld full">
+          <label for="lfBudget">Ngân sách dự kiến</label>
+          <select id="lfBudget" name="budget">
+            <option value="">— Chưa rõ, nhờ Kay tư vấn —</option>
+            <option>Dưới 1.5 triệu</option>
+            <option>1.5 – 3 triệu</option>
+            <option>3 – 6 triệu</option>
+            <option>Trên 6 triệu</option>
+          </select>
+        </div>
+        <div class="fld full">
+          <label for="lfNote">Bạn muốn Kay biết thêm điều gì?</label>
+          <textarea id="lfNote" name="note" placeholder="Số người cần makeup, giờ phải xong, kiểu look bạn thích..."></textarea>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn" type="submit">Kiểm tra ngày trống</button>
+        <p class="form-note">Bấm xong Kay sẽ mở sẵn Zalo và điền giúp bạn tin nhắn — bạn chỉ cần dán và gửi.</p>
+      </div>
+      <div class="form-msg" id="leadMsg" role="status" aria-live="polite"></div>
+    </form>
+
+    <p class="book-or reveal in">Hoặc nhắn thẳng</p>
     <a class="btn" id="bookCta" href="https://zalo.me/0933953179" rel="noopener" data-t="booking.cta">Nhắn Zalo cho Kay</a>
     <p class="book-hint reveal in" data-t="booking.hint">Zalo 0933 953 179 — Kay trả lời nhanh nhất ở đây</p>
     <a class="btn-alt reveal in" id="bookCta2" href="https://www.instagram.com/kinkay.official/" rel="noopener" data-t="booking.cta2">Hoặc nhắn Instagram</a>
@@ -806,6 +929,24 @@ Ngồi vào ghế KINKAY, bạn nhận được tư vấn thật — bằng con 
   </div>
   <p data-t="footer.line">KINKAY · a beauty atelier · HCMC</p>
   <p class="foot-owner" data-t="footer.owner">Chủ sở hữu website: Thạch Bé Trâm · Studio: Phường Tân Hưng, TP.HCM · 0933 953 179 · kinkay20t@gmail.com</p>
+  <!-- 12/08/2026: dieu huong day trang. Chin trang moi cua dot A-B-C deu can it nhat mot
+       link noi bo tu trang chu — trang chu la trang duy nhat cua site co impression dang ke,
+       nen trang nao khong duoc no tro toi thi gan nhu khong co cua vao index. -->
+  <nav class="foot-nav" aria-label="Tất cả trang">
+    <a href="/makeup-co-dau/">Makeup cô dâu</a><span class="sep">·</span>
+    <a href="/trang-diem-du-tiec/">Trang điểm dự tiệc</a><span class="sep">·</span>
+    <a href="/hair-styling/">Hair styling</a><span class="sep">·</span>
+    <a href="/photoshoot-editorial/">Photoshoot &amp; editorial</a><span class="sep">·</span>
+    <a href="/before-after/">Before &amp; After</a><br>
+    <a href="/cam-nang-co-dau/">Cẩm nang cô dâu</a><span class="sep">·</span>
+    <a href="/faq/">Câu hỏi thường gặp</a><span class="sep">·</span>
+    <a href="/doi-tac/">Đối tác cưới</a><span class="sep">·</span>
+    <a href="/qua-tang/">Quà tặng &amp; voucher</a><span class="sep">·</span>
+    <a href="/lich-cuoi/">Lịch đếm ngược ngày cưới</a><span class="sep">·</span>
+    <a href="/masterclass/">Masterclass 1:1</a><span class="sep">·</span>
+    <a href="/blog/">Blog</a><span class="sep">·</span>
+    <a href="/en/">English</a>
+  </nav>
   <p class="foot-links">
     <a href="/chinh-sach-du-lieu/" data-t="footer.privacy">Chính sách dữ liệu</a>
     <span class="sep">·</span>
@@ -830,6 +971,10 @@ Ngồi vào ghế KINKAY, bạn nhận được tư vấn thật — bằng con 
 <script src="services.js"></script>
 <script src="bloglist.js"></script>
 <script src="beforeafter.js"></script>
+<script src="testimonials.js"></script>
+<!-- 12/08/2026: page.js dung chung voi cac trang con. Trang chu chi lay ham leadForm(),
+     khong goi KINKAY.init() de khong dam vao nav/reveal von co cua trang nay. -->
+<script src="assets/page.js"></script>
 <script>
 const C = window.CONTENT, G = window.GALLERY;
 let lang = 'vi';
@@ -892,26 +1037,68 @@ function renderServices(){
   // HTML tho. Ham nay van chay — no la duong doi ngon ngu VI/EN va la luoi an toan neu
   // pre-render hong. Viet bang noi chuoi thay vi template literal de ma nguon HTML tho khong
   // chua chuoi kieu ${...} — cong cu quet SEO doc nham do la placeholder chua render.
+  // 12/08/2026 (dot B1): moi dich vu co mot trang rieng (services.json -> truong "link").
+  // The dich vu tro thanh <a>. Phai khop y het ban pre-render trong build.js muc 4b-2,
+  // neu khong thi lan dau khach vao thay mot kieu, JS chay xong lai nhay sang kieu khac.
+  var linkByName = {};
+  (S.items||[]).forEach(function(it){ if(it&&it.name) linkByName[String(it.name).trim().toLowerCase()] = it.link||''; });
   document.getElementById('svcGrid').innerHTML = C.services.items.map(function(s,i){
     var key = String(s.title.en||s.title.vi||'').trim().toLowerCase();
     var price = show ? (byName[key]||'') : '';
-    return '\n    <div class="svc reveal in" style="transition-delay:' + (i*100) + 'ms">'
-         + '\n      <h3>' + s.title[lang] + '</h3>'
-         + '\n      <p>' + s.desc[lang] + '</p>'
-         + (price ? '\n      <div class="svc-price">' + price + '</div>' : '')
-         + '\n    </div>';
+    var href = linkByName[key] || '';
+    var inner = '\n      <h3>' + s.title[lang] + '</h3>'
+              + '\n      <p>' + s.desc[lang] + '</p>'
+              + (price ? '\n      <div class="svc-price">' + price + '</div>' : '')
+              + (href ? '\n      <div class="svc-more">' + (lang==='vi'?'Xem chi tiết →':'See details →') + '</div>' : '');
+    return href
+      ? '\n    <a class="svc reveal in" href="' + href + '" style="transition-delay:' + (i*100) + 'ms">' + inner + '\n    </a>'
+      : '\n    <div class="svc reveal in" style="transition-delay:' + (i*100) + 'ms">' + inner + '\n    </div>';
   }).join('');
 }
 
-/* testimonials */
+/* testimonials
+   12/08/2026 (dot A2). Nguon du lieu doi tu content.js sang content/testimonials.json
+   (build.js sinh ra testimonials.js -> window.TESTIMONIALS). Ly do: Kay phai them duoc
+   khach moi tu trang admin, va moi cam nhan gio co the kem TEN, ANH KHACH va ANH CHUP
+   MAN HINH tin nhan goc. Ba cau khen trung ten, khong mat, khong bang chung thi ai cung
+   viet duoc — do la muc yeu nhat cua trang chu khi doi chieu voi MUA top the gioi.
+   Van giu duong lui ve C.testimonials neu file du lieu chua co. */
 function renderTesti(){
-  const t = C.testimonials;
-  if(!t) return;
-  document.getElementById('testiGrid').innerHTML = t.items.map((it,i)=>`
-    <div class="tcard reveal" style="transition-delay:${i*120}ms">
-      <p>${it.quote[lang]}</p>
-      <div class="who">${it.who[lang]}</div>
-    </div>`).join('');
+  var esc=function(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')};
+  var grid = document.getElementById('testiGrid');
+  if(!grid) return;
+  var T = window.TESTIMONIALS;
+  var items = (T && T.items && T.items.length) ? T.items : null;
+
+  if(!items){
+    var t = C.testimonials;
+    if(!t) return;
+    grid.innerHTML = t.items.map(function(it,i){
+      return '\n    <div class="tcard reveal in" style="transition-delay:'+(i*120)+'ms">'
+           + '\n      <p>“'+esc(it.quote[lang].replace(/^[“"]|[”"]$/g,''))+'”</p>'
+           + '\n      <div class="who">'+esc(it.who[lang])+'</div>'
+           + '\n    </div>'; }).join('');
+    return;
+  }
+
+  grid.innerHTML = items.map(function(it,i){
+    var q  = (lang==='en' && it.quote_en) ? it.quote_en : it.quote;
+    var wh = (lang==='en' && it.who_en)   ? it.who_en   : (it.who||'');
+    var by = '';
+    if(it.name || wh || it.photo){
+      by = '\n      <div class="tby">'
+         + (it.photo ? '<img src="'+esc(it.photo)+'" alt="'+esc(it.name||wh)+'" loading="lazy">' : '')
+         + '<span>' + (it.name ? '<b>'+esc(it.name)+'</b>' : '')
+         + (wh ? '<i>'+esc(wh)+'</i>' : '') + '</span>'
+         + '</div>';
+    }
+    var shot = it.screenshot
+      ? '\n      <img class="tshot" src="'+esc(it.screenshot)+'" alt="Tin nhắn khách gửi Kay" loading="lazy">' : '';
+    return '\n    <div class="tcard reveal in" style="transition-delay:'+(i*120)+'ms">'
+         + '\n      <p>“'+esc(String(q).replace(/^[“"]|[”"]$/g,''))+'”</p>'
+         + by + shot
+         + '\n    </div>';
+  }).join('');
 }
 
 /* portfolio decks */
@@ -1183,6 +1370,24 @@ function observeReveals(){
 })();
 
 applyLang();
+
+/* 12/08/2026 (dot A4) — dong uu dai ngay thuong.
+   Bat/tat bang truong offpeak_on trong content/services.json (sua o trang admin).
+   An mac dinh trong HTML, chi hien khi CO bat VA co noi dung — de khi Tan tat uu dai
+   thi khong con vet gi tren trang. */
+(function(){
+  var S = window.SERVICES || {};
+  var el = document.getElementById('offpeakNote');
+  if(!el || !S.offpeak_on || !S.offpeak_note) return;
+  el.hidden = false;
+  el.innerHTML = '<b>Ưu đãi ngày thường</b> · ' +
+    String(S.offpeak_note).replace(/^Ưu đãi ngày thường:\s*/i,'')
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+})();
+
+/* 12/08/2026 (dot A1) — noi form "Kiem tra ngay trong".
+   Chi goi leadForm(); KHONG goi KINKAY.init() vi trang chu da co nav/reveal/banner in-app rieng. */
+if (window.KINKAY && window.KINKAY.leadForm) window.KINKAY.leadForm({ source: 'home_booking' });
 
 /* 09/08/2026 — Before/After. Section an mac dinh (hidden), chi hien khi co it nhat 1 cap anh
    trong window.BEFOREAFTER (Kay them qua admin, muc "Before / After"). */

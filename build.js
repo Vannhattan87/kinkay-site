@@ -78,6 +78,21 @@ try {
   }
 } catch (e) { /* chua co beforeafter.json - muc 3d xu ly */ }
 
+// 2b-6. anh khach trong testimonials (12/08/2026, dot A2)
+try {
+  const tRaw = JSON.parse(fs.readFileSync('content/testimonials.json', 'utf8'));
+  for (const t of tRaw.items || []) {
+    checkRef(t && t.photo, 'testimonials.json (anh khach)');
+    checkRef(t && t.screenshot, 'testimonials.json (screenshot tin nhan)');
+  }
+} catch (e) { /* chua co testimonials.json - muc 3e xu ly */ }
+
+// 2b-7. logo doi tac (12/08/2026, dot B2)
+try {
+  const pRaw = JSON.parse(fs.readFileSync('content/partners.json', 'utf8'));
+  for (const p of pRaw.items || []) checkRef(p && p.logo, 'partners.json (logo)');
+} catch (e) { /* chua co partners.json - muc 3f xu ly */ }
+
 // 2b-4. hai file chi khac nhau hoa/thuong -> Windows chi giu duoc 1 ban, repo dirty vinh vien
 const walk = d => fs.readdirSync(d, { withFileTypes: true }).flatMap(e =>
   e.isDirectory() ? walk(path.join(d, e.name)) : [path.join(d, e.name)]);
@@ -136,6 +151,32 @@ try {
 } catch (e) { console.log('beforeafter.json không có — bỏ qua'); }
 fs.writeFileSync(path.join(SITE, 'beforeafter.js'), 'window.BEFOREAFTER=' + JSON.stringify(BA) + ';');
 console.log('beforeafter.js:', BA.items.length, 'cặp ảnh');
+
+// ---------- 3e. testimonials.json -> testimonials.js ----------
+// 12/08/2026 (dot A2). Truoc do 3 cau khen nam CUNG LUC o hai noi: hardcode trong
+// static/index.html va trong content.js. Sua mot noi quen noi kia la web va du lieu lech nhau.
+// Gio content/testimonials.json la nguon duy nhat, Kay them khach moi tu trang admin
+// (co o ten, anh khach, va anh chup man hinh tin nhan goc — thu lam nguoi ta tin that su).
+let TESTI = { note: '', items: [] };
+try {
+  TESTI = JSON.parse(fs.readFileSync('content/testimonials.json', 'utf8'));
+  TESTI.items = (TESTI.items || []).filter(t => t && t.quote);
+} catch (e) { console.log('testimonials.json không có — bỏ qua'); }
+fs.writeFileSync(path.join(SITE, 'testimonials.js'), 'window.TESTIMONIALS=' + JSON.stringify(TESTI) + ';');
+console.log('testimonials.js:', TESTI.items.length, 'cảm nhận ·',
+  TESTI.items.filter(t => t.photo || t.screenshot).length, 'có ảnh');
+
+// ---------- 3f. partners.json -> partners.js ----------
+// 12/08/2026 (dot B2). Trang /doi-tac/ — danh sach photographer/planner/ao cuoi/venue.
+// Muc dich khong chi la trang tin: moi doi tac duoc neu ten la mot ly do de ho link nguoc
+// ve kinkay.vn. Backlink co ngu canh trong nganh cuoi la thu site nay dang thieu nhat.
+let PARTNERS = { intro: '', items: [] };
+try {
+  PARTNERS = JSON.parse(fs.readFileSync('content/partners.json', 'utf8'));
+  PARTNERS.items = (PARTNERS.items || []).filter(p => p && p.name);
+} catch (e) { console.log('partners.json không có — bỏ qua'); }
+fs.writeFileSync(path.join(SITE, 'partners.js'), 'window.PARTNERS=' + JSON.stringify(PARTNERS) + ';');
+console.log('partners.js:', PARTNERS.items.length, 'đối tác');
 
 // ---------- 4. blog ----------
 const CSS = fs.readFileSync('blog_theme.css', 'utf8');
@@ -325,22 +366,70 @@ if (SVC && SVC.show_prices) {
     console.error('content.js khong co CONTENT.services.items — khong pre-render duoc gia.\n');
     process.exit(1);
   }
-  const byName = {};
-  (SVC.items || []).forEach(it => { if (it && it.name) byName[String(it.name).trim().toLowerCase()] = it.price || ''; });
+  const byName = {}, linkByName = {};
+  (SVC.items || []).forEach(it => {
+    if (!it || !it.name) return;
+    const k = String(it.name).trim().toLowerCase();
+    byName[k] = it.price || '';
+    linkByName[k] = it.link || '';
+  });
+  // 12/08/2026 (dot B1): moi the dich vu gio tro sang trang rieng cua dich vu do.
+  // Day la duong link noi bo QUAN TRONG NHAT cua site: trang chu la trang duy nhat co
+  // impression dang ke, nen 4 trang dich vu moi chi co cua len index neu trang chu tro toi.
+  // The nao chua khai "link" trong services.json thi van la <div> nhu cu — khong vo layout.
   const svcCards = svcItems.map((s, i) => {
     const key = String((s.title && (s.title.en || s.title.vi)) || '').trim().toLowerCase();
     const price = byName[key] || '';
-    return `\n    <div class="svc reveal in" style="transition-delay:${i * 100}ms">` +
+    const href = linkByName[key] || '';
+    const inner =
       `\n      <h3>${esc(s.title.vi)}</h3>` +
       `\n      <p>${esc(s.desc.vi)}</p>` +
       (price ? `\n      <div class="svc-price">${esc(price)}</div>` : '') +
-      `\n    </div>`;
+      (href ? `\n      <div class="svc-more">Xem chi tiết →</div>` : '');
+    return href
+      ? `\n    <a class="svc reveal in" href="${esc(href)}" style="transition-delay:${i * 100}ms">${inner}\n    </a>`
+      : `\n    <div class="svc reveal in" style="transition-delay:${i * 100}ms">${inner}\n    </div>`;
   }).join('');
   idxHtml = idxHtml.replace(SVCGRID_RE, (m, open) => open + svcCards + '</div>');
   const missing = svcItems.filter(s => !byName[String((s.title && (s.title.en || s.title.vi)) || '').trim().toLowerCase()]);
   console.log('svcGrid trang chu: pre-render', svcItems.length, 'dich vu · thieu gia:', missing.length);
 } else {
   console.log('svcGrid trang chu: show_prices = false — khong pre-render gia (dung y do)');
+}
+
+// ---------- 4b-3. pre-render cam nhan khach vao #testiGrid ----------
+// 12/08/2026 (dot A2). Cung loai loi voi jGrid va svcGrid: neu de renderTesti() gan noi dung
+// khi JavaScript chay, thi Googlebot doc HTML tho chi thay ba the <div> Kay go tay tu thang 7,
+// dong bang mai mai. Sinh lai tu content/testimonials.json de HTML tho luon dung.
+{
+  const TESTI_RE = /(<div class="testi-grid" id="testiGrid">)[\s\S]*?<\/div><\/div>/;
+  if (!TESTI_RE.test(idxHtml)) {
+    console.error('\n=========== BUILD DUNG ===========');
+    console.error('Khong tim thay khoi <div class="testi-grid" id="testiGrid">...</div></div> trong static/index.html.');
+    console.error('Ai do da doi markup muc Cam nhan. Sua TESTI_RE trong build.js cho khop —');
+    console.error('bo qua la trang chu quay ve ba cau khen hardcode cu, khong ai biet.\n');
+    process.exit(1);
+  }
+  const tCards = (TESTI.items || []).map((it, i) => {
+    const wh = it.who || '';
+    const by = (it.name || wh || it.photo)
+      ? `\n      <div class="tby">` +
+        (it.photo ? `<img src="${esc(it.photo)}" alt="${esc(it.name || wh)}" loading="lazy">` : '') +
+        `<span>${it.name ? `<b>${esc(it.name)}</b>` : ''}${wh ? `<i>${esc(wh)}</i>` : ''}</span>` +
+        `</div>`
+      : '';
+    const shot = it.screenshot
+      ? `\n      <img class="tshot" src="${esc(it.screenshot)}" alt="Tin nhắn khách gửi Kay" loading="lazy">` : '';
+    const q = String(it.quote || '').replace(/^[“"]|[”"]$/g, '');
+    return `\n    <div class="tcard reveal in" style="transition-delay:${i * 120}ms">` +
+      `\n      <p>“${esc(q)}”</p>` + by + shot + `\n    </div>`;
+  }).join('');
+  if (tCards) {
+    idxHtml = idxHtml.replace(TESTI_RE, (m, open) => open + tCards + '</div>');
+    console.log('testiGrid trang chu: pre-render', TESTI.items.length, 'cam nhan');
+  } else {
+    console.log('testiGrid trang chu: testimonials.json rong — giu nguyen HTML co san');
+  }
 }
 
 fs.writeFileSync(idxPath, idxHtml);
@@ -354,7 +443,7 @@ console.log('jGrid trang chu:', posts.slice(0, 3).map(p => p.slug).join(', '));
 // Cach chua goc: gan hash noi dung vao URL. index.html moi se tro toi content.js?v=<hash moi>,
 // khong bao gio ghep duoc voi ban cu nua. Doi file -> doi hash -> trinh duyet bat buoc tai lai.
 const crypto = require('crypto');
-const DATA_JS = ['content.js', 'gallery.js', 'videos.js', 'services.js', 'bloglist.js', 'beforeafter.js'];
+const DATA_JS = ['content.js', 'gallery.js', 'videos.js', 'services.js', 'bloglist.js', 'beforeafter.js', 'testimonials.js'];
 let idx2 = fs.readFileSync(idxPath, 'utf8');
 for (const f of DATA_JS) {
   const fp = path.join(SITE, f);
@@ -382,6 +471,19 @@ const entries = [
   // 09/08/2026: /thu-look/ da go khoi sitemap — trang bi xoa, _redirects 301 ve trang chu.
   { loc: 'https://kinkay.vn/lich-cuoi/',   lastmod: mtime('static/lich-cuoi/index.html') },
   { loc: 'https://kinkay.vn/masterclass/', lastmod: mtime('static/masterclass/index.html') },
+  // 12/08/2026 (dot B1) — bon trang dich vu rieng. Truoc do CA BON dich vu chi song tren
+  // trang chu, nen site chi co DUNG MOT trang de canh tranh cho bon nhom tu khoa khac nhau.
+  { loc: 'https://kinkay.vn/makeup-co-dau/',        lastmod: mtime('static/makeup-co-dau/index.html') },
+  { loc: 'https://kinkay.vn/trang-diem-du-tiec/',   lastmod: mtime('static/trang-diem-du-tiec/index.html') },
+  { loc: 'https://kinkay.vn/hair-styling/',         lastmod: mtime('static/hair-styling/index.html') },
+  { loc: 'https://kinkay.vn/photoshoot-editorial/', lastmod: mtime('static/photoshoot-editorial/index.html') },
+  // 12/08/2026 (dot A3, B2, B4, C1, C3)
+  { loc: 'https://kinkay.vn/before-after/', lastmod: mtime('static/before-after/index.html') },
+  { loc: 'https://kinkay.vn/doi-tac/',      lastmod: mtime('static/doi-tac/index.html') },
+  { loc: 'https://kinkay.vn/faq/',          lastmod: mtime('static/faq/index.html') },
+  { loc: 'https://kinkay.vn/cam-nang-co-dau/', lastmod: mtime('static/cam-nang-co-dau/index.html') },
+  { loc: 'https://kinkay.vn/en/',           lastmod: mtime('static/en/index.html') },
+  { loc: 'https://kinkay.vn/qua-tang/',     lastmod: mtime('static/qua-tang/index.html') },
   // 08/08/2026: bổ sung hai trang pháp lý mới.
   // KHÔNG khai /danh-gia/ ở đây. Trang đó cố ý mang <meta name="robots" content="noindex">
   // (nó chỉ là bước đệm chuyển hướng khách sang form đánh giá Google). Khai một URL noindex
