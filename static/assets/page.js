@@ -19,14 +19,65 @@
     catch (e) { /* GA bị chặn thì thôi, không được để gãy trang */ }
   }
 
-  /* ---------- 2. nav ---------- */
+  /* ---------- 2. nav + menu xổ (đợt D, 12/08/2026) ----------
+     Desktop: rê chuột mở, bấm cũng mở (cho người dùng bàn phím và màn cảm ứng).
+     Mobile (<=980px): menu xổ biến thành accordion trong ngăn kéo — CSS lo phần
+     hiển thị, JS chỉ bật/tắt data-open. Một nguồn trạng thái duy nhất cho cả hai
+     kích thước màn hình, nên không có chuyện desktop và mobile lệch nhau. */
   function initNav() {
     var burger = document.getElementById('burger');
     var menu = document.getElementById('menu');
+    var subs = [].slice.call(document.querySelectorAll('body>nav .has-sub'));
+
+    function closeAll(except) {
+      subs.forEach(function (li) {
+        if (li === except) return;
+        li.setAttribute('data-open', '0');
+        var t = li.querySelector('.sub-t');
+        if (t) t.setAttribute('aria-expanded', 'false');
+      });
+    }
+    function setOpen(li, on) {
+      li.setAttribute('data-open', on ? '1' : '0');
+      var t = li.querySelector('.sub-t');
+      if (t) t.setAttribute('aria-expanded', on ? 'true' : 'false');
+      if (on) closeAll(li);
+    }
+
+    subs.forEach(function (li) {
+      var t = li.querySelector('.sub-t');
+      if (!t) return;
+      t.addEventListener('click', function (e) {
+        e.preventDefault();
+        setOpen(li, li.getAttribute('data-open') !== '1');
+      });
+      // Rê chuột chỉ áp dụng khi có chuột thật. Trên màn cảm ứng, hover giả
+      // làm menu nhấp nháy rồi tự đóng — nên khoá lại bằng media query.
+      if (window.matchMedia('(hover:hover) and (min-width:981px)').matches) {
+        li.addEventListener('mouseenter', function () { setOpen(li, true); });
+        li.addEventListener('mouseleave', function () { setOpen(li, false); });
+      }
+    });
+
+    document.addEventListener('click', function (e) {
+      if (!e.target.closest('body>nav .has-sub')) closeAll(null);
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') {
+        closeAll(null);
+        if (menu) menu.classList.remove('open');
+        if (burger) burger.setAttribute('aria-expanded', 'false');
+      }
+    });
+
     if (!burger || !menu) return;
-    burger.addEventListener('click', function () { menu.classList.toggle('open'); });
+    burger.addEventListener('click', function () {
+      var on = menu.classList.toggle('open');
+      burger.setAttribute('aria-expanded', on ? 'true' : 'false');
+      if (!on) closeAll(null);
+    });
     menu.querySelectorAll('a').forEach(function (a) {
-      a.addEventListener('click', function () { menu.classList.remove('open'); });
+      a.addEventListener('click', function () { menu.classList.remove('open'); closeAll(null); });
     });
   }
 
@@ -271,6 +322,8 @@
     track: track,
     leadForm: leadForm,
     beforeAfter: beforeAfter,
+    // Trang chu goi rieng nav() vi no da co reveal/banner in-app cua chinh no.
+    nav: initNav,
     init: function (source) {
       initNav();
       initReveal();

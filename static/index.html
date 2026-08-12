@@ -8,12 +8,6 @@
 <title>KINKAY — Makeup Cô Dâu &amp; Trang Điểm Dự Tiệc TP.HCM</title>
 <meta name="description" content="Makeup cô dâu, trang điểm dự tiệc và hair styling tại TP.HCM. Kay — makeup artist từ hậu trường Miss Cosmo International, Hoa Hậu Việt Nam. Nhận lịch toàn quốc.">
 <link rel="canonical" href="https://kinkay.vn/">
-<!-- 12/08/2026 (dot C1): trang tieng Anh rieng tai /en/. Nut EN tren nav van doi ngon ngu
-     tai cho (content.js) — nhung ban dich tai cho khong co URL rieng nen Google khong the
-     xep hang no. /en/ moi la trang di san duoc tiep khach expat va destination wedding. -->
-<link rel="alternate" hreflang="vi" href="https://kinkay.vn/">
-<link rel="alternate" hreflang="en" href="https://kinkay.vn/en/">
-<link rel="alternate" hreflang="x-default" href="https://kinkay.vn/">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://kinkay.vn/">
 <meta property="og:site_name" content="KINKAY">
@@ -37,6 +31,12 @@
 :root{
   --cream:#FAF7F2; --espresso:#2C1810; --gold:#C4A882; --taupe:#8B6B52;
   --sand:#E8DDD0; --ink:#1A0F08; --paper:#FDFAF6;
+  /* 13/08/2026 — --gold-ink: bản gold ĐẬM HƠN, dùng cho CHỮ nằm trên nền sáng.
+     Đo được: gold #C4A882 trên nền cream chỉ đạt 2.12:1, dưới chuẩn WCAG AA (4.5:1) rất xa —
+     mà đó lại đúng là màu của mọi dòng eyebrow nhỏ in hoa giãn chữ, tức là loại chữ khó đọc nhất.
+     #876334 đạt 5.09:1 trên cream và 5.22:1 trên paper, vẫn nằm trong họ vàng-đồng của thương hiệu.
+     --gold GIỮ NGUYÊN cho chữ trên nền tối (7.44:1 trên espresso) và cho mọi mảng nền, viền, nút. */
+  --gold-ink:#876334;
   --display:'Playfair Display','Times New Roman',serif;
   --body:'Be Vietnam Pro',-apple-system,'Segoe UI',sans-serif;
 }
@@ -47,7 +47,7 @@ img{display:block;max-width:100%;height:auto}
 a{color:inherit;text-decoration:none}
 h1,h2,h3{font-family:var(--display);font-weight:500}
 .wrap{max-width:1100px;margin:0 auto;padding:0 20px}
-.eyebrow{font-size:11.5px;letter-spacing:.38em;text-transform:uppercase;color:var(--gold);font-weight:400}
+.eyebrow{font-size:11.5px;letter-spacing:.38em;text-transform:uppercase;color:var(--gold-ink);font-weight:400}
 .section{padding:110px 0}
 .section-head{text-align:center;margin-bottom:60px}
 .section-head h2{font-size:clamp(30px,4.4vw,46px);letter-spacing:.04em;margin-top:12px}
@@ -63,25 +63,78 @@ h1,h2,h3{font-family:var(--display);font-weight:500}
 .wordmark .wm-sub{font-size:.26em;letter-spacing:.5em;text-indent:.5em;text-transform:uppercase;white-space:nowrap;color:var(--gold);font-family:var(--body);font-weight:300}
 
 /* NAV */
-nav{position:fixed;top:0;left:0;right:0;z-index:50;display:flex;align-items:center;justify-content:space-between;
+body>nav{position:fixed;top:0;left:0;right:0;z-index:50;display:flex;align-items:center;justify-content:space-between;
   padding:16px 24px;transition:background .3s,box-shadow .3s,padding .3s}
-nav.solid{background:rgba(250,247,242,.97);box-shadow:0 1px 0 rgba(44,24,16,.08);padding:10px 24px}
+body>nav.solid{background:rgba(250,247,242,.97);box-shadow:0 1px 0 rgba(44,24,16,.08);padding:10px 24px}
 .brand{font-family:var(--display);font-size:20px;letter-spacing:.32em;text-indent:.32em;color:#fff;transition:color .3s;
   text-shadow:0 1px 8px rgba(26,15,8,.45)}
-nav.solid .brand{color:var(--espresso);text-shadow:none}
-nav ul{display:flex;gap:22px;list-style:none;align-items:center}
-nav ul a{font-size:11.5px;letter-spacing:.13em;text-transform:uppercase;color:#fff;transition:color .3s;font-weight:400;
+body>nav.solid .brand{color:var(--espresso);text-shadow:none}
+body>nav ul{display:flex;gap:22px;list-style:none;align-items:center}
+body>nav ul a{font-size:11.5px;letter-spacing:.13em;text-transform:uppercase;color:#fff;transition:color .3s;font-weight:400;
   text-shadow:0 1px 6px rgba(26,15,8,.4)}
-nav.solid ul a{color:var(--espresso);text-shadow:none}
-nav ul a:hover{color:var(--gold)}
+body>nav.solid ul a{color:var(--espresso);text-shadow:none}
+body>nav ul a:hover{color:var(--gold)}
+body>nav.solid ul a:hover,body>nav.solid .sub-t:hover{color:var(--gold-ink)}
 .lang-btn{background:none;border:1px solid currentColor;border-radius:2px;color:#fff;
   font-family:var(--body);font-size:11.5px;letter-spacing:.12em;padding:4px 10px;cursor:pointer;transition:.3s}
-nav.solid .lang-btn{color:var(--espresso)}
+body>nav.solid .lang-btn{color:var(--espresso)}
 .lang-btn:hover{background:var(--gold);border-color:var(--gold);color:#fff}
-.nav-book{border:1px solid var(--gold);color:var(--gold)!important;padding:8px 18px;border-radius:2px;transition:.3s;text-shadow:none!important}
-.nav-book:hover{background:var(--gold);color:#fff!important}
+
+/* ==========================================================================
+   NAV — thiết kế lại 12/08/2026 (đợt D). Phải KHỚP với assets/page.css: nav trên
+   trang chủ và trang con giờ là MỘT bộ duy nhất, chỉ khác nền (trang chủ trong suốt
+   đè lên hero, trang con nền đặc).
+
+   Ribbon Masterclass tách khỏi hero: trước đây pill "Đang nhận học viên" nằm ngay
+   dưới nút Đặt lịch, hai phễu khác nhau tranh nhau trong 3 giây đầu. Giờ nó lên
+   một dải riêng trên cùng, và tự trốn đi khi khách bắt đầu cuộn.
+   ========================================================================== */
+.topbar{position:fixed;top:0;left:0;right:0;z-index:51;background:var(--espresso);color:var(--gold);
+  text-align:center;font-size:11px;letter-spacing:.16em;text-transform:uppercase;padding:8px 16px;
+  transition:transform .35s}
+.topbar a{border-bottom:1px solid rgba(196,168,130,.45);padding-bottom:2px}
+.topbar a:hover{color:var(--sand);border-bottom-color:var(--sand)}
+body.scrolled .topbar{transform:translateY(-100%)}
+body>nav{top:33px;transition:background .3s,box-shadow .3s,padding .3s,top .35s}
+body.scrolled>nav{top:0}
+
+body>nav ul{gap:4px}
+body>nav ul>li{position:relative}
+body>nav .sub-t{display:block;font-size:11.5px;letter-spacing:.13em;text-transform:uppercase;color:#fff;
+  background:none;border:none;font-family:inherit;font-weight:400;cursor:pointer;white-space:nowrap;
+  padding:9px 13px;transition:color .3s;text-shadow:0 1px 6px rgba(26,15,8,.4)}
+body>nav.solid .sub-t{color:var(--espresso);text-shadow:none}
+body>nav .sub-t:hover{color:var(--gold)}
+body>nav ul a{padding:9px 13px}
+.sub-t .cv{display:inline-block;width:5px;height:5px;margin-left:7px;vertical-align:2px;
+  border-right:1px solid currentColor;border-bottom:1px solid currentColor;
+  transform:rotate(45deg);transition:transform .25s}
+.has-sub[data-open="1"] .sub-t .cv{transform:rotate(-135deg)}
+
+/* Panel menu xổ LUÔN nền sáng, kể cả khi nav đang trong suốt trên hero tối —
+   chữ trắng trên nền trắng là đúng loại lỗi đã dính hôm 10/08. */
+.sub{position:absolute;top:100%;left:0;min-width:290px;background:var(--paper);
+  border:1px solid rgba(44,24,16,.14);box-shadow:0 14px 34px rgba(44,24,16,.22);
+  padding:8px;opacity:0;visibility:hidden;transform:translateY(-6px);
+  transition:opacity .2s,transform .2s,visibility .2s}
+.has-sub[data-open="1"] .sub{opacity:1;visibility:visible;transform:none}
+.sub a{display:flex!important;align-items:baseline;justify-content:space-between;gap:16px;
+  padding:11px 14px!important;text-transform:none!important;letter-spacing:0!important;
+  font-size:14.5px!important;color:var(--espresso)!important;text-shadow:none!important;
+  transition:background .2s,color .2s}
+.sub a:hover{background:var(--cream);color:var(--espresso)!important}
+.sub a b{font-weight:400}
+.sub a i{font-style:normal;font-size:12px;color:var(--taupe);white-space:nowrap}
+.sub .sub-more{border-top:1px solid rgba(44,24,16,.12);margin-top:5px;padding-top:12px!important;
+  font-size:12.5px!important;color:var(--taupe)!important}
+
+.nav-book{background:var(--gold);border:none;color:var(--ink)!important;padding:10px 20px;border-radius:2px;
+  letter-spacing:.1em;text-shadow:none!important;transition:background .28s,color .28s}
+.nav-book:hover{background:var(--espresso);color:var(--sand)!important}
+/* rule .nav-book cu da bo 13/08/2026 — no nam SAU rule moi o tren nen de len, khien nut
+   Dat lich van hien kieu vien cu thay vi hop dac. Kieu moi khai o muc NAV phia tren. */
 .burger{display:none;background:none;border:none;color:#fff;font-size:26px;cursor:pointer;text-shadow:0 1px 6px rgba(26,15,8,.5)}
-nav.solid .burger{color:var(--espresso);text-shadow:none}
+body>nav.solid .burger{color:var(--espresso);text-shadow:none}
 
 /* HERO */
 .hero{position:relative;min-height:100svh;display:flex;align-items:flex-end;overflow:hidden;background:var(--ink)}
@@ -108,12 +161,19 @@ nav.solid .burger{color:var(--espresso);text-shadow:none}
 @keyframes pulseDot{0%{box-shadow:0 0 0 0 rgba(196,168,130,.55)}70%{box-shadow:0 0 0 8px rgba(196,168,130,0)}100%{box-shadow:0 0 0 0 rgba(196,168,130,0)}}
 .hero-badge:hover{background:var(--gold);color:var(--ink);border-color:var(--gold)}
 .hero-badge:hover::before{background:var(--ink)}
-.btn{display:inline-block;background:var(--gold);color:var(--ink);padding:15px 36px;border-radius:2px;
-  font-family:var(--body);font-weight:500;font-size:13px;letter-spacing:.2em;text-transform:uppercase;
-  transition:.3s;border:none;cursor:pointer}
-.btn:hover{background:var(--cream);color:var(--espresso);transform:translateY(-2px);box-shadow:0 8px 24px rgba(26,15,8,.35)}
-.btn-ghost{background:none;border:1px solid var(--sand);color:var(--sand);margin-left:14px}
-.btn-ghost:hover{border-color:var(--gold);color:var(--gold);background:none;box-shadow:none}
+/* NÚT — ba cấp, thiết kế lại 12/08/2026 (đợt D). Xem giải thích đầy đủ trong assets/page.css.
+   Luật: mỗi màn hình CHỈ MỘT nút cấp 1. Cái thứ hai là CHỮ có gạch chân, không phải hộp thứ hai —
+   trước đây hero có hai hộp bằng nhau nên mắt không biết đi đâu. */
+.btn{display:inline-block;background:var(--gold);color:var(--ink);padding:15px 34px;border-radius:2px;
+  font-family:var(--body);font-weight:400;font-size:12px;letter-spacing:.14em;text-transform:uppercase;
+  border:none;cursor:pointer;line-height:1.2;
+  transition:background .28s,color .28s,transform .28s}
+.btn:hover{background:var(--espresso);color:var(--sand);transform:translateY(-1px)}
+.btn-ghost{background:none;border:none;border-radius:0;color:var(--sand);margin-left:26px;
+  padding:15px 2px;border-bottom:1px solid rgba(196,168,130,.75);
+  letter-spacing:.06em;text-transform:none;font-size:14.5px;font-weight:400;
+  transition:color .25s,border-color .25s}
+.btn-ghost:hover{background:none;color:#fff;border-bottom-color:#fff;transform:none;box-shadow:none}
 
 /* sticky CTA — mobile: thanh full-width dưới đáy; desktop: viên nổi góc phải */
 .mcta{display:flex;position:fixed;z-index:48;box-shadow:0 6px 26px rgba(26,15,8,.3);
@@ -149,7 +209,7 @@ nav.solid .burger{color:var(--espresso);text-shadow:none}
 /* MASTERCLASS teaser */
 .mclass{background:var(--espresso);color:var(--sand)}
 .mclass .section-head h2{color:var(--cream)}
-.mclass .section-head .eyebrow{color:var(--gold)}
+.mclass .section-head .eyebrow,.services .section-head .eyebrow{color:var(--gold)}
 .mclass-intro{text-align:center;max-width:640px;margin:-38px auto 46px;font-size:16px;color:var(--sand)}
 .mclass-points{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:20px 30px;
   max-width:900px;margin:0 auto 50px}
@@ -191,10 +251,10 @@ nav.solid .burger{color:var(--espresso);text-shadow:none}
 .deck .card-title{position:absolute;bottom:13px;left:6px;right:6px;z-index:2;text-align:center;
   font-family:var(--display);color:var(--cream);font-size:clamp(14px,1.6vw,17px);
   letter-spacing:.12em;text-transform:uppercase;text-shadow:0 1px 6px rgba(0,0,0,.55);transition:color .3s}
-.deck:hover .card-title{color:var(--gold)}
+.deck:hover .card-title{color:var(--gold-ink)}
 .deck-label{text-align:center;margin-top:14px}
 .deck-label .name{font-family:var(--display);font-size:16.5px;letter-spacing:.12em;text-transform:uppercase;transition:color .3s}
-.deck:hover .deck-label .name{color:var(--gold)}
+.deck:hover .deck-label .name{color:var(--gold-ink)}
 .deck-label .count{font-size:11px;letter-spacing:.24em;color:var(--taupe);text-transform:uppercase;margin-top:2px}
 
 /* VIEWER */
@@ -269,7 +329,7 @@ nav.solid .burger{color:var(--espresso);text-shadow:none}
 .about-txt p{margin-bottom:16px;font-size:15.5px;white-space:pre-line}
 .about-quote{margin:28px 0 8px;font-style:italic;font-family:var(--display);font-size:19px;
   color:var(--taupe);border-left:2px solid var(--gold);padding-left:18px;line-height:1.6}
-.about-sign{font-size:12.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold)}
+.about-sign{font-size:12.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold-ink)}
 
 /* JOURNAL */
 .journal{background:var(--paper)}
@@ -313,10 +373,10 @@ footer .foot-links .sep{padding:0 10px;opacity:.6}
 
 /* MOBILE */
 @media(max-width:760px){
-  nav ul{position:fixed;top:0;right:-100%;height:100vh;width:72vw;background:var(--ink);
+  body>nav ul{position:fixed;top:0;right:-100%;height:100vh;width:72vw;background:var(--ink);
     flex-direction:column;justify-content:center;gap:34px;transition:right .35s}
-  nav ul.open{right:0}
-  nav ul a{color:var(--cream)!important;font-size:15px;text-shadow:none}
+  body>nav ul.open{right:0}
+  body>nav ul a{color:var(--cream)!important;font-size:15px;text-shadow:none}
   .burger{display:block;z-index:60}
   .steps{grid-template-columns:1fr}
   .about-grid{grid-template-columns:1fr}
@@ -425,13 +485,55 @@ border:1px solid rgba(44,24,16,.18);background:var(--paper);padding:28px 30px;ma
 .book-or{margin:30px 0 4px;font-size:11.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--taupe)}
 @media(max-width:620px){.ff{grid-template-columns:1fr}}
 
-/* điều hướng trong footer — mọi trang con đều có mặt ở đây trên MỌI trang.
-   Đây là cách rẻ nhất để 9 trang mới có link nội bộ từ trang chủ (trang mạnh nhất site). */
-footer .foot-nav{margin-top:22px;font-size:12px;line-height:2.15;letter-spacing:.05em;
-  text-transform:none;max-width:780px;margin-left:auto;margin-right:auto}
-footer .foot-nav a{opacity:.85}
-footer .foot-nav a:hover{color:var(--sand);opacity:1}
-footer .foot-nav .sep{padding:0 8px;opacity:.4}
+/* ==========================================================================
+   FOOTER xếp cột — 12/08/2026 (đợt D).
+   Bản trước là MỘT dòng 13 link chạy ngang, không nhóm gì. Giờ chia theo ý định
+   người đọc: đang tìm dịch vụ / đang chuẩn bị cưới / muốn biết về Kay.
+   Lưu ý: footer KHÔNG còn dùng thẻ <nav> nữa — chính thẻ đó đã ăn luật
+   nav{position:fixed} và bay lên đè hero. Đã sửa gốc bằng body>nav, đây là lớp thứ hai.
+   ========================================================================== */
+.fwrap{max-width:1100px;margin:0 auto;padding:0 20px;display:grid;
+  grid-template-columns:1.5fr 1fr 1fr 1fr;gap:34px;text-align:left}
+.fcol h4{font-family:var(--body);font-weight:400;font-size:10.5px;letter-spacing:.22em;
+  text-transform:uppercase;color:var(--gold);margin-bottom:14px}
+.fcol a{display:block;font-size:13px;line-height:2.15;color:rgba(232,221,208,.72);transition:color .22s}
+.fcol a:hover{color:var(--sand)}
+.fbrand .wordmark{font-size:24px;color:var(--sand);margin-bottom:14px}
+.fbrand p{font-size:13px;line-height:1.8;color:rgba(232,221,208,.6);max-width:30ch;
+  letter-spacing:0;text-transform:none}
+.fbrand .fch{margin-top:16px}
+.fbrand .fch a{display:block;font-size:13px;line-height:2.1;color:rgba(232,221,208,.72)}
+.fbrand .fch a:hover{color:var(--sand)}
+.fbase{max-width:1100px;margin:44px auto 0;padding:22px 20px 0;
+  border-top:1px solid rgba(232,221,208,.14);text-align:center}
+@media(max-width:860px){
+  .fwrap{grid-template-columns:1fr 1fr;gap:28px}
+  .fbrand{grid-column:1/-1}
+}
+@media(max-width:520px){.fwrap{grid-template-columns:1fr}}
+
+/* nav mobile — menu xổ thành accordion trong ngăn kéo, KHÔNG phải hộp bay */
+@media(max-width:980px){
+  body>nav ul{position:fixed;top:0;right:-100%;height:100vh;width:80vw;max-width:340px;
+    background:var(--ink);flex-direction:column;justify-content:flex-start;align-items:stretch;
+    gap:0;padding:88px 22px 30px;transition:right .35s;z-index:55;overflow-y:auto}
+  body>nav ul.open{right:0}
+  body>nav ul a,body>nav .sub-t{color:var(--cream)!important;font-size:14px;padding:14px 2px;
+    letter-spacing:.12em;width:100%;text-align:left;text-shadow:none}
+  body>nav ul>li{border-bottom:1px solid rgba(232,221,208,.14)}
+  body>nav ul>li:last-child{border-bottom:none}
+  .sub{position:static;min-width:0;background:none;border:none;box-shadow:none;padding:0;
+    display:none;opacity:1;visibility:visible;transform:none}
+  .has-sub[data-open="1"] .sub{display:block}
+  .sub a{padding:11px 14px!important;font-size:14px!important;color:rgba(232,221,208,.8)!important}
+  .sub a:hover{background:rgba(250,247,242,.06);color:var(--cream)!important}
+  .sub a i{color:var(--gold)}
+  .sub .sub-more{border-top-color:rgba(232,221,208,.16)}
+  .nav-book{display:inline-block;margin-top:18px;text-align:center}
+  .burger{display:block;z-index:60}
+  .topbar{font-size:10px;letter-spacing:.1em;padding:7px 12px}
+  .btn-ghost{margin-left:0;display:inline-block;margin-top:6px}
+}
 
 </style>
 <script type="application/ld+json">
@@ -580,16 +682,30 @@ footer .foot-nav .sep{padding:0 8px;opacity:.4}
 </head>
 <body>
 
+<div class="topbar">Đang nhận học viên · <a href="masterclass/">Masterclass 1:1 →</a></div>
+
 <nav id="nav">
   <a class="brand" href="#top">KINKAY</a>
-  <button class="burger" id="burger" aria-label="menu">☰</button>
-  <!-- 09/08/2026 (dot 5): thu tu nav khop thu tu section that tren trang;
-       "Phuong phap" bo — section approach da gop vao Ve Kay. -->
+  <button class="burger" id="burger" aria-label="Mở menu" aria-expanded="false">☰</button>
   <ul id="menu">
-    <li><a href="#portfolio" data-t="nav.portfolio">Portfolio</a></li>
-    <li><a href="#services" data-t="nav.services">Dịch vụ</a></li>
+    <li class="has-sub" data-open="0">
+      <button class="sub-t" type="button" aria-expanded="false"><span data-t="nav.services">Dịch vụ</span><span class="cv"></span></button>
+      <div class="sub">
+        <a href="/makeup-co-dau/"><b>Makeup cô dâu</b><i>3 – 6 triệu</i></a>
+        <a href="/trang-diem-du-tiec/"><b>Trang điểm dự tiệc</b><i>Từ 1.2 triệu</i></a>
+        <a href="/hair-styling/"><b>Hair styling</b><i>Trong combo</i></a>
+        <a href="/photoshoot-editorial/"><b>Photoshoot &amp; editorial</b><i>Từ 1.8 triệu</i></a>
+        <a class="sub-more" href="/faq/">Câu hỏi thường gặp →</a>
+      </div>
+    </li>
+    <li class="has-sub" data-open="0">
+      <button class="sub-t" type="button" aria-expanded="false"><span data-t="nav.portfolio">Portfolio</span><span class="cv"></span></button>
+      <div class="sub">
+        <a href="#portfolio"><b>Portfolio ảnh</b><i>7 nhóm</i></a>
+        <a href="/before-after/"><b>Before &amp; After</b><i>Khách thật</i></a>
+      </div>
+    </li>
     <li><a href="#about" data-t="nav.about">Về Kay</a></li>
-    <li><a href="#testimonials" data-t="nav.testi">Cảm nhận</a></li>
     <li><a href="masterclass/" data-t="nav.masterclass">Học 1:1</a></li>
     <li><a href="blog/" data-t="nav.blog">Blog</a></li>
     <li><a class="nav-book" id="navBook" href="https://zalo.me/0933953179" target="_blank" rel="noopener" data-t="nav.book">Đặt lịch</a></li>
@@ -608,7 +724,6 @@ footer .foot-nav .sep{padding:0 8px;opacity:.4}
     <h1 class="sub" data-t="hero.sub">Makeup cô dâu &amp; trang điểm dự tiệc tại TP.HCM — sắc nét, sang, và vẫn là chính bạn.</h1>
     <a class="btn" id="heroCta" href="#services" data-t="hero.cta">Đặt lịch với Kay</a>
     <a class="btn btn-ghost" href="#portfolio" data-t="hero.scroll">Xem portfolio</a>
-    <div class="hero-badge-row"><a class="hero-badge" href="masterclass/" data-t="masterclass.badge">Đang nhận học viên · Masterclass 1:1</a></div>
   </div>
 </header>
 
@@ -690,7 +805,7 @@ footer .foot-nav .sep{padding:0 8px;opacity:.4}
 <section class="section" id="beforeafter" hidden>
   <div class="wrap">
     <div class="section-head reveal in">
-      <div class="eyebrow" style="color:var(--gold)">Khách thật của Kay</div>
+      <div class="eyebrow">Khách thật của Kay</div>
       <h2>Before / After</h2>
     </div>
     <div class="ba-grid" id="baGrid"></div>
@@ -701,7 +816,7 @@ footer .foot-nav .sep{padding:0 8px;opacity:.4}
 <section class="section services" id="services">
   <div class="wrap">
     <div class="section-head reveal in">
-      <div class="eyebrow" style="color:var(--gold)">Makeup · Hair</div>
+      <div class="eyebrow">Makeup · Hair</div>
       <h2 data-t="services.heading">Dịch vụ</h2>
     </div>
     <div class="svc-grid" id="svcGrid">
@@ -739,7 +854,7 @@ footer .foot-nav .sep{padding:0 8px;opacity:.4}
 <section class="section tools" id="tools">
   <div class="wrap">
     <div class="section-head reveal in">
-      <div class="eyebrow" style="color:var(--gold)" data-t="tools.eyebrow">Công cụ miễn phí</div>
+      <div class="eyebrow" data-t="tools.eyebrow">Công cụ miễn phí</div>
       <h2 data-t="tools.heading">Sắp cưới? Bắt đầu từ lộ trình</h2>
     </div>
     <!-- 09/08/2026 (dot 5): bo the "bang gia" (tro ra blog nhin lac quan giua khoi cong cu — Tan che, dung).
@@ -922,36 +1037,48 @@ Ngồi vào ghế KINKAY, bạn nhận được tư vấn thật — bằng con 
 </section>
 
 <footer>
-  <div class="wordmark">
-    <span class="wm-name">KINKAY</span>
-    <span class="wm-rule"></span>
-    <span class="wm-sub">a beauty atelier</span>
+  <div class="fwrap">
+    <div class="fcol fbrand">
+      <div class="wordmark">
+        <span class="wm-name">KINKAY</span><span class="wm-rule"></span><span class="wm-sub">a beauty atelier</span>
+      </div>
+      <p>Makeup cô dâu &amp; trang điểm dự tiệc tại TP.HCM. Studio ở Phường Tân Hưng, nhận lịch toàn quốc.</p>
+      <div class="fch">
+        <a href="https://zalo.me/0933953179" target="_blank" rel="noopener">Zalo · 0933 953 179</a>
+        <a href="https://www.instagram.com/kinkay.official/" rel="noopener">Instagram · @kinkay.official</a>
+        <a href="https://www.tiktok.com/@kinkay.official" target="_blank" rel="noopener">TikTok · @kinkay.official</a>
+      </div>
+    </div>
+    <div class="fcol">
+      <h4>Dịch vụ</h4>
+      <a href="/makeup-co-dau/">Makeup cô dâu</a>
+      <a href="/trang-diem-du-tiec/">Trang điểm dự tiệc</a>
+      <a href="/hair-styling/">Hair styling</a>
+      <a href="/photoshoot-editorial/">Photoshoot &amp; editorial</a>
+      <a href="/qua-tang/">Quà tặng &amp; voucher</a>
+    </div>
+    <div class="fcol">
+      <h4>Cho cô dâu</h4>
+      <a href="/cam-nang-co-dau/">Cẩm nang 12 tuần</a>
+      <a href="/lich-cuoi/">Lịch đếm ngược ngày cưới</a>
+      <a href="/before-after/">Before &amp; After</a>
+      <a href="/doi-tac/">Ekip cưới tin dùng</a>
+      <a href="/faq/">Câu hỏi thường gặp</a>
+    </div>
+    <div class="fcol">
+      <h4>KINKAY</h4>
+      <a href="#about">Về Kay</a>
+      <a href="masterclass/">Masterclass 1:1</a>
+      <a href="blog/">Blog</a>
+      <a href="https://g.page/r/Cbm9vzO5j8-vEBE/review" target="_blank" rel="noopener">Đánh giá trên Google</a>
+    </div>
   </div>
-  <p data-t="footer.line">KINKAY · a beauty atelier · HCMC</p>
-  <p class="foot-owner" data-t="footer.owner">Chủ sở hữu website: Thạch Bé Trâm · Studio: Phường Tân Hưng, TP.HCM · 0933 953 179 · kinkay20t@gmail.com</p>
-  <!-- 12/08/2026: dieu huong day trang. Chin trang moi cua dot A-B-C deu can it nhat mot
-       link noi bo tu trang chu — trang chu la trang duy nhat cua site co impression dang ke,
-       nen trang nao khong duoc no tro toi thi gan nhu khong co cua vao index. -->
-  <nav class="foot-nav" aria-label="Tất cả trang">
-    <a href="/makeup-co-dau/">Makeup cô dâu</a><span class="sep">·</span>
-    <a href="/trang-diem-du-tiec/">Trang điểm dự tiệc</a><span class="sep">·</span>
-    <a href="/hair-styling/">Hair styling</a><span class="sep">·</span>
-    <a href="/photoshoot-editorial/">Photoshoot &amp; editorial</a><span class="sep">·</span>
-    <a href="/before-after/">Before &amp; After</a><br>
-    <a href="/cam-nang-co-dau/">Cẩm nang cô dâu</a><span class="sep">·</span>
-    <a href="/faq/">Câu hỏi thường gặp</a><span class="sep">·</span>
-    <a href="/doi-tac/">Đối tác cưới</a><span class="sep">·</span>
-    <a href="/qua-tang/">Quà tặng &amp; voucher</a><span class="sep">·</span>
-    <a href="/lich-cuoi/">Lịch đếm ngược ngày cưới</a><span class="sep">·</span>
-    <a href="/masterclass/">Masterclass 1:1</a><span class="sep">·</span>
-    <a href="/blog/">Blog</a><span class="sep">·</span>
-    <a href="/en/">English</a>
-  </nav>
-  <p class="foot-links">
-    <a href="/chinh-sach-du-lieu/" data-t="footer.privacy">Chính sách dữ liệu</a>
-    <span class="sep">·</span>
-    <a href="/dieu-khoan/" data-t="footer.terms">Điều khoản dịch vụ</a>
-  </p>
+  <div class="fbase">
+    <p class="foot-owner" data-t="footer.owner">Chủ sở hữu website: Thạch Bé Trâm · Studio: Phường Tân Hưng, TP.HCM · 0933 953 179 · kinkay20t@gmail.com</p>
+    <p class="foot-links">
+      <a href="/chinh-sach-du-lieu/" data-t="footer.privacy">Chính sách dữ liệu</a><span class="sep">·</span><a href="/dieu-khoan/" data-t="footer.terms">Điều khoản dịch vụ</a>
+    </p>
+  </div>
 </footer>
 
 <div class="viewer" id="viewer">
@@ -1335,12 +1462,14 @@ if(heroCta) heroCta.addEventListener('click', ()=>track('cta_scroll', {location:
 const nav = document.getElementById('nav'), mcta = document.getElementById('mcta');
 addEventListener('scroll', ()=>{
   nav.classList.toggle('solid', scrollY>60);
+  document.body.classList.toggle('scrolled', scrollY>60);
   const nearBooking = document.getElementById('booking').getBoundingClientRect().top < innerHeight;
   mcta.classList.toggle('show', scrollY > innerHeight*.8 && !nearBooking);
 });
-const menu = document.getElementById('menu');
-document.getElementById('burger').onclick = ()=>menu.classList.toggle('open');
-menu.querySelectorAll('a').forEach(a=>a.onclick=()=>menu.classList.remove('open'));
+/* 12/08/2026 (dot D): burger + menu xo do KINKAY.nav() trong assets/page.js lo,
+   dung chung voi 9 trang con. Truoc day trang chu tu xu ly rieng — hai bo code cho
+   cung mot thanh dieu huong la nguon goc cua viec trang chu va trang con lech nhau. */
+if (window.KINKAY && window.KINKAY.nav) window.KINKAY.nav();
 
 /* scroll reveal */
 let io = null;

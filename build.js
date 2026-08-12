@@ -14,6 +14,11 @@ fs.cpSync('static', SITE, { recursive: true });
 // thay bang muc Before/After tren trang chu). Thu muc static/thu-look co the van con trong repo
 // (sandbox khong xoa duoc file tren mount) nhung KHONG duoc len production. _redirects 301 ve /.
 fs.rmSync(path.join(SITE, 'thu-look'), { recursive: true, force: true });
+// 12/08/2026 (dot D): /en/ GO khoi ban xuat ban theo quyet dinh cua Tan — site chi con
+// tieng Viet, nut EN tren nav doi ngon ngu tai cho. File static/en/ VAN GIU trong repo
+// de bat lai duoc bat cu luc nao: xoa dong duoi + khai lai URL trong sitemap la xong.
+// Danh doi da noi ro voi Tan: mat URL tieng Anh duy nhat Google xep hang duoc.
+fs.rmSync(path.join(SITE, 'en'), { recursive: true, force: true });
 console.log('copy static OK (da loai thu-look)');
 
 // ---------- 2. resize ảnh upload quá lớn (sharp, optional) ----------
@@ -482,7 +487,6 @@ const entries = [
   { loc: 'https://kinkay.vn/doi-tac/',      lastmod: mtime('static/doi-tac/index.html') },
   { loc: 'https://kinkay.vn/faq/',          lastmod: mtime('static/faq/index.html') },
   { loc: 'https://kinkay.vn/cam-nang-co-dau/', lastmod: mtime('static/cam-nang-co-dau/index.html') },
-  { loc: 'https://kinkay.vn/en/',           lastmod: mtime('static/en/index.html') },
   { loc: 'https://kinkay.vn/qua-tang/',     lastmod: mtime('static/qua-tang/index.html') },
   // 08/08/2026: bổ sung hai trang pháp lý mới.
   // KHÔNG khai /danh-gia/ ở đây. Trang đó cố ý mang <meta name="robots" content="noindex">

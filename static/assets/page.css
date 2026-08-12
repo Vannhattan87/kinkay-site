@@ -14,6 +14,12 @@
 :root{
   --cream:#FAF7F2; --espresso:#2C1810; --gold:#C4A882; --taupe:#8B6B52;
   --sand:#E8DDD0; --ink:#1A0F08; --paper:#FDFAF6;
+  /* 13/08/2026 — --gold-ink: bản gold ĐẬM HƠN, dùng cho CHỮ nằm trên nền sáng.
+     Đo được: gold #C4A882 trên nền cream chỉ đạt 2.12:1, dưới chuẩn WCAG AA (4.5:1) rất xa —
+     mà đó lại đúng là màu của mọi dòng eyebrow nhỏ in hoa giãn chữ, tức là loại chữ khó đọc nhất.
+     #876334 đạt 5.09:1 trên cream và 5.22:1 trên paper, vẫn nằm trong họ vàng-đồng của thương hiệu.
+     --gold GIỮ NGUYÊN cho chữ trên nền tối (7.44:1 trên espresso) và cho mọi mảng nền, viền, nút. */
+  --gold-ink:#876334;
   --display:'Playfair Display','Times New Roman',serif;
   --body:'Be Vietnam Pro',-apple-system,'Segoe UI',sans-serif;
 }
@@ -25,7 +31,7 @@ a{color:inherit;text-decoration:none}
 h1,h2,h3,h4{font-family:var(--display);font-weight:500}
 .wrap{max-width:1100px;margin:0 auto;padding:0 20px}
 .narrow{max-width:780px}
-.eyebrow{font-size:11.5px;letter-spacing:.38em;text-transform:uppercase;color:var(--gold);font-weight:400}
+.eyebrow{font-size:11.5px;letter-spacing:.38em;text-transform:uppercase;color:var(--gold-ink);font-weight:400}
 .section{padding:88px 0}
 .section.tight{padding:60px 0}
 .section-head{text-align:center;margin-bottom:52px}
@@ -38,6 +44,9 @@ section[id],header[id]{scroll-margin-top:84px}
 .dark{background:var(--espresso);color:var(--sand)}
 .dark h2,.dark h3{color:var(--sand)}
 .dark p{color:rgba(232,221,208,.82)}
+/* Chỉ .dark (nền espresso) mới quay lại gold sáng. .strip nền --sand là nền SÁNG,
+   eyebrow ở đó phải giữ --gold-ink như mặc định. */
+.dark .eyebrow{color:var(--gold)}
 
 /* reveal */
 .reveal{opacity:0;transform:translateY(22px);transition:opacity .7s ease,transform .7s ease}
@@ -50,22 +59,86 @@ section[id],header[id]{scroll-margin-top:84px}
 .wordmark .wm-sub{font-size:.26em;letter-spacing:.5em;text-indent:.5em;text-transform:uppercase;
   white-space:nowrap;color:var(--gold);font-family:var(--body);font-weight:300}
 
-/* NAV — trang con luôn nền đặc (khác trang chủ có hero full-bleed) */
-nav{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;
-  padding:16px 30px;background:rgba(250,247,242,.96);backdrop-filter:blur(8px);
+/* ==========================================================================
+   NAV — thiết kế lại 12/08/2026 (đợt D).
+
+   BỐI CẢNH: trước đó nav là của một trang one-page (6 mục trỏ tới các neo trên
+   trang chủ), trong khi site đã có 13 trang. Trang chủ và trang con lại có hai
+   bộ menu KHÁC NHAU, nên khách nhảy qua lại là mất phương hướng.
+
+   Giờ: MỘT nav duy nhất, giống hệt trên mọi trang.
+     Dịch vụ ▾ · Portfolio ▾ · Về Kay · Học 1:1 · Blog · [Đặt lịch]
+   Hai menu xổ chứa toàn bộ trang còn lại, kèm giá — vì giá là thứ khách hỏi đầu tiên.
+
+   BẪY ĐÃ SỬA (nguyên nhân vụ vỡ giao diện 12/08): trước đây khai `nav{...}` bằng
+   selector THẺ TRẦN, nên mọi thẻ <nav> trong trang — kể cả dải link trong footer —
+   đều ăn `position:fixed;top:0`. Giới hạn xuống `body>nav` để chuyện đó không lặp lại.
+   ========================================================================== */
+
+/* ribbon Masterclass — phễu riêng, tách khỏi hero để không tranh nút đặt lịch */
+.topbar{background:var(--espresso);color:var(--gold);text-align:center;
+  font-size:11px;letter-spacing:.16em;text-transform:uppercase;padding:7px 16px}
+.topbar a{border-bottom:1px solid rgba(196,168,130,.45);padding-bottom:2px}
+.topbar a:hover{color:var(--sand);border-bottom-color:var(--sand)}
+
+body>nav{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;
+  padding:15px 30px;background:rgba(250,247,242,.97);backdrop-filter:blur(8px);
   border-bottom:1px solid rgba(44,24,16,.1)}
-nav .brand{font-family:var(--display);font-size:20px;letter-spacing:.34em;text-indent:.34em;color:var(--espresso)}
-nav ul{display:flex;gap:26px;list-style:none;align-items:center}
-nav ul a{font-size:12.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--espresso);transition:.25s}
-nav ul a:hover{color:var(--gold)}
-.nav-book{border:1px solid var(--gold);color:var(--gold)!important;padding:8px 18px;border-radius:2px;transition:.3s}
-.nav-book:hover{background:var(--gold);color:#fff!important}
-.burger{display:none;background:none;border:none;font-size:22px;color:var(--espresso);cursor:pointer}
-@media(max-width:860px){
-  nav ul{position:fixed;top:0;right:-100%;height:100vh;width:74vw;background:var(--ink);
-    flex-direction:column;justify-content:center;gap:30px;transition:right .35s;z-index:55}
-  nav ul.open{right:0}
-  nav ul a{color:var(--cream)!important;font-size:15px}
+body>nav .brand{font-family:var(--display);font-size:19px;letter-spacing:.32em;text-indent:.32em;color:var(--espresso)}
+body>nav ul{display:flex;gap:4px;list-style:none;align-items:center}
+body>nav ul>li{position:relative}
+body>nav ul a,body>nav .sub-t{display:block;font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--espresso);transition:color .25s;padding:9px 13px;background:none;border:none;
+  font-family:inherit;font-weight:400;cursor:pointer;white-space:nowrap}
+body>nav ul a:hover,body>nav .sub-t:hover{color:var(--gold)}
+.sub-t .cv{display:inline-block;width:5px;height:5px;margin-left:7px;vertical-align:2px;
+  border-right:1px solid currentColor;border-bottom:1px solid currentColor;
+  transform:rotate(45deg);transition:transform .25s}
+.has-sub[data-open="1"] .sub-t .cv{transform:rotate(-135deg)}
+
+/* menu xổ */
+.sub{position:absolute;top:100%;left:0;min-width:290px;background:var(--paper);
+  border:1px solid rgba(44,24,16,.14);box-shadow:0 14px 34px rgba(44,24,16,.13);
+  padding:8px;opacity:0;visibility:hidden;transform:translateY(-6px);
+  transition:opacity .2s,transform .2s,visibility .2s}
+.has-sub[data-open="1"] .sub{opacity:1;visibility:visible;transform:none}
+.sub a{display:flex!important;align-items:baseline;justify-content:space-between;gap:16px;
+  padding:11px 14px!important;text-transform:none!important;letter-spacing:0!important;
+  font-size:14.5px!important;transition:background .2s,color .2s}
+.sub a:hover{background:var(--cream)}
+.sub a b{font-weight:400}
+.sub a i{font-style:normal;font-size:12px;color:var(--taupe);white-space:nowrap}
+.sub a:hover i{color:var(--gold-ink)}
+.sub .sub-more{border-top:1px solid rgba(44,24,16,.12);margin-top:5px;padding-top:12px!important;
+  font-size:12.5px!important;color:var(--taupe)}
+
+/* nút Đặt lịch trên nav — hộp duy nhất được phép tồn tại ở đây */
+.nav-book{background:var(--gold);color:var(--ink)!important;padding:10px 20px!important;border-radius:2px;
+  transition:background .28s,color .28s;letter-spacing:.1em!important}
+.nav-book:hover{background:var(--espresso);color:var(--sand)!important}
+
+.burger{display:none;background:none;border:none;font-size:22px;color:var(--espresso);cursor:pointer;line-height:1}
+
+@media(max-width:980px){
+  body>nav{padding:13px 18px}
+  body>nav ul{position:fixed;top:0;right:-100%;height:100vh;width:80vw;max-width:340px;
+    background:var(--ink);flex-direction:column;justify-content:flex-start;align-items:stretch;
+    gap:0;padding:88px 22px 30px;transition:right .35s;z-index:55;overflow-y:auto}
+  body>nav ul.open{right:0}
+  body>nav ul a,body>nav .sub-t{color:var(--cream)!important;font-size:14px;padding:14px 2px;
+    letter-spacing:.12em;width:100%;text-align:left}
+  body>nav ul>li{border-bottom:1px solid rgba(232,221,208,.14)}
+  /* menu xổ trên mobile là accordion, không phải hộp bay */
+  .sub{position:static;min-width:0;background:none;border:none;box-shadow:none;padding:0;
+    display:none;opacity:1;visibility:visible;transform:none}
+  .has-sub[data-open="1"] .sub{display:block}
+  .sub a{padding:11px 14px!important;font-size:14px!important;color:rgba(232,221,208,.8)!important}
+  .sub a:hover{background:rgba(250,247,242,.06)}
+  .sub a i{color:var(--gold)}
+  .sub a:hover i{color:var(--gold)}
+  .sub .sub-more{border-top-color:rgba(232,221,208,.16)}
+  .nav-book{display:inline-block;margin-top:18px;text-align:center}
+  body>nav ul>li:last-child{border-bottom:none}
   .burger{display:block;z-index:60}
 }
 
@@ -75,21 +148,44 @@ nav ul a:hover{color:var(--gold)}
 .phero .lede{max-width:62ch;margin:20px auto 0;color:var(--taupe);font-size:16px}
 .phero .pbtns{margin-top:30px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
 .crumb{font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--taupe)}
-.crumb a:hover{color:var(--gold)}
+.crumb a:hover{color:var(--gold-ink)}
 .crumb .sep{padding:0 8px;opacity:.5}
 
-/* BUTTONS */
-.btn{display:inline-block;background:var(--gold);color:var(--ink);padding:14px 32px;border-radius:2px;
-  font-size:12.5px;letter-spacing:.2em;text-transform:uppercase;transition:.3s;border:1px solid var(--gold);
-  cursor:pointer;font-family:inherit}
-.btn:hover{background:var(--espresso);color:var(--sand);border-color:var(--espresso)}
-.btn-ghost{background:none;color:var(--taupe);border:1px solid rgba(139,107,82,.4)}
-.btn-ghost:hover{border-color:var(--gold);color:var(--espresso);background:none}
-.btn-line{display:inline-block;border:1px solid var(--gold);color:var(--taupe);padding:12px 28px;border-radius:2px;
-  font-size:12.5px;letter-spacing:.18em;text-transform:uppercase;transition:.3s}
-.btn-line:hover{background:var(--gold);color:var(--ink)}
+/* ==========================================================================
+   NÚT — ba cấp, thiết kế lại 12/08/2026 (đợt D).
+
+   VẤN ĐỀ CŨ: trong một khung hình có tới 4-5 khối hộp cùng trọng lượng (nút nav,
+   nút EN, nút chính, nút phụ, pill Masterclass). Không có cấp bậc thì mắt không
+   biết bấm đâu, và tổng thể trông rẻ.
+
+   LUẬT: mỗi màn hình CHỈ MỘT nút cấp 1. Cái thứ hai phải là chữ, không phải hộp.
+     .btn        cấp 1 — hộp đặc, hành động chính
+     .btn-ghost  cấp 2 — CHỮ có gạch chân mảnh (trước đây là hộp — đổi ở đây thì
+                 toàn bộ trang con tự nâng cấp theo, không phải sửa 10 file HTML)
+     .btn-line   cấp 3 — viền mảnh, chỉ dùng cho hành động phụ cuối section
+
+   Letter-spacing giảm từ .2em xuống .14em: chữ giãn quá rộng trên nút nhỏ là thứ
+   làm nút trông kéo dãn và thiếu tinh.
+   ========================================================================== */
+.btn{display:inline-block;background:var(--gold);color:var(--ink);padding:15px 34px;border-radius:2px;
+  font-size:12px;letter-spacing:.14em;text-transform:uppercase;border:none;cursor:pointer;
+  font-family:inherit;font-weight:400;line-height:1.2;
+  transition:background .28s,color .28s,transform .28s}
+.btn:hover{background:var(--espresso);color:var(--sand);transform:translateY(-1px)}
+
+.btn-ghost{background:none;color:var(--taupe);border:none;border-radius:0;padding:15px 2px;
+  border-bottom:1px solid rgba(196,168,130,.75);letter-spacing:.08em;text-transform:none;
+  font-size:14px;transition:color .25s,border-color .25s}
+.btn-ghost:hover{background:none;color:var(--espresso);border-bottom-color:var(--espresso);transform:none}
+
+.btn-line{display:inline-block;border:1px solid rgba(196,168,130,.6);color:var(--taupe);
+  padding:11px 24px;border-radius:2px;font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;
+  transition:background .28s,color .28s,border-color .28s}
+.btn-line:hover{background:var(--gold);color:var(--ink);border-color:var(--gold)}
 .dark .btn-line{color:var(--sand)}
 .dark .btn-line:hover{color:var(--ink)}
+.dark .btn-ghost{color:var(--sand)}
+.dark .btn-ghost:hover{color:#fff;border-bottom-color:#fff}
 
 /* CARD GRID dùng chung */
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:22px}
@@ -129,7 +225,7 @@ nav ul a:hover{color:var(--gold)}
 /* QUY TRÌNH (numbered steps) */
 .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:22px}
 .step{padding:34px 26px;background:var(--cream);border-top:2px solid var(--gold)}
-.step .num{font-family:var(--display);font-size:34px;color:var(--gold);line-height:1}
+.step .num{font-family:var(--display);font-size:34px;color:var(--gold-ink);line-height:1}
 .step h3{font-size:19px;margin:10px 0 8px}
 .step p{font-size:14.5px;color:var(--taupe)}
 .alt .step{background:var(--paper)}
@@ -141,7 +237,7 @@ nav ul a:hover{color:var(--gold)}
 .tl .tli::before{content:"";position:absolute;left:-32px;top:8px;width:11px;height:11px;border-radius:50%;
   background:var(--gold);box-shadow:0 0 0 4px var(--cream)}
 .alt .tl .tli::before{box-shadow:0 0 0 4px var(--paper)}
-.tl .when{font-size:11.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold)}
+.tl .when{font-size:11.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold-ink)}
 .tl h3{font-size:19px;margin:5px 0 6px}
 .tl p{font-size:14.5px;color:var(--taupe)}
 
@@ -151,7 +247,7 @@ nav ul a:hover{color:var(--gold)}
 .faq summary{cursor:pointer;padding:20px 34px 20px 2px;font-family:var(--display);font-size:18.5px;
   line-height:1.45;list-style:none;position:relative}
 .faq summary::-webkit-details-marker{display:none}
-.faq summary::after{content:"+";position:absolute;right:6px;top:19px;font-size:22px;color:var(--gold);
+.faq summary::after{content:"+";position:absolute;right:6px;top:19px;font-size:22px;color:var(--gold-ink);
   font-family:var(--body);font-weight:300;transition:transform .25s}
 .faq details[open] summary::after{transform:rotate(45deg)}
 .faq .ans{padding:0 34px 22px 2px;font-size:15px;color:var(--taupe)}
@@ -173,7 +269,7 @@ nav ul a:hover{color:var(--gold)}
 /* ĐỐI TÁC */
 .plist{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:18px}
 .pitem{border:1px solid rgba(44,24,16,.14);padding:22px 22px;background:var(--paper)}
-.pitem .cat{font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold)}
+.pitem .cat{font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold-ink)}
 .pitem h3{font-size:18px;margin:7px 0 6px}
 .pitem p{font-size:13.5px;color:var(--taupe)}
 .pitem .lk{display:inline-block;margin-top:10px;font-size:12.5px;color:var(--taupe);
@@ -191,7 +287,7 @@ nav ul a:hover{color:var(--gold)}
   transition:border-color .22s;width:100%}
 .fld input:focus,.fld select:focus,.fld textarea:focus{outline:none;border-color:var(--gold)}
 .fld textarea{resize:vertical;min-height:84px}
-.fld .req{color:var(--gold)}
+.fld .req{color:var(--gold-ink)}
 .form-actions{margin-top:22px;text-align:center}
 .form-note{font-size:12.5px;color:var(--taupe);margin-top:14px;text-align:center}
 .form-msg{margin-top:16px;padding:15px 18px;border:1px solid var(--gold);background:var(--paper);
@@ -243,8 +339,32 @@ nav ul a:hover{color:var(--gold)}
 /* LIST tick */
 .ticks{list-style:none;display:grid;gap:11px;max-width:640px;margin:0 auto}
 .ticks li{display:flex;gap:12px;font-size:15px;color:var(--taupe);align-items:flex-start}
-.ticks li::before{content:"✦";color:var(--gold);flex:0 0 auto;font-size:12px;line-height:1.7}
+.ticks li::before{content:"✦";color:var(--gold-ink);flex:0 0 auto;font-size:12px;line-height:1.7}
 .dark .ticks li{color:rgba(232,221,208,.82)}
+
+/* ==========================================================================
+   FOOTER — xếp cột, 12/08/2026 (đợt D).
+   Trước đó là MỘT dòng 13 link chạy ngang, cắt hai hàng, không nhóm gì cả —
+   đúng nghĩa "nồi lẩu". Giờ chia theo ý định của người đọc.
+   ========================================================================== */
+.fwrap{max-width:1100px;margin:0 auto;padding:0 20px;display:grid;
+  grid-template-columns:1.5fr 1fr 1fr 1fr;gap:34px;text-align:left}
+.fcol h4{font-family:var(--body);font-weight:400;font-size:10.5px;letter-spacing:.22em;
+  text-transform:uppercase;color:var(--gold);margin-bottom:14px}
+.fcol a{display:block;font-size:13px;line-height:2.15;color:rgba(232,221,208,.72);transition:color .22s}
+.fcol a:hover{color:var(--sand)}
+.fbrand .wordmark{font-size:24px;color:var(--sand);margin-bottom:14px}
+.fbrand p{font-size:13px;line-height:1.8;color:rgba(232,221,208,.6);max-width:30ch}
+.fbrand .fch{margin-top:16px}
+.fbrand .fch a{display:block;font-size:13px;line-height:2.1;color:rgba(232,221,208,.72)}
+.fbrand .fch a:hover{color:var(--sand)}
+.fbase{max-width:1100px;margin:44px auto 0;padding:22px 20px 0;
+  border-top:1px solid rgba(232,221,208,.14);text-align:center}
+@media(max-width:860px){
+  .fwrap{grid-template-columns:1fr 1fr;gap:28px}
+  .fbrand{grid-column:1/-1}
+}
+@media(max-width:520px){.fwrap{grid-template-columns:1fr}}
 
 /* FOOTER */
 footer{background:var(--ink);color:var(--taupe);text-align:center;padding:52px 20px 60px}

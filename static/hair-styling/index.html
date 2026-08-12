@@ -52,15 +52,31 @@
 </head>
 <body>
 
+<div class="topbar">Đang nhận học viên · <a href="/masterclass/">Masterclass 1:1 →</a></div>
+
 <nav>
   <a class="brand" href="/">KINKAY</a>
-  <button class="burger" id="burger" aria-label="menu">☰</button>
+  <button class="burger" id="burger" aria-label="Mở menu" aria-expanded="false">☰</button>
   <ul id="menu">
-    <li><a href="/makeup-co-dau/">Cô dâu</a></li>
-    <li><a href="/trang-diem-du-tiec/">Dự tiệc</a></li>
-    <li><a href="/before-after/">Before / After</a></li>
-    <li><a href="/faq/">Hỏi đáp</a></li>
-    <li><a href="/#portfolio">Portfolio</a></li>
+    <li class="has-sub" data-open="0">
+      <button class="sub-t" type="button" aria-expanded="false">Dịch vụ<span class="cv"></span></button>
+      <div class="sub">
+        <a href="/makeup-co-dau/"><b>Makeup cô dâu</b><i>3 – 6 triệu</i></a>
+        <a href="/trang-diem-du-tiec/"><b>Trang điểm dự tiệc</b><i>Từ 1.2 triệu</i></a>
+        <a href="/hair-styling/"><b>Hair styling</b><i>Trong combo</i></a>
+        <a href="/photoshoot-editorial/"><b>Photoshoot &amp; editorial</b><i>Từ 1.8 triệu</i></a>
+        <a class="sub-more" href="/faq/">Câu hỏi thường gặp →</a>
+      </div>
+    </li>
+    <li class="has-sub" data-open="0">
+      <button class="sub-t" type="button" aria-expanded="false">Portfolio<span class="cv"></span></button>
+      <div class="sub">
+        <a href="/#portfolio"><b>Portfolio ảnh</b><i>7 nhóm</i></a>
+        <a href="/before-after/"><b>Before &amp; After</b><i>Khách thật</i></a>
+      </div>
+    </li>
+    <li><a href="/#about">Về Kay</a></li>
+    <li><a href="/masterclass/">Học 1:1</a></li>
     <li><a href="/blog/">Blog</a></li>
     <li><a class="nav-book" href="https://zalo.me/0933953179" target="_blank" rel="noopener">Đặt lịch</a></li>
   </ul>
@@ -258,30 +274,48 @@
 </section>
 
 <footer>
-  <div class="wordmark">
-    <span class="wm-name">KINKAY</span><span class="wm-rule"></span><span class="wm-sub">a beauty atelier</span>
+  <div class="fwrap">
+    <div class="fcol fbrand">
+      <div class="wordmark">
+        <span class="wm-name">KINKAY</span><span class="wm-rule"></span><span class="wm-sub">a beauty atelier</span>
+      </div>
+      <p>Makeup cô dâu &amp; trang điểm dự tiệc tại TP.HCM. Studio ở Phường Tân Hưng, nhận lịch toàn quốc.</p>
+      <div class="fch">
+        <a href="https://zalo.me/0933953179" target="_blank" rel="noopener">Zalo · 0933 953 179</a>
+        <a href="https://www.instagram.com/kinkay.official/" rel="noopener">Instagram · @kinkay.official</a>
+        <a href="https://www.tiktok.com/@kinkay.official" target="_blank" rel="noopener">TikTok · @kinkay.official</a>
+      </div>
+    </div>
+    <div class="fcol">
+      <h4>Dịch vụ</h4>
+      <a href="/makeup-co-dau/">Makeup cô dâu</a>
+      <a href="/trang-diem-du-tiec/">Trang điểm dự tiệc</a>
+      <a href="/hair-styling/">Hair styling</a>
+      <a href="/photoshoot-editorial/">Photoshoot &amp; editorial</a>
+      <a href="/qua-tang/">Quà tặng &amp; voucher</a>
+    </div>
+    <div class="fcol">
+      <h4>Cho cô dâu</h4>
+      <a href="/cam-nang-co-dau/">Cẩm nang 12 tuần</a>
+      <a href="/lich-cuoi/">Lịch đếm ngược ngày cưới</a>
+      <a href="/before-after/">Before &amp; After</a>
+      <a href="/doi-tac/">Ekip cưới tin dùng</a>
+      <a href="/faq/">Câu hỏi thường gặp</a>
+    </div>
+    <div class="fcol">
+      <h4>KINKAY</h4>
+      <a href="/#about">Về Kay</a>
+      <a href="/masterclass/">Masterclass 1:1</a>
+      <a href="/blog/">Blog</a>
+      <a href="https://g.page/r/Cbm9vzO5j8-vEBE/review" target="_blank" rel="noopener">Đánh giá trên Google</a>
+    </div>
   </div>
-  <p class="fline">KINKAY · a beauty atelier · HCMC</p>
-  <nav class="foot-nav" aria-label="Tất cả trang">
-    <a href="/makeup-co-dau/">Makeup cô dâu</a><span class="sep">·</span>
-    <a href="/trang-diem-du-tiec/">Trang điểm dự tiệc</a><span class="sep">·</span>
-    <a href="/hair-styling/">Hair styling</a><span class="sep">·</span>
-    <a href="/photoshoot-editorial/">Photoshoot &amp; editorial</a><span class="sep">·</span>
-    <a href="/before-after/">Before &amp; After</a><br>
-    <a href="/cam-nang-co-dau/">Cẩm nang cô dâu</a><span class="sep">·</span>
-    <a href="/faq/">Câu hỏi thường gặp</a><span class="sep">·</span>
-    <a href="/doi-tac/">Đối tác cưới</a><span class="sep">·</span>
-    <a href="/qua-tang/">Quà tặng &amp; voucher</a><span class="sep">·</span>
-    <a href="/lich-cuoi/">Lịch đếm ngược ngày cưới</a><span class="sep">·</span>
-    <a href="/masterclass/">Masterclass 1:1</a><span class="sep">·</span>
-    <a href="/blog/">Blog</a><span class="sep">·</span>
-    <a href="/en/">English</a>
-  </nav>
-  <p class="foot-owner">Chủ sở hữu website: Thạch Bé Trâm · Studio: Phường Tân Hưng, TP.HCM · 0933 953 179 · kinkay20t@gmail.com</p>
-  <p class="foot-links">
-    <a href="/chinh-sach-du-lieu/">Chính sách dữ liệu</a><span class="sep">·</span>
-    <a href="/dieu-khoan/">Điều khoản dịch vụ</a>
-  </p>
+  <div class="fbase">
+    <p class="foot-owner">Chủ sở hữu website: Thạch Bé Trâm · Studio: Phường Tân Hưng, TP.HCM · 0933 953 179 · kinkay20t@gmail.com</p>
+    <p class="foot-links">
+      <a href="/chinh-sach-du-lieu/">Chính sách dữ liệu</a><span class="sep">·</span><a href="/dieu-khoan/">Điều khoản dịch vụ</a>
+    </p>
+  </div>
 </footer>
 
 <script src="/assets/page.js"></script>
