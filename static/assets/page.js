@@ -43,7 +43,20 @@
         if (t) t.setAttribute('aria-expanded', 'false');
       });
     }
+    // Menu xo neo trai theo mac dinh. Muc nam sat mep phai se tran khoi man hinh va
+    // de ra thanh cuon ngang — do truoc khi hien, tran thi neo ve phai (class .flip).
+    // Do moi lan mo chu khong do mot lan luc tai trang: nguoi dung doi co cua so, phong to
+    // chu, hay xoay dien thoai la ket qua do cu sai ngay.
+    function fitPanel(li) {
+      var p = li.querySelector('.navsub');
+      if (!p) return;
+      li.classList.remove('flip');
+      var r = p.getBoundingClientRect();
+      if (!r.width) return;                       // mobile: panel display:none, khong can lat
+      if (r.right > document.documentElement.clientWidth - 8) li.classList.add('flip');
+    }
     function setOpen(li, on) {
+      if (on) fitPanel(li);
       li.setAttribute('data-open', on ? '1' : '0');
       var t = li.querySelector('.sub-t');
       if (t) t.setAttribute('aria-expanded', on ? 'true' : 'false');

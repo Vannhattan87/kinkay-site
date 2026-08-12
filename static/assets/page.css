@@ -102,6 +102,11 @@ body>nav ul a:hover,body>nav .sub-t:hover{color:var(--gold)}
   padding:8px;opacity:0;visibility:hidden;transform:translateY(-6px);
   transition:opacity .2s,transform .2s,visibility .2s}
 .has-sub[data-open="1"] .navsub{opacity:1;visibility:visible;transform:none}
+/* 13/08/2026: menu xổ nằm sát mép phải (mục "Về Kay") tràn khỏi màn hình 48px và
+   đẻ ra thanh cuộn ngang trên MỌI trang. JS đo rồi gắn .flip để neo về bên phải.
+   max-width là lưới an toàn cho màn hẹp, phòng khi JS chưa kịp chạy. */
+.has-sub.flip .navsub{left:auto;right:0}
+.navsub{max-width:calc(100vw - 32px)}
 .navsub a{display:flex!important;align-items:baseline;justify-content:space-between;gap:16px;
   padding:11px 14px!important;text-transform:none!important;letter-spacing:0!important;
   font-size:14.5px!important;transition:background .2s,color .2s}

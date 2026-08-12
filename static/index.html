@@ -123,6 +123,9 @@ body>nav ul a{padding:9px 13px}
   padding:8px;opacity:0;visibility:hidden;transform:translateY(-6px);
   transition:opacity .2s,transform .2s,visibility .2s}
 .has-sub[data-open="1"] .navsub{opacity:1;visibility:visible;transform:none}
+/* 13/08/2026: menu xo sat mep phai tran khoi man hinh -> JS gan .flip de neo ve ben phai */
+.has-sub.flip .navsub{left:auto;right:0}
+.navsub{max-width:calc(100vw - 32px)}
 .navsub a{display:flex!important;align-items:baseline;justify-content:space-between;gap:16px;
   padding:11px 14px!important;text-transform:none!important;letter-spacing:0!important;
   font-size:14.5px!important;color:var(--espresso)!important;text-shadow:none!important;
@@ -694,25 +697,36 @@ border:1px solid rgba(44,24,16,.18);background:var(--paper);padding:28px 30px;ma
   <button class="burger" id="burger" aria-label="Mở menu" aria-expanded="false">☰</button>
   <ul id="menu">
     <li class="has-sub" data-open="0">
-      <button class="sub-t" type="button" aria-expanded="false"><span data-t="nav.services">Dịch vụ</span><span class="cv"></span></button>
+      <button class="sub-t" type="button" aria-expanded="false">Dịch vụ<span class="cv"></span></button>
       <div class="navsub">
         <a href="/makeup-co-dau/"><b>Makeup cô dâu</b><i>3 – 6 triệu</i></a>
         <a href="/trang-diem-du-tiec/"><b>Trang điểm dự tiệc</b><i>Từ 1.2 triệu</i></a>
         <a href="/hair-styling/"><b>Hair styling</b><i>Trong combo</i></a>
         <a href="/photoshoot-editorial/"><b>Photoshoot &amp; editorial</b><i>Từ 1.8 triệu</i></a>
-        <a class="navsub-more" href="/faq/">Câu hỏi thường gặp →</a>
+        <a href="/qua-tang/"><b>Quà tặng &amp; voucher</b><i>Từ 500k</i></a>
       </div>
     </li>
     <li class="has-sub" data-open="0">
-      <button class="sub-t" type="button" aria-expanded="false"><span data-t="nav.portfolio">Portfolio</span><span class="cv"></span></button>
+      <button class="sub-t" type="button" aria-expanded="false">Cho cô dâu<span class="cv"></span></button>
       <div class="navsub">
-        <a href="#portfolio"><b>Portfolio ảnh</b><i>7 nhóm</i></a>
+        <a href="/cam-nang-co-dau/"><b>Cẩm nang 12 tuần</b><i>Miễn phí</i></a>
+        <a href="/lich-cuoi/"><b>Lịch đếm ngược ngày cưới</b><i>Công cụ</i></a>
         <a href="/before-after/"><b>Before &amp; After</b><i>Khách thật</i></a>
+        <a href="/doi-tac/"><b>Ekip cưới tin dùng</b></a>
+        <a class="navsub-more" href="/faq/">Câu hỏi thường gặp →</a>
       </div>
     </li>
-    <li><a href="#about" data-t="nav.about">Về Kay</a></li>
-    <li><a href="masterclass/" data-t="nav.masterclass">Học 1:1</a></li>
-    <li><a href="blog/" data-t="nav.blog">Blog</a></li>
+    <li><a href="#portfolio" data-t="nav.portfolio">Portfolio</a></li>
+    <li class="has-sub" data-open="0">
+      <button class="sub-t" type="button" aria-expanded="false">Về Kay<span class="cv"></span></button>
+      <div class="navsub">
+        <a href="#about"><b>Về Kay</b><i>Câu chuyện</i></a>
+        <a href="masterclass/"><b>Masterclass 1:1</b><i>Đang nhận</i></a>
+        <a href="blog/"><b>Blog</b></a>
+        <a href="https://g.page/r/Cbm9vzO5j8-vEBE/review" target="_blank" rel="noopener"><b>Đánh giá trên Google</b></a>
+        <a class="navsub-more" href="/en/">English →</a>
+      </div>
+    </li>
     <li><a class="nav-book" id="navBook" href="https://zalo.me/0933953179" target="_blank" rel="noopener" data-t="nav.book">Đặt lịch</a></li>
     <li><button class="lang-btn" id="langBtn">EN</button></li>
   </ul>
