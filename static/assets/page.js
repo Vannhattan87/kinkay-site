@@ -24,7 +24,13 @@
      Mobile (<=980px): menu xổ biến thành accordion trong ngăn kéo — CSS lo phần
      hiển thị, JS chỉ bật/tắt data-open. Một nguồn trạng thái duy nhất cho cả hai
      kích thước màn hình, nên không có chuyện desktop và mobile lệch nhau. */
+  var navReady = false;
   function initNav() {
+    // Goi hai lan la moi cu bam bi xu ly hai lan -> mo roi dong ngay -> nhin nhu menu chet.
+    // Da dinh dung bay nay luc test 13/08, nen chot cua o day thay vi tin vao ky luat goi ham.
+    if (navReady) return;
+    navReady = true;
+
     var burger = document.getElementById('burger');
     var menu = document.getElementById('menu');
     var subs = [].slice.call(document.querySelectorAll('body>nav .has-sub'));

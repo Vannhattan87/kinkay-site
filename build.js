@@ -460,6 +460,42 @@ for (const f of DATA_JS) {
 fs.writeFileSync(idxPath, idx2);
 console.log('gan ?v=hash cho', DATA_JS.length, 'file du lieu');
 
+// ---------- 4d. gan ?v=hash cho assets/page.css va assets/page.js TREN MOI TRANG ----------
+// 13/08/2026. SU CO THAT vua xay ra: dot D deploy xong, file moi da nam tren server (fetch kem
+// ?bust= tra ve dung ban moi) nhung trinh duyet va edge cache van phuc vu BAN CU cua
+// /assets/page.css va /assets/page.js. Hau qua: menu xo khong bung ra, mau eyebrow khong doi,
+// nut van kieu cu — nhin nhu deploy that bai trong khi that ra chi la cache.
+//
+// Muc 4c da giai quyet dung van de nay cho content.js/gallery.js/... tu 08/08, nhung chi ap
+// cho index.html va chi cho cac file DATA. Hai file dung chung cua 10 trang con thi bo sot.
+//
+// Cach lam: bam hash noi dung cua tung file, roi ghi de duong dan tren TAT CA file .html
+// trong ban build. Doi file -> doi hash -> URL moi -> cache cu khong con duong ghep vao.
+// Khong can purge cache Cloudflare bang tay nua.
+{
+  const SHARED = ['assets/page.css', 'assets/page.js'];
+  const hashes = {};
+  for (const f of SHARED) {
+    const fp = path.join(SITE, f);
+    if (!fs.existsSync(fp)) continue;
+    hashes[f] = crypto.createHash('sha1').update(fs.readFileSync(fp)).digest('hex').slice(0, 8);
+  }
+  const htmlFiles = walk(SITE).filter(f => f.endsWith('.html'));
+  let touched = 0;
+  for (const fp of htmlFiles) {
+    let h = fs.readFileSync(fp, 'utf8');
+    const before = h;
+    for (const [f, hash] of Object.entries(hashes)) {
+      // bat ca duong dan tuyet doi (/assets/page.css) lan tuong doi (assets/page.css)
+      const re = new RegExp('(["\'])(/?' + f.replace(/[./]/g, '\\$&') + ')(\\?v=[a-f0-9]+)?\\1', 'g');
+      h = h.replace(re, (m, q, pathPart) => q + pathPart + '?v=' + hash + q);
+    }
+    if (h !== before) { fs.writeFileSync(fp, h); touched++; }
+  }
+  console.log('gan ?v=hash cho page.css/page.js tren', touched, 'trang ·',
+    Object.entries(hashes).map(([f, x]) => f.split('/').pop() + '=' + x).join(' '));
+}
+
 // ---------- 5. sitemap.xml ----------
 // lastmod phải là ngày sửa THẬT của từng trang. Trước đây gán ngày build cho tất cả,
 // nên mỗi lần deploy là khai "vừa sửa hết" — Google học được là lastmod của site này

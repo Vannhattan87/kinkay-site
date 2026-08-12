@@ -118,19 +118,19 @@ body>nav ul a{padding:9px 13px}
 
 /* Panel menu xổ LUÔN nền sáng, kể cả khi nav đang trong suốt trên hero tối —
    chữ trắng trên nền trắng là đúng loại lỗi đã dính hôm 10/08. */
-.sub{position:absolute;top:100%;left:0;min-width:290px;background:var(--paper);
+.navsub{position:absolute;top:100%;left:0;min-width:290px;background:var(--paper);
   border:1px solid rgba(44,24,16,.14);box-shadow:0 14px 34px rgba(44,24,16,.22);
   padding:8px;opacity:0;visibility:hidden;transform:translateY(-6px);
   transition:opacity .2s,transform .2s,visibility .2s}
-.has-sub[data-open="1"] .sub{opacity:1;visibility:visible;transform:none}
-.sub a{display:flex!important;align-items:baseline;justify-content:space-between;gap:16px;
+.has-sub[data-open="1"] .navsub{opacity:1;visibility:visible;transform:none}
+.navsub a{display:flex!important;align-items:baseline;justify-content:space-between;gap:16px;
   padding:11px 14px!important;text-transform:none!important;letter-spacing:0!important;
   font-size:14.5px!important;color:var(--espresso)!important;text-shadow:none!important;
   transition:background .2s,color .2s}
-.sub a:hover{background:var(--cream);color:var(--espresso)!important}
-.sub a b{font-weight:400}
-.sub a i{font-style:normal;font-size:12px;color:var(--taupe);white-space:nowrap}
-.sub .sub-more{border-top:1px solid rgba(44,24,16,.12);margin-top:5px;padding-top:12px!important;
+.navsub a:hover{background:var(--cream);color:var(--espresso)!important}
+.navsub a b{font-weight:400}
+.navsub a i{font-style:normal;font-size:12px;color:var(--taupe);white-space:nowrap}
+.navsub .navsub-more{border-top:1px solid rgba(44,24,16,.12);margin-top:5px;padding-top:12px!important;
   font-size:12.5px!important;color:var(--taupe)!important}
 
 .nav-book{background:var(--gold);border:none;color:var(--ink)!important;padding:10px 20px;border-radius:2px;
@@ -527,13 +527,13 @@ border:1px solid rgba(44,24,16,.18);background:var(--paper);padding:28px 30px;ma
     letter-spacing:.12em;width:100%;text-align:left;text-shadow:none}
   body>nav ul>li{border-bottom:1px solid rgba(232,221,208,.14)}
   body>nav ul>li:last-child{border-bottom:none}
-  .sub{position:static;min-width:0;background:none;border:none;box-shadow:none;padding:0;
+  .navsub{position:static;min-width:0;background:none;border:none;box-shadow:none;padding:0;
     display:none;opacity:1;visibility:visible;transform:none}
-  .has-sub[data-open="1"] .sub{display:block}
-  .sub a{padding:11px 14px!important;font-size:14px!important;color:rgba(232,221,208,.8)!important}
-  .sub a:hover{background:rgba(250,247,242,.06);color:var(--cream)!important}
-  .sub a i{color:var(--gold)}
-  .sub .sub-more{border-top-color:rgba(232,221,208,.16)}
+  .has-sub[data-open="1"] .navsub{display:block}
+  .navsub a{padding:11px 14px!important;font-size:14px!important;color:rgba(232,221,208,.8)!important}
+  .navsub a:hover{background:rgba(250,247,242,.06);color:var(--cream)!important}
+  .navsub a i{color:var(--gold)}
+  .navsub .navsub-more{border-top-color:rgba(232,221,208,.16)}
   .nav-book{display:inline-block;margin-top:18px;text-align:center}
   .burger{display:block;z-index:60}
   .topbar{font-size:10px;letter-spacing:.1em;padding:7px 12px}
@@ -695,17 +695,17 @@ border:1px solid rgba(44,24,16,.18);background:var(--paper);padding:28px 30px;ma
   <ul id="menu">
     <li class="has-sub" data-open="0">
       <button class="sub-t" type="button" aria-expanded="false"><span data-t="nav.services">Dịch vụ</span><span class="cv"></span></button>
-      <div class="sub">
+      <div class="navsub">
         <a href="/makeup-co-dau/"><b>Makeup cô dâu</b><i>3 – 6 triệu</i></a>
         <a href="/trang-diem-du-tiec/"><b>Trang điểm dự tiệc</b><i>Từ 1.2 triệu</i></a>
         <a href="/hair-styling/"><b>Hair styling</b><i>Trong combo</i></a>
         <a href="/photoshoot-editorial/"><b>Photoshoot &amp; editorial</b><i>Từ 1.8 triệu</i></a>
-        <a class="sub-more" href="/faq/">Câu hỏi thường gặp →</a>
+        <a class="navsub-more" href="/faq/">Câu hỏi thường gặp →</a>
       </div>
     </li>
     <li class="has-sub" data-open="0">
       <button class="sub-t" type="button" aria-expanded="false"><span data-t="nav.portfolio">Portfolio</span><span class="cv"></span></button>
-      <div class="sub">
+      <div class="navsub">
         <a href="#portfolio"><b>Portfolio ảnh</b><i>7 nhóm</i></a>
         <a href="/before-after/"><b>Before &amp; After</b><i>Khách thật</i></a>
       </div>
