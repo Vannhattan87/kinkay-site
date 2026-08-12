@@ -57,15 +57,31 @@
 </head>
 <body>
 
+<div class="topbar">Now enrolling · <a href="/masterclass/">1:1 Masterclass →</a></div>
+
 <nav>
   <a class="brand" href="/en/">KINKAY</a>
-  <button class="burger" id="burger" aria-label="menu">☰</button>
+  <button class="burger" id="burger" aria-label="Open menu" aria-expanded="false">☰</button>
   <ul id="menu">
-    <li><a href="#services">Services</a></li>
-    <li><a href="#pricing">Pricing</a></li>
+    <li class="has-sub" data-open="0">
+      <button class="sub-t" type="button" aria-expanded="false">Services<span class="cv"></span></button>
+      <div class="sub">
+        <a href="#services"><b>Bridal</b><i>3 – 6M VND</i></a>
+        <a href="#services"><b>Event &amp; party</b><i>from 1.2M</i></a>
+        <a href="#services"><b>Full Glam Combo</b><i>from 1.8M</i></a>
+        <a href="#services"><b>Photoshoot &amp; editorial</b><i>from 1.8M</i></a>
+        <a class="sub-more" href="#pricing">Full pricing →</a>
+      </div>
+    </li>
+    <li class="has-sub" data-open="0">
+      <button class="sub-t" type="button" aria-expanded="false">Portfolio<span class="cv"></span></button>
+      <div class="sub">
+        <a href="/#portfolio"><b>Photo portfolio</b><i>7 sets</i></a>
+        <a href="/before-after/"><b>Before &amp; After</b><i>Real clients</i></a>
+      </div>
+    </li>
     <li><a href="#about">About Kay</a></li>
     <li><a href="#faq">FAQ</a></li>
-    <li><a href="/#portfolio">Portfolio</a></li>
     <li><a href="/">Tiếng Việt</a></li>
     <li><a class="nav-book" href="https://zalo.me/0933953179" target="_blank" rel="noopener">Book</a></li>
   </ul>
@@ -316,28 +332,48 @@
 </section>
 
 <footer>
-  <div class="wordmark">
-    <span class="wm-name">KINKAY</span><span class="wm-rule"></span><span class="wm-sub">a beauty atelier</span>
+  <div class="fwrap">
+    <div class="fcol fbrand">
+      <div class="wordmark">
+        <span class="wm-name">KINKAY</span><span class="wm-rule"></span><span class="wm-sub">a beauty atelier</span>
+      </div>
+      <p>Bridal and event makeup in Ho Chi Minh City. Studio in Tan Hung Ward, bookings nationwide.</p>
+      <div class="fch">
+        <a href="https://zalo.me/0933953179" target="_blank" rel="noopener">Zalo · +84 933 953 179</a>
+        <a href="https://www.instagram.com/kinkay.official/" rel="noopener">Instagram · @kinkay.official</a>
+        <a href="mailto:kinkay20t@gmail.com">kinkay20t@gmail.com</a>
+      </div>
+    </div>
+    <div class="fcol">
+      <h4>Services</h4>
+      <a href="/makeup-co-dau/">Bridal makeup</a>
+      <a href="/trang-diem-du-tiec/">Event makeup</a>
+      <a href="/hair-styling/">Hair styling</a>
+      <a href="/photoshoot-editorial/">Photoshoot &amp; editorial</a>
+      <a href="/qua-tang/">Gift vouchers</a>
+    </div>
+    <div class="fcol">
+      <h4>For brides</h4>
+      <a href="/cam-nang-co-dau/">12-week bridal guide</a>
+      <a href="/lich-cuoi/">Wedding countdown</a>
+      <a href="/before-after/">Before &amp; After</a>
+      <a href="/doi-tac/">Wedding vendors</a>
+      <a href="/faq/">FAQ</a>
+    </div>
+    <div class="fcol">
+      <h4>KINKAY</h4>
+      <a href="/">Tiếng Việt</a>
+      <a href="/masterclass/">1:1 Masterclass</a>
+      <a href="/blog/">Blog</a>
+      <a href="https://g.page/r/Cbm9vzO5j8-vEBE/review" target="_blank" rel="noopener">Review on Google</a>
+    </div>
   </div>
-  <p class="fline">KINKAY · a beauty atelier · HCMC</p>
-  <nav class="foot-nav" aria-label="All pages">
-    <a href="/">Tiếng Việt</a><span class="sep">·</span>
-    <a href="/makeup-co-dau/">Bridal</a><span class="sep">·</span>
-    <a href="/trang-diem-du-tiec/">Event makeup</a><span class="sep">·</span>
-    <a href="/hair-styling/">Hair styling</a><span class="sep">·</span>
-    <a href="/photoshoot-editorial/">Photoshoot</a><span class="sep">·</span>
-    <a href="/before-after/">Before &amp; After</a><br>
-    <a href="/faq/">FAQ</a><span class="sep">·</span>
-    <a href="/doi-tac/">Wedding vendors</a><span class="sep">·</span>
-    <a href="/qua-tang/">Gift vouchers</a><span class="sep">·</span>
-    <a href="/masterclass/">1:1 Masterclass</a><span class="sep">·</span>
-    <a href="/blog/">Blog</a>
-  </nav>
-  <p class="foot-owner">Website owner: Thạch Bé Trâm · Studio: Tan Hung Ward, Ho Chi Minh City · +84 933 953 179 · kinkay20t@gmail.com</p>
-  <p class="foot-links">
-    <a href="/chinh-sach-du-lieu/">Data policy</a><span class="sep">·</span>
-    <a href="/dieu-khoan/">Terms of service</a>
-  </p>
+  <div class="fbase">
+    <p class="foot-owner">Website owner: Thạch Bé Trâm · Studio: Tan Hung Ward, Ho Chi Minh City · +84 933 953 179 · kinkay20t@gmail.com</p>
+    <p class="foot-links">
+      <a href="/chinh-sach-du-lieu/">Data policy</a><span class="sep">·</span><a href="/dieu-khoan/">Terms of service</a>
+    </p>
+  </div>
 </footer>
 
 <script src="/assets/page.js"></script>
