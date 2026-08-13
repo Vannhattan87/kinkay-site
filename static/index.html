@@ -31,6 +31,12 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<!-- 13/08/2026 — LCP. Anh hero la background-image trong khoi <style> ben duoi, nen trinh duyet
+     KHONG thay no bang preload scanner: phai tai HTML xong, dung CSSOM xong (33 KB style) roi
+     moi bat dau tai anh. Do bang PageSpeed Insights 13/08: LCP mobile 4,9s (nguong "Poor" > 4,0s)
+     trong khi TBT chi 30ms — tuc nghen o mang, khong phai o CPU.
+     Dong preload duoi day cho trinh duyet bat dau tai hero ngay tu byte dau cua HTML. -->
+<link rel="preload" as="image" href="assets/img/hero_01.jpg" fetchpriority="high">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&amp;family=Be+Vietnam+Pro:wght@300;400;500&amp;display=swap" rel="stylesheet">
 <style>
 :root{
@@ -1112,17 +1118,23 @@ Ngồi vào ghế KINKAY, bạn nhận được tư vấn thật — bằng con 
   <div class="v-hint" id="vHint"></div>
 </div>
 
-<script src="content.js"></script>
-<script src="gallery.js"></script>
-<script src="videos.js"></script>
-<script src="services.js"></script>
-<script src="bloglist.js"></script>
-<script src="beforeafter.js"></script>
-<script src="testimonials.js"></script>
+<!-- 13/08/2026 — LCP. Truoc day 8 file JS nay khong co defer nen chan parser va tranh bang thong
+     voi anh hero. Them defer: chung tai song song, chay theo dung thu tu viet o day, va chay
+     TRUOC su kien DOMContentLoaded. Khoi <script> boot ben duoi doc window.CONTENT/window.GALLERY
+     nen phai boc trong DOMContentLoaded de van chay sau ca 8 file. Doi thu tu la trang chu mat
+     toan bo phan render dong. -->
+<script src="content.js" defer></script>
+<script src="gallery.js" defer></script>
+<script src="videos.js" defer></script>
+<script src="services.js" defer></script>
+<script src="bloglist.js" defer></script>
+<script src="beforeafter.js" defer></script>
+<script src="testimonials.js" defer></script>
 <!-- 12/08/2026: page.js dung chung voi cac trang con. Trang chu chi lay ham leadForm(),
      khong goi KINKAY.init() de khong dam vao nav/reveal von co cua trang nay. -->
-<script src="assets/page.js"></script>
+<script src="assets/page.js" defer></script>
 <script>
+document.addEventListener('DOMContentLoaded', function(){
 const C = window.CONTENT, G = window.GALLERY;
 let lang = 'vi';
 
@@ -1587,6 +1599,8 @@ if (window.KINKAY && window.KINKAY.leadForm) window.KINKAY.leadForm({ source: 'h
     if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(n).then(ok,fb)}else{fb()}
   });
 })();
+
+}); /* 13/08/2026 — dong DOMContentLoaded mo o dau khoi script nay */
 </script>
 
 
