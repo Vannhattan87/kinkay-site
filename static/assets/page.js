@@ -212,7 +212,10 @@
 
       track('generate_lead', {
         lead_type: 'booking_form',
-        source: source,
+        // 26/08/2026: KHONG duoc dat ten param la `source`. Do la ten danh rieng cua GA4
+        // (cung ho voi medium/campaign/term/content) — GA4 lay no ghi de attribution cua
+        // session, sinh ra kenh "Unassigned" va thoi phong so session. Dung `click_source`.
+        click_source: source,
         occasion: d.occasion,
         budget_band: d.budget || 'chua_chon',
         has_date: d.date ? 'yes' : 'no',
@@ -296,7 +299,7 @@
       var r = el.querySelector('input');
       r.addEventListener('input', function () {
         el.style.setProperty('--x', r.value + '%');
-        if (!tracked) { tracked = true; track('ba_drag', { source: opts.source || 'page' }); }
+        if (!tracked) { tracked = true; track('ba_drag', { click_source: opts.source || 'page' }); }
       });
     });
   }
@@ -305,12 +308,12 @@
   function initCtaTracking(source) {
     document.querySelectorAll('a[href*="zalo.me"]').forEach(function (a) {
       a.addEventListener('click', function () {
-        track('booking_click', { method: 'zalo', source: source || 'page' });
+        track('booking_click', { method: 'zalo', click_source: source || 'page' });
       });
     });
     document.querySelectorAll('a[href*="instagram.com"]').forEach(function (a) {
       a.addEventListener('click', function () {
-        track('booking_click', { method: 'instagram', source: source || 'page' });
+        track('booking_click', { method: 'instagram', click_source: source || 'page' });
       });
     });
   }
@@ -331,7 +334,7 @@
       var btn = this;
       copyText('0933953179').then(function () {
         btn.textContent = 'ĐÃ COPY';
-        track('generate_lead', { lead_type: 'contact', contact_channel: 'phone_copy', source: 'inapp_banner' });
+        track('generate_lead', { lead_type: 'contact', contact_channel: 'phone_copy', click_source: 'inapp_banner' });
       });
     });
   }

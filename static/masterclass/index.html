@@ -554,8 +554,8 @@ function leadOnce(params){
     var h=a.getAttribute('href')||'';
     var m = h.indexOf('zalo')>-1 ? 'zalo' : (h.indexOf('instagram')>-1 ? 'instagram' : (h.indexOf('mailto')===0 ? 'email' : 'other'));
     a.addEventListener('click',function(){
-      track('booking_click',{method:m,source:'masterclass'});
-      if(m!=='other') leadOnce({lead_type:m+'_click',contact_channel:m,service_type:'masterclass',source:'masterclass'});
+      track('booking_click',{method:m,click_source:'masterclass'});
+      if(m!=='other') leadOnce({lead_type:m+'_click',contact_channel:m,service_type:'masterclass',click_source:'masterclass'});
     });
   });
 })();
@@ -609,7 +609,7 @@ function leadOnce(params){
     if(!f.name.value.trim()||!f.phone.value.trim()) return;   // trinh duyet da co required, day la lop chan thu hai
     var msg=buildMsg();
     leadOnce({lead_type:'form_submit',contact_channel:'website_form',service_type:'masterclass',
-              form_id:'regForm',method:'zalo_handoff',source:'masterclass',goal:f.goal.value});
+              form_id:'regForm',method:'zalo_handoff',click_source:'masterclass',goal:f.goal.value});
     if(box) box.value=msg;
     if(panel){
       panel.hidden=false;
@@ -637,7 +637,7 @@ function leadOnce(params){
   });
   var openZalo=document.getElementById('regZalo');
   if(openZalo) openZalo.addEventListener('click',function(){
-    track('booking_click',{method:'zalo',source:'masterclass_after_form'});
+    track('booking_click',{method:'zalo',click_source:'masterclass_after_form'});
   });
 })();
 </script>

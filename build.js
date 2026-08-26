@@ -277,10 +277,10 @@ ${FOOT}
 <script>
 function track(n,p){ if(typeof gtag==='function') gtag('event',n,p||{}); }
 document.getElementById('bookCta').addEventListener('click',function(){
-  track('booking_click',{method:'zalo',source:'blog'});
+  track('booking_click',{method:'zalo',click_source:'blog'});
 });
 document.getElementById('bookCtaIg').addEventListener('click',function(e){
-  track('booking_click',{method:'instagram',source:'blog'});
+  track('booking_click',{method:'instagram',click_source:'blog'});
   e.preventDefault();var t=Date.now();location.href='instagram://user?username=kinkay.official';
   setTimeout(function(){if(Date.now()-t<1600&&!document.hidden)location.href='https://www.instagram.com/kinkay.official/';},1200);
 });
@@ -335,7 +335,12 @@ if (!JGRID_RE.test(idxHtml)) {
   console.error('dung bo qua — bo qua la trang chu quay ve trang thai hardcode cu.\n');
   process.exit(1);
 }
-const jcards = posts.slice(0, 3).map(p =>
+// 26/08/2026: truoc day chi pre-render 3 bai moi nhat. He qua do duoc trong health check
+// 26/08: 7 bai blog KHONG nhan link noi bo nao tu trang chu — ma trang chu la trang manh
+// nhat site. Bai /blog/kieu-makeup-nao-hop-voi-guong-mat-ban dung thu 4 toan site ve
+// impression (6) van nam ngoai. Gio render TOAN BO bai. Khoi .jlist la danh sach chu,
+// moi bai mot dong, nen them 7 dong chi ton ~350px tren trang cao 8.545px (~4%).
+const jcards = posts.map(p =>
   `\n    <a class="jrow" href="blog/${encodeURI(p.slug)}">` +
   `<span class="jd">${p.date_display}</span>` +
   `<span class="jt">${esc(p.title)}</span></a>`).join('');
@@ -435,7 +440,7 @@ if (SVC && SVC.show_prices) {
 }
 
 fs.writeFileSync(idxPath, idxHtml);
-console.log('jGrid trang chu:', posts.slice(0, 3).map(p => p.slug).join(', '));
+console.log('jGrid trang chu: pre-render', posts.length, 'bai —', posts.map(p => p.slug).join(', '));
 // ---------- 4c. gan van ban (?v=hash) cho cac file du lieu ----------
 // 08/08/2026. Su co that: sau khi deploy, trinh duyet nap index.html MOI nhung van dung
 // content.js CU trong cache. Ban cu thieu key credits.caption -> renderCredits() nem loi,

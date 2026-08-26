@@ -1436,8 +1436,8 @@ if(bookBtn){
   bookBtn.href = ZALO_WEB;
   bookBtn.setAttribute('target','_blank');
   bookBtn.addEventListener('click', ()=>{
-    track('booking_click', {method:'zalo', source:'home'});
-    leadOnce({lead_type:'zalo_click', contact_channel:'zalo', service_type:'unknown', source:'home'});
+    track('booking_click', {method:'zalo', click_source:'home'});
+    leadOnce({lead_type:'zalo_click', contact_channel:'zalo', service_type:'unknown', click_source:'home'});
   });
 }
 const bookBtn2 = document.getElementById('bookCta2');
@@ -1445,8 +1445,8 @@ if(bookBtn2){
   bookBtn2.href = IG_WEB;
   bookBtn2.removeAttribute('target');
   bookBtn2.addEventListener('click', e=>{
-    track('booking_click', {method:'instagram', source:'home'});
-    leadOnce({lead_type:'instagram_click', contact_channel:'instagram', service_type:'unknown', source:'home'});
+    track('booking_click', {method:'instagram', click_source:'home'});
+    leadOnce({lead_type:'instagram_click', contact_channel:'instagram', service_type:'unknown', click_source:'home'});
     appLink(e, IG_APP, IG_WEB);
   });
 }
@@ -1459,8 +1459,8 @@ document.querySelectorAll('#channels a').forEach(a=>{
   const ch = (a.dataset.ch||'').toLowerCase();
   const isLead = BOOKING_CH.includes(ch);
   a.addEventListener('click', ()=>{
-    track(isLead ? 'booking_click' : 'social_click', {method:ch, source:'home_channels'});
-    if(isLead) leadOnce({lead_type:ch+'_click', contact_channel:ch, service_type:'unknown', source:'home_channels'});
+    track(isLead ? 'booking_click' : 'social_click', {method:ch, click_source:'home_channels'});
+    if(isLead) leadOnce({lead_type:ch+'_click', contact_channel:ch, service_type:'unknown', click_source:'home_channels'});
   });
 });
 const igCh = document.querySelector('#channels a[data-ch="Instagram"]');
@@ -1470,30 +1470,30 @@ if(igCh){ igCh.removeAttribute('target'); igCh.addEventListener('click', e=>appL
    Trước 05/08/2026 cả thanh chỉ là anchor #booking nên không bao giờ tạo lead. */
 const mctaZalo = document.getElementById('mctaZalo');
 if(mctaZalo) mctaZalo.addEventListener('click', ()=>{
-  track('booking_click', {method:'zalo', source:'sticky'});
-  leadOnce({lead_type:'zalo_click', contact_channel:'zalo', service_type:'unknown', source:'sticky'});
+  track('booking_click', {method:'zalo', click_source:'sticky'});
+  leadOnce({lead_type:'zalo_click', contact_channel:'zalo', service_type:'unknown', click_source:'sticky'});
 });
 const mctaAlt = document.getElementById('mctaAlt');
-if(mctaAlt) mctaAlt.addEventListener('click', ()=>track('cta_scroll', {location:'sticky_alt', source:'home'}));
+if(mctaAlt) mctaAlt.addEventListener('click', ()=>track('cta_scroll', {location:'sticky_alt', click_source:'home'}));
 
 /* CTA ngay sau khối dịch vụ — điểm ý định cao nhất trên trang */
 const afterPrice = document.getElementById('afterPriceCta');
 if(afterPrice) afterPrice.addEventListener('click', ()=>{
-  track('booking_click', {method:'zalo', source:'after_price'});
-  leadOnce({lead_type:'zalo_click', contact_channel:'zalo', service_type:'unknown', source:'after_price'});
+  track('booking_click', {method:'zalo', click_source:'after_price'});
+  leadOnce({lead_type:'zalo_click', contact_channel:'zalo', service_type:'unknown', click_source:'after_price'});
 });
 
 /* nút Đặt lịch trên thanh nav — người bấm ở đây đã chủ động tìm cách liên hệ */
 const navBook = document.getElementById('navBook');
 if(navBook) navBook.addEventListener('click', ()=>{
-  track('booking_click', {method:'zalo', source:'nav'});
-  leadOnce({lead_type:'zalo_click', contact_channel:'zalo', service_type:'unknown', source:'nav'});
+  track('booking_click', {method:'zalo', click_source:'nav'});
+  leadOnce({lead_type:'zalo_click', contact_channel:'zalo', service_type:'unknown', click_source:'nav'});
 });
 
 /* CTA hero — cố ý chỉ cuộn tới #services, không mở Zalo:
    khách vừa vào trang chưa xem portfolio/giá, đẩy thẳng sang chat sẽ tạo click rác. */
 const heroCta = document.getElementById('heroCta');
-if(heroCta) heroCta.addEventListener('click', ()=>track('cta_scroll', {location:'hero', source:'home'}));
+if(heroCta) heroCta.addEventListener('click', ()=>track('cta_scroll', {location:'hero', click_source:'home'}));
 
 /* nav + sticky CTA */
 const nav = document.getElementById('nav'), mcta = document.getElementById('mcta');
@@ -1527,11 +1527,11 @@ function observeReveals(){
 (function(){
   var el=document.getElementById('toolTimeline');
   if(el) el.addEventListener('click',function(){
-    track('tool_click',{tool:'lich_cuoi',source:'home'});
+    track('tool_click',{tool:'lich_cuoi',click_source:'home'});
   });
   var rv=document.getElementById('reviewCta');
   if(rv) rv.addEventListener('click',function(){
-    track('review_click',{source:'home_testi'});
+    track('review_click',{click_source:'home_testi'});
   });
 })();
 
@@ -1578,7 +1578,7 @@ if (window.KINKAY && window.KINKAY.leadForm) window.KINKAY.leadForm({ source: 'h
     var r=el.querySelector('input');
     r.addEventListener('input',function(){
       el.style.setProperty('--x',r.value+'%');
-      if(!tracked){tracked=true;track('ba_drag',{source:'home'});}
+      if(!tracked){tracked=true;track('ba_drag',{click_source:'home'});}
     });
   });
 })();
@@ -1598,7 +1598,7 @@ if (window.KINKAY && window.KINKAY.leadForm) window.KINKAY.leadForm({ source: 'h
   document.getElementById('iabCopy').addEventListener('click',function(){
     var n='0933953179',btn=this;
     function ok(){btn.textContent='ĐÃ COPY';
-      track('generate_lead',{lead_type:'contact',contact_channel:'phone_copy',source:'inapp_banner'});}
+      track('generate_lead',{lead_type:'contact',contact_channel:'phone_copy',click_source:'inapp_banner'});}
     function fb(){var a=document.createElement('textarea');a.value=n;document.body.appendChild(a);a.select();
       try{document.execCommand('copy');ok()}catch(e){}finally{a.remove()}}
     if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(n).then(ok,fb)}else{fb()}

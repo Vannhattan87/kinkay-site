@@ -252,7 +252,7 @@ padding:12px 20px;border-radius:2px;font-size:13px;opacity:0;transition:opacity 
     tl.querySelectorAll('[data-k]').forEach(function(k){
       k.addEventListener('click',function(){
         var src=k.getAttribute('data-k')==='trial'?'lich_cuoi_trial':'lich_cuoi_timeline';
-        track('booking_click',{method:'zalo',source:src});
+        track('booking_click',{method:'zalo',click_source:src});
         track('generate_lead',{lead_type:'contact',contact_channel:'zalo',service_type:'bridal'});
       });
     });
@@ -278,7 +278,7 @@ padding:12px 20px;border-radius:2px;font-size:13px;opacity:0;transition:opacity 
     var msg='Chào Kay, ngày cưới của mình là '+(W?fmt(W):'(chưa chọn)')+'. Lộ trình của mình: '+location.href+' — ngày đó Kay còn lịch không?';
     var t=$('toast');
     function after(){
-      track('booking_click',{method:'zalo',source:'lich_cuoi_send'});
+      track('booking_click',{method:'zalo',click_source:'lich_cuoi_send'});
       track('generate_lead',{lead_type:'contact',contact_channel:'zalo',service_type:'bridal'});
       if(INAPP){t.textContent='Đã sao chép tin nhắn — mở Zalo, nhắn số 0933 953 179 và dán vào';}
       else{t.textContent='Đã sao chép tin nhắn — dán vào Zalo cho Kay nhé';window.open('https://zalo.me/0933953179','_blank');}
@@ -289,7 +289,7 @@ padding:12px 20px;border-radius:2px;font-size:13px;opacity:0;transition:opacity 
     if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(msg).then(after,fb)}else{fb()}
   };
   $('ctaZalo').addEventListener('click',function(){
-    track('booking_click',{method:'zalo',source:'lich_cuoi_cta'});
+    track('booking_click',{method:'zalo',click_source:'lich_cuoi_cta'});
     track('generate_lead',{lead_type:'contact',contact_channel:'zalo',service_type:'bridal'});
   });
 

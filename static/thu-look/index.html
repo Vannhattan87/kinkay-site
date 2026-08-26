@@ -173,17 +173,17 @@ padding:12px 20px;border-radius:2px;font-size:13px;opacity:0;transition:opacity 
   window.__kkTrack=track;
   track('tryon_open',{in_app:inApp?'yes':'no'});
   document.getElementById('ctaZalo').addEventListener('click',function(){
-    track('booking_click',{method:'zalo',source:'thu_look'});
+    track('booking_click',{method:'zalo',click_source:'thu_look'});
     track('generate_lead',{lead_type:'contact',contact_channel:'zalo',service_type:'tryon'});
   });
   document.getElementById('ctaClass').addEventListener('click',function(){
-    track('booking_click',{method:'masterclass',source:'thu_look'});
+    track('booking_click',{method:'masterclass',click_source:'thu_look'});
   });
   var t=document.getElementById('toast');
   document.getElementById('btnCopy').addEventListener('click',function(){
     var n='0933953179';
     function ok(){t.classList.add('on');setTimeout(function(){t.classList.remove('on')},1800);
-      track('booking_click',{method:'copy_phone',source:'thu_look'});}
+      track('booking_click',{method:'copy_phone',click_source:'thu_look'});}
     if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(n).then(ok,fb)}else{fb()}
     function fb(){var a=document.createElement('textarea');a.value=n;document.body.appendChild(a);a.select();
       try{document.execCommand('copy');ok()}catch(e){}finally{a.remove()}}

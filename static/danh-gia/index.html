@@ -113,12 +113,12 @@ function track(name,params){ if(typeof gtag==='function') gtag('event',name,para
   var iv=setInterval(function(){
     secs--;
     if(hint) hint.textContent='Tự mở Google sau '+secs+' giây — hoặc bấm nút ở trên';
-    if(secs<=0){ clearInterval(iv); track('review_click',{method:'auto_redirect',source:'danh_gia'}); location.href=GOOGLE_URL; }
+    if(secs<=0){ clearInterval(iv); track('review_click',{method:'auto_redirect',click_source:'danh_gia'}); location.href=GOOGLE_URL; }
   },1000);
   var more=document.getElementById('moreLink');
-  if(more) more.addEventListener('click',function(){ clearInterval(iv); track('review_abandon',{method:'portfolio',source:'danh_gia'}); });
+  if(more) more.addEventListener('click',function(){ clearInterval(iv); track('review_abandon',{method:'portfolio',click_source:'danh_gia'}); });
   var btn=document.getElementById('reviewBtn');
-  if(btn) btn.addEventListener('click',function(){ clearInterval(iv); track('review_click',{method:'button',source:'danh_gia'}); });
+  if(btn) btn.addEventListener('click',function(){ clearInterval(iv); track('review_click',{method:'button',click_source:'danh_gia'}); });
 })();
 </script>
 </body></html>
