@@ -61,7 +61,7 @@ collections:
             fields:
               - { label: "Tên dịch vụ", name: "name", widget: "string" }
               - { label: "Mô tả", name: "desc", widget: "text" }
-              - { label: "Giá", name: "price", widget: "string", hint: "Gõ nguyên văn như muốn hiện trên web. Ví dụ: Từ 1.200.000đ" }
+              - { label: "Giá", name: "price", widget: "string", hint: "Gõ nguyên văn như muốn hiện trên web. Ví dụ: Từ 1.800.000đ" }
               # 12/08/2026 (đợt B1): mỗi dịch vụ có một trang riêng. Điền đường dẫn vào đây thì
               # thẻ dịch vụ trên trang chủ bấm được và có thêm dòng "Xem chi tiết →".
               - { label: "Trang chi tiết", name: "link", widget: "string", required: false, hint: "Đường dẫn trang riêng của dịch vụ. Ví dụ: /makeup-co-dau/ — để trống thì thẻ không bấm được." }

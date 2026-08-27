@@ -3,34 +3,34 @@
   "currency_note": "Giá tham khảo. Combo và trường hợp đặc biệt Kay báo riêng khi nhắn.",
   "location_note": "Studio tại Phường Tân Hưng, TP.HCM (by appointment) · Nhận lịch toàn quốc, phụ phí di chuyển báo trước khi xác nhận.",
   "bridal_from": "3.000.000đ",
-  "bridal_to": "6.000.000đ",
+  "bridal_to": "5.000.000đ",
   "trial_price": "1.500.000đ",
   "offpeak_on": true,
   "offpeak_note": "Ưu đãi ngày thường: đặt lịch Thứ 2 – Thứ 5 (trừ mùa cưới cao điểm và ngày lễ) được giảm 15% cho dịch vụ makeup và Full Glam Combo. Bridal không áp dụng.",
   "items": [
     {
-      "name": "Makeup",
-      "desc": "Tiệc, sự kiện, photoshoot editorial. Da căng bóng, nét sắc, bền suốt sự kiện.",
-      "price": "Từ 1.200.000đ",
-      "link": "/trang-diem-du-tiec/"
-    },
-    {
       "name": "Full Glam Combo",
-      "desc": "Makeup + hair styling trọn gói cho tiệc, event, chụp hình cá nhân.",
+      "desc": "Makeup + tóc cho tiệc, sự kiện, chụp ảnh cá nhân. Tóc luôn đi cùng, không bán tách rời.",
       "price": "Từ 1.800.000đ",
-      "link": "/photoshoot-editorial/"
-    },
-    {
-      "name": "Bridal",
-      "desc": "Trial trước ngày cưới + day-of trọn gói. Look cô dâu sắc nét mà vẫn là bạn trong ngày quan trọng nhất.",
-      "price": "3.000.000 – 6.000.000đ",
-      "link": "/makeup-co-dau/"
+      "link": "/trang-diem-du-tiec/"
     },
     {
       "name": "Hair Styling",
       "desc": "Blowout, soft waves, updo cho tiệc và sự kiện.",
-      "price": "Có trong combo",
+      "price": "Đã có trong mọi gói",
       "link": "/hair-styling/"
+    },
+    {
+      "name": "Pre-wedding",
+      "desc": "Makeup và tóc cho buổi chụp ảnh cưới. Kay làm xong rồi về, hoặc đi theo cả buổi.",
+      "price": "2.000.000 – 3.500.000đ",
+      "link": "/photoshoot-editorial/"
+    },
+    {
+      "name": "Bridal",
+      "desc": "Ba mức chọn một: trọn ngày cưới, riêng lễ gia tiên, hoặc bà sui. Trial tính riêng.",
+      "price": "3.000.000 – 5.000.000đ",
+      "link": "/makeup-co-dau/"
     }
   ]
 }

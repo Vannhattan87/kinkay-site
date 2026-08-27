@@ -116,10 +116,10 @@ window.CONTENT = {
     },
     items: [
       {
-        title: { vi: "Makeup", en: "Makeup" },
+        title: { vi: "Full Glam Combo", en: "Full Glam Combo" },
         desc: {
-          vi: "Tiệc, sự kiện, photoshoot editorial. Da căng bóng, nét sắc, bền suốt sự kiện.",
-          en: "Party, events, editorial photoshoots. Luminous skin, sharp definition, lasts all night."
+          vi: "Makeup + tóc cho tiệc, sự kiện, chụp ảnh cá nhân. Tóc luôn đi cùng, không bán tách rời.",
+          en: "Makeup + hair for events, parties and personal shoots. Hair always comes with it."
         }
       },
       {
@@ -130,17 +130,17 @@ window.CONTENT = {
         }
       },
       {
-        title: { vi: "Full Glam Combo", en: "Full Glam Combo" },
+        title: { vi: "Pre-wedding", en: "Pre-wedding" },
         desc: {
-          vi: "Makeup + hair trọn gói cho tiệc, event, chụp hình cá nhân.",
-          en: "Makeup + hair, one seamless session for events and personal shoots."
+          vi: "Makeup và tóc cho buổi chụp ảnh cưới. Kay làm xong rồi về, hoặc đi theo cả buổi.",
+          en: "Makeup and hair for the wedding shoot. Kay finishes and leaves, or stays the whole day."
         }
       },
       {
         title: { vi: "Bridal", en: "Bridal" },
         desc: {
-          vi: "Trial trước ngày cưới + day-of trọn gói. Look cô dâu sắc nét mà vẫn là bạn trong ngày quan trọng nhất.",
-          en: "Pre-wedding trial + day-of packages. A bridal look that is polished — and unmistakably you."
+          vi: "Ba mức chọn một: trọn ngày cưới, riêng lễ gia tiên, hoặc bà sui. Trial tính riêng.",
+          en: "Three rates, choose one: the full wedding day, the ceremony alone, or the mothers. Trial charged separately."
         }
       }
     ]
