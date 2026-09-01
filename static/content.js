@@ -34,6 +34,7 @@ window.CONTENT = {
     party:       { vi: "Trang điểm dự tiệc",        en: "Event makeup" },
     hair:        { vi: "Hair styling",              en: "Hair styling" },
     shoot:       { vi: "Photoshoot & editorial",    en: "Photoshoot & editorial" },
+    profile:     { vi: "Ảnh profile công ty",       en: "Business profile photos" },
     gift:        { vi: "Quà tặng & voucher",        en: "Gift vouchers" },
     guide:       { vi: "Cẩm nang 12 tuần",          en: "12-week bridal guide" },
     countdown:   { vi: "Lịch đếm ngược ngày cưới",  en: "Wedding countdown" },
@@ -51,6 +52,7 @@ window.CONTENT = {
   hint: {
     bridalPrice: { vi: "3 – 5 triệu",   en: "3 – 5M VND" },
     from18:      { vi: "Từ 1.8 triệu",  en: "From 1.8M" },
+    from15:      { vi: "Từ 1.5 triệu",  en: "From 1.5M" },
     inCombo:     { vi: "Trong combo",   en: "In every package" },
     from500k:    { vi: "Từ 500k",       en: "From 500k" },
     free:        { vi: "Miễn phí",      en: "Free" },
@@ -269,8 +271,9 @@ window.CONTENT = {
     },
     p1: { vi: "1 kèm 1, dạy trực tiếp bởi Kay", en: "One-to-one, taught by Kay herself" },
     p2: { vi: "Lộ trình cá nhân hóa theo trình độ", en: "A path built around your level" },
-    p3: { vi: "8 module: từ tư duy đến signature look", en: "8 modules: mindset to signature look" },
-    p4: { vi: "Thực hành trên mẫu thật mỗi buổi", en: "Hands-on practice on real models" },
+    // 01/09/2026: lop gio la 5 buoi 2-3h, hoc tren chinh guong mat hoc vien (khong con mau that).
+    p3: { vi: "5 buổi, 2–3 giờ mỗi buổi", en: "5 sessions, 2–3 hours each" },
+    p4: { vi: "Học trên chính gương mặt bạn, dùng mỹ phẩm của lớp", en: "Learn on your own face, using the studio's kit" },
     cta: { vi: "Xem lộ trình & học phí", en: "See curriculum & tuition" },
     cta2: { vi: "Đăng ký giữ chỗ", en: "Reserve a seat" }
   },

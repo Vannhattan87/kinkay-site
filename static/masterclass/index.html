@@ -6,20 +6,20 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Personal Makeup Masterclass 1:1 | KINKAY — Học Trang Điểm Với Kay</title>
-<meta name="description" content="Khóa học makeup 1 kèm 1 với Kay — makeup artist từ hậu trường Miss Cosmo, Hoa Hậu Việt Nam. Lộ trình cá nhân hóa 8 module, thực hành mẫu thật, tại TP.HCM.">
+<meta name="description" content="Khóa học makeup 1 kèm 1 với Kay — makeup artist từ hậu trường Miss Cosmo, Hoa Hậu Việt Nam. 5 buổi, 2–3 giờ mỗi buổi, học trên chính gương mặt bạn. 8.000.000đ tại TP.HCM.">
 <link rel="canonical" href="https://kinkay.vn/masterclass/">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://kinkay.vn/masterclass/">
 <meta property="og:site_name" content="KINKAY">
 <meta property="og:title" content="Personal Makeup Masterclass 1:1 | KINKAY">
-<meta property="og:description" content="Học makeup 1 kèm 1 với Kay. Lộ trình cá nhân hóa 8 module, thực hành mẫu thật, tại TP.HCM.">
+<meta property="og:description" content="Học makeup 1 kèm 1 với Kay. 5 buổi, 2–3 giờ mỗi buổi, học trên chính gương mặt bạn. 8.000.000đ tại TP.HCM.">
 <meta property="og:image" content="https://kinkay.vn/assets/img/og_cover.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:locale" content="vi_VN">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Personal Makeup Masterclass 1:1 | KINKAY">
-<meta name="twitter:description" content="Học makeup 1 kèm 1 với Kay. Lộ trình cá nhân hóa 8 module, thực hành mẫu thật.">
+<meta name="twitter:description" content="Học makeup 1 kèm 1 với Kay. 5 buổi, 2–3 giờ mỗi buổi, học trên chính gương mặt bạn. 8.000.000đ.">
 <meta name="twitter:image" content="https://kinkay.vn/assets/img/og_cover.jpg">
 <meta name="theme-color" content="#1A0F08">
 <link rel="icon" type="image/png" href="../favicon.png">
@@ -155,6 +155,22 @@ h1,h2,h3{font-family:var(--display);font-weight:500}
 .tu li::before{content:"—";position:absolute;left:0;color:var(--gold)}
 .tu .btn{margin-top:auto;text-align:center}
 .tu-note{text-align:center;max-width:660px;margin:40px auto 0;font-size:13.5px;color:var(--taupe);line-height:1.7}
+/* 01/09/2026 — chi con MOT lo trinh. Luoi auto-fit se keo the ra het 1000px neu khong
+   bo hep, nen .tu-one khoa lai 560px. The duy nhat nay canh giua, danh sach van canh trai
+   (canh giua mot danh sach gach dau dong lam mat diem tua cua mat khi doc). */
+.tu-one{max-width:560px}
+.tu-one .tu{align-items:center;text-align:center;padding:44px 40px}
+.tu-one .tu .who{max-width:38ch}
+.tu-one .tu ul{text-align:left;width:100%;max-width:400px;margin-left:auto;margin-right:auto}
+.tu-cta{align-self:center;font-size:14px;padding:16px 40px;letter-spacing:.14em}
+/* Dai uu dai gioi thieu — nam ngay duoi nut giu cho, la ly do de hoc vien cu keo nguoi moi. */
+.tu-promo{max-width:560px;margin:22px auto 0;text-align:center;padding:20px 26px;
+  border:1px dashed var(--gold);border-radius:4px;background:rgba(196,168,130,.07)}
+.tu-promo-tag{display:inline-block;font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--gold);margin-bottom:8px}
+.tu-promo p{font-size:14px;color:var(--taupe);line-height:1.65;margin:0}
+.tu-promo p b{color:var(--espresso)}
+@media(max-width:620px){.tu-one .tu{padding:34px 24px}.tu-cta{width:100%;justify-content:center}}
 
 /* register */
 .register{background:var(--sand)}
@@ -218,13 +234,16 @@ footer .foot-links .sep{padding:0 10px;opacity:.6}
  "@context":"https://schema.org",
  "@type":"Course",
  "name":"KINKAY Personal Makeup Masterclass",
- "description":"Khóa học trang điểm 1 kèm 1 với Kay — lộ trình cá nhân hóa 8 module theo đúng trình độ và mục tiêu của từng người. Thực hành trên mẫu thật tại TP.HCM.",
+ "description":"Khóa học trang điểm 1 kèm 1 với Kay — 5 buổi, 2 đến 3 giờ mỗi buổi, học trên chính gương mặt bạn. Dùng mỹ phẩm của lớp trong quá trình học và được hướng dẫn mua mỹ phẩm cá nhân. Học tại TP.HCM.",
  "inLanguage":"vi-VN",
  "url":"https://kinkay.vn/masterclass/",
  "provider":{"@type":"Organization","name":"KINKAY","url":"https://kinkay.vn/"},
+ "offers":{"@type":"Offer","price":8000000,"priceCurrency":"VND","category":"Paid",
+   "url":"https://kinkay.vn/masterclass/","availability":"https://schema.org/InStock"},
  "hasCourseInstance":{
    "@type":"CourseInstance",
    "courseMode":["onsite","private"],
+   "courseWorkload":"PT13H",
    "location":{"@type":"Place","name":"KINKAY Studio","address":{"@type":"PostalAddress","addressLocality":"Thành phố Hồ Chí Minh","addressCountry":"VN"}}
  }
 }
@@ -290,7 +309,7 @@ footer .foot-links .sep{padding:0 10px;opacity:.6}
       <div class="eyebrow">Lộ trình 8 Module</div>
       <h2>Bạn sẽ học gì</h2>
     </div>
-    <p class="mod-sub reveal">Từ tư duy nền tảng đến signature look của KINKAY. Mỗi module đều gắn liền với thực hành trên mẫu thật.</p>
+    <p class="mod-sub reveal">Từ tư duy nền tảng đến signature look của KINKAY. Mỗi module đều gắn liền với thực hành ngay trên gương mặt bạn.</p>
     <div class="mod-grid">
       <div class="mod reveal">
         <div class="mod-no">Module 01</div>
@@ -384,8 +403,9 @@ footer .foot-links .sep{padding:0 10px;opacity:.6}
       <div class="pr-col reveal">
         <h3>Thực hành</h3>
         <ul>
-          <li>Thực hành trực tiếp trên mẫu thật</li>
+          <li>Thực hành trực tiếp trên gương mặt của bạn</li>
           <li>Kay chỉnh sửa từng chi tiết ngay tại chỗ</li>
+          <li>Dùng mỹ phẩm của lớp trong suốt quá trình học</li>
           <li>Hoàn thiện một layout theo phong cách KINKAY</li>
           <li>Đánh giá và góp ý sau mỗi buổi học</li>
         </ul>
@@ -393,9 +413,9 @@ footer .foot-links .sep{padding:0 10px;opacity:.6}
       <div class="pr-col reveal">
         <h3>Sau khóa học</h3>
         <ul>
+          <li>Hướng dẫn mua mỹ phẩm cá nhân đúng nhu cầu và ngân sách</li>
           <li>Hỗ trợ giải đáp trong suốt quá trình luyện tập</li>
           <li>Định hướng phát triển phong cách cá nhân</li>
-          <li>Chia sẻ kinh nghiệm làm việc với khách thực tế</li>
         </ul>
       </div>
     </div>
@@ -411,7 +431,7 @@ footer .foot-links .sep{padding:0 10px;opacity:.6}
       <ul class="why-list">
         <li><b>Chuẩn mực sân khấu, không phải lý thuyết.</b> Kay makeup cho Miss Cosmo International, Hoa Hậu Việt Nam, Miss Grand Vietnam và các show của Đỗ Long, Adrian Anh Tuấn. Bạn học đúng thứ Kay dùng ngoài nghề.</li>
         <li><b>1 kèm 1, đi theo tốc độ của bạn.</b> Không lớp đông, không ai bị bỏ lại. Lộ trình bám sát gương mặt và mục tiêu riêng của từng học viên.</li>
-        <li><b>Thực hành trên mẫu thật.</b> Học tới đâu làm tới đó, Kay đứng cạnh chỉnh từng nét — thứ mà học online không có được.</li>
+        <li><b>Học trên chính gương mặt bạn.</b> Học tới đâu làm tới đó, Kay đứng cạnh chỉnh từng nét — thứ mà học online không có được. Mỹ phẩm của lớp dùng suốt buổi học, nên bạn thử được nhiều chất trước khi bỏ tiền mua bất cứ món nào.</li>
       </ul>
     </div>
   </div>
@@ -423,51 +443,43 @@ footer .foot-links .sep{padding:0 10px;opacity:.6}
       <div class="eyebrow">Lộ trình &amp; học phí</div>
       <h2>Chọn lộ trình phù hợp</h2>
     </div>
-    <p class="tu-sub reveal">Ba lộ trình cho ba mục tiêu khác nhau. Học phí cá nhân hóa theo lộ trình — đăng ký để Kay tư vấn đúng gói cho bạn.</p>
-    <div class="tu-grid">
+    <!-- 01/09/2026 (quyet dinh cua Tan): GO gói 30.000.000đ va gói 2.500.000đ/buổi.
+         Chi con MOT lo trinh 8.000.000đ. Ly do thuong mai: ba gia cach nhau 12 lan
+         bat nguoi ta phai chon truoc khi ho hieu minh dang mua gi — moi lua chon them
+         la mot ly do de hoan lai. Mot gia thi chi con mot quyet dinh: hoc hay khong hoc.
+         The CTA duoc dua ra GIUA the va phong to, vi day gio la nut duy nhat cua trang.
+         Luoi .tu-grid la auto-fit minmax(280px,1fr) max-width 1000px — mot the se keo
+         gian het 1000px va trong nhu trang loi, nen phai co class .tu-one bo hep lai. -->
+    <p class="tu-sub reveal">Một lộ trình duy nhất, làm cho tới nơi. Không có gói rút gọn để bạn phải phân vân.</p>
+    <div class="tu-grid tu-one">
       <div class="tu feature reveal">
-        <div class="tag">Được chọn nhiều nhất</div>
+        <div class="tag">Lớp 1 kèm 1</div>
         <h3>Signature Masterclass</h3>
-        <p class="who">Full 8 module. Cho người muốn học bài bản, toàn diện.</p>
-        <div class="price">30.000.000<small>đ</small></div>
-        <div class="fmt">3 tháng · 1:1 · mẫu thật</div>
-        <ul>
-          <li>Trọn 8 module + Signature look</li>
-          <li>Thực hành mẫu thật mỗi buổi</li>
-          <li>Chỉ nhận 4 học viên mỗi tháng</li>
-          <li class="gift">Tặng bảng má hồng 9 ô Moonslice</li>
-        </ul>
-        <a class="btn" href="#dang-ky">Đăng ký giữ chỗ</a>
-      </div>
-      <div class="tu reveal">
-        <div class="tag">Self-makeup</div>
-        <h3>Personal Glow</h3>
-        <p class="who">Bản rút gọn. Cho người muốn tự makeup đẹp cho chính mình.</p>
-        <div class="price">từ 8.000.000<small>đ</small></div>
-        <div class="fmt">5 buổi · ~2.5h/buổi · mẫu thật</div>
+        <p class="who">Cho người muốn tự makeup cho chính mình — đẹp, và đúng gương mặt mình.</p>
+        <div class="price">8.000.000<small>đ</small></div>
+        <div class="fmt">5 buổi · 2–3 giờ mỗi buổi · 1 kèm 1</div>
         <ul>
           <li>Nền, mắt, chân mày, môi</li>
           <li>Look đi tiệc &amp; dịp đặc biệt</li>
           <li>Cầm tay chỉ việc theo gương mặt bạn</li>
-          <li class="gift">Tặng bộ cọ cá nhân</li>
+          <li>Dùng mỹ phẩm của lớp trong suốt quá trình học</li>
+          <li>Hướng dẫn mua mỹ phẩm cá nhân đúng nhu cầu và ngân sách</li>
+          <li>Đánh giá và góp ý sau mỗi buổi</li>
         </ul>
-        <a class="btn btn-ghost" style="border-color:var(--gold);color:var(--taupe)" href="#dang-ky">Đăng ký giữ chỗ</a>
-      </div>
-      <div class="tu reveal">
-        <div class="tag">Linh hoạt</div>
-        <h3>Buổi lẻ theo chủ đề</h3>
-        <p class="who">Cho người chỉ cần nâng một kỹ năng cụ thể.</p>
-        <div class="price">từ 2.500.000<small>đ / buổi</small></div>
-        <div class="fmt">1 buổi · 2.5–3h · theo yêu cầu</div>
-        <ul>
-          <li>Chọn 1 chủ đề: nền / mắt / mày / môi</li>
-          <li>Đi thẳng vào kỹ thuật bạn cần</li>
-          <li>Phù hợp người đã có nền tảng</li>
-        </ul>
-        <a class="btn btn-ghost" style="border-color:var(--gold);color:var(--taupe)" href="#dang-ky">Đăng ký giữ chỗ</a>
+        <a class="btn tu-cta" href="#dang-ky">Giữ chỗ lớp tháng này</a>
       </div>
     </div>
-    <p class="tu-note reveal">Học tại studio KINKAY, Phường Tân Hưng, TP.HCM. Giữ chỗ bằng cọc 30%, phần còn lại đóng trước buổi đầu. Lịch học linh hoạt, xếp riêng theo thời gian của bạn. Học phí có thể điều chỉnh theo lộ trình và trình độ đầu vào — Kay tư vấn cụ thể sau khi bạn đăng ký.</p>
+
+    <!-- Uu dai chay HANG THANG, khong phai chien dich co han. Dat ngay duoi nut giu cho
+         vi day la ly do manh nhat de hoc vien da hoc xong gioi thieu nguoi tiep theo —
+         va gioi thieu tu hoc vien cu la nguon khach re nhat cua mot lop 1 kem 1. -->
+    <div class="tu-promo reveal">
+      <span class="tu-promo-tag">Có mỗi tháng</span>
+      <p><b>Giới thiệu học viên kế tiếp, bạn được hoàn 3.000.000đ.</b>
+         Người bạn giới thiệu đóng đủ học phí và bắt đầu buổi đầu tiên là Kay chuyển lại tiền cho bạn.</p>
+    </div>
+
+    <p class="tu-note reveal">Học tại studio KINKAY, Phường Tân Hưng, TP.HCM. Giữ chỗ bằng cọc 30%, phần còn lại đóng trước buổi đầu. Lịch học linh hoạt, xếp riêng theo thời gian của bạn.</p>
   </div>
 </section>
 
@@ -491,10 +503,12 @@ footer .foot-links .sep{padding:0 10px;opacity:.6}
         <label for="rf-phone">Số điện thoại / Zalo</label>
         <input id="rf-phone" name="phone" type="tel" placeholder="09xx xxx xxx" required>
         <label for="rf-goal">Mục tiêu của bạn</label>
+        <!-- 01/09/2026: bo hai lua chon ung voi hai goi da go. Giu cau hoi muc tieu vi no
+             giup Kay chuan bi buoi dau, nhung khong con la cau hoi "chon goi nao" nua. -->
         <select id="rf-goal" name="goal">
-          <option>Tự makeup cho bản thân (Personal Glow)</option>
-          <option>Học bài bản / theo nghề (Signature Masterclass)</option>
-          <option>Nâng cao 1 kỹ năng (Buổi lẻ)</option>
+          <option>Tự makeup đẹp cho chính mình</option>
+          <option>Makeup cho dịp cụ thể sắp tới</option>
+          <option>Có nền tảng rồi, muốn nâng lên</option>
           <option>Chưa rõ — cần Kay tư vấn</option>
         </select>
         <label for="rf-note">Ghi chú thêm</label>
