@@ -228,7 +228,7 @@ window.CONTENT = {
         title: { vi: "Ảnh profile công ty", en: "Business profile photos" },
         desc: {
           vi: "Headshot cá nhân và chụp profile cả team. Grooming nam 900.000đ. Team nửa ngày 4.500.000đ.",
-          en: "Business headshots and team profile shoots. Men's grooming 900,000đ. Team half day 4,500,000đ."
+          en: "Business headshots and team profile shoots. Men's grooming 900,000 VND. Team half day 4,500,000 VND."
         }
       },
       {

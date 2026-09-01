@@ -1204,6 +1204,13 @@ function applyLang(){
       var m = el.dataset.vi.match(/Tháng\s+(\d{1,2}),\s*(\d{4})/);
       el.textContent = (lang === 'en' && m) ? (MONTHS_EN[+m[1]-1] + ' ' + m[2]) : el.dataset.vi;
     });
+    // (4) An han khoi Journal khi bat EN. Bai blog la bai TIENG VIET that — dich tieu de
+    //     ma bam vao ra noi dung tieng Viet la lua nguoi doc, con de nguyen thi khach nuoc
+    //     ngoai thay mot mang chu Viet giua trang, doc ra la trang lam do dang.
+    //     Chi an o phia trinh duyet khi khach TU BAM sang EN; mac dinh cua trang van la
+    //     tieng Viet nen Googlebot van thay day du khoi nay va cac link noi bo toi blog.
+    var jSec = document.getElementById('journal');
+    if (jSec) jSec.hidden = (lang === 'en');
   } catch(e){ console.error('[KINKAY] dich placeholder/option/ngay loi:', e); }
 
   document.getElementById('langBtn').textContent = lang==='vi' ? 'EN' : 'VI';
