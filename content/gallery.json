@@ -1,8 +1,8 @@
 {
   "categories": [
     {
-      "slug": "Bridal",
-      "label_vi": "Bridal",
+      "slug": "bridal",
+      "label_vi": "Cô dâu",
       "label_en": "Bridal",
       "images": [
         "/assets/img/IMG_6193.JPG",
@@ -18,20 +18,14 @@
         "/assets/img/bridal/bridal_009.jpg",
         "/assets/img/bridal/bridal_005.jpg",
         "/assets/img/bridal/bridal_016.jpg",
-        "/assets/img/incollage_save.JPG",
+        "/assets/img/incollage_save.jpg",
         "/assets/img/beautyqueen/beautyqueen_006.jpg",
-        "/assets/img/bridal/bridal_020.jpg",
-        "/assets/img/IMG_6193.JPG",
-        "/assets/img/IMG_6675.JPG",
-        "/assets/img/incollage_save.JPG",
-        null,
-        null,
-        null
+        "/assets/img/bridal/bridal_020.jpg"
       ]
     },
     {
-      "slug": "Beautyqueen",
-      "label_vi": "Beautyqueen",
+      "slug": "beautyqueen",
+      "label_vi": "Hoa hậu",
       "label_en": "Beauty Queen",
       "images": [
         "/assets/img/beautyqueen/beautyqueen_003.jpg",
@@ -49,7 +43,7 @@
     },
     {
       "slug": "celebrity",
-      "label_vi": "Celebrity",
+      "label_vi": "Nghệ sĩ",
       "label_en": "Celebrity",
       "images": [
         "/assets/img/celebrity/celebrity_013.jpg",
@@ -64,8 +58,7 @@
         "/assets/img/celebrity/celebrity_010.jpg",
         "/assets/img/img_0175.jpg",
         "/assets/img/celebrity/celebrity_012.jpg",
-        "/assets/img/celebrity/celebrity_014.jpg",
-        "/assets/img/img_0175.jpg"
+        "/assets/img/celebrity/celebrity_014.jpg"
       ]
     },
     {
@@ -90,7 +83,7 @@
     },
     {
       "slug": "party",
-      "label_vi": "Party",
+      "label_vi": "Tiệc",
       "label_en": "Party",
       "images": [
         "/assets/img/party/party_003.jpg",
@@ -113,7 +106,6 @@
         "/assets/img/concept/concept_003.jpg",
         "/assets/img/img_0236.jpg",
         "/assets/img/img_0231.jpg",
-        "/assets/img/img_0236.jpg",
         "/assets/img/img_0237.jpg",
         "/assets/img/img_0239.jpg",
         "/assets/img/img_0249.jpg",
@@ -154,7 +146,7 @@
     {
       "slug": "transformation",
       "label_vi": "Transformation",
-      "label_en": "transformation",
+      "label_en": "Transformation",
       "images": [
         "/assets/img/img_0269.jpg",
         "/assets/img/img_0267.jpg",
