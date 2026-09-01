@@ -286,6 +286,7 @@ document.getElementById('bookCtaIg').addEventListener('click',function(e){
   setTimeout(function(){if(Date.now()-t<1600&&!document.hidden)location.href='https://www.instagram.com/kinkay.official/';},1200);
 });
 </script>
+<script src="/assets/en-notice.js" defer></script>
 </body></html>`;
   fs.writeFileSync(path.join(blogDir, p.slug + '.html'), html);
 }
@@ -304,6 +305,7 @@ ${bar('../', '← kinkay.vn')}
 <div class="blog-head"><div class="eyebrow">KINKAY Journal</div><h1>Blog</h1></div>
 <div class="cards">${cards}</div>
 ${FOOT}
+<script src="/assets/en-notice.js" defer></script>
 </body></html>`;
 fs.writeFileSync(path.join(blogDir, 'index.html'), index);
 

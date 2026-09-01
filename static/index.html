@@ -1185,6 +1185,48 @@ Ngồi vào ghế KINKAY, bạn nhận được tư vấn thật — bằng con 
 document.addEventListener('DOMContentLoaded', function(){
 const C = window.CONTENT, G = window.GALLERY;
 let lang = 'vi';
+/* 02/09/2026 — nut EN truoc day chi doi chu tai cho va QUEN ngay khi roi trang: bam link
+   nao cung ve tieng Viet, lan sau mo lai cung tieng Viet. Gio:
+   - ?lang=vi|en tren URL thang moi thu (link "Tieng Viet" trong /en/ tro ve /?lang=vi),
+   - lua chon luu localStorage 'kk_lang' (cung khoa voi assets/en-notice.js o trang con),
+   - khi EN, link nao co ban /en/ thi tro sang /en/ (remapLinks o cuoi applyLang). */
+const LANG_KEY = 'kk_lang';
+function readLang(){
+  try {
+    var u = new URL(location.href), q = u.searchParams.get('lang');
+    if (q === 'vi' || q === 'en') {
+      try { localStorage.setItem(LANG_KEY, q); } catch(e){}
+      u.searchParams.delete('lang');
+      history.replaceState(null, '', u.pathname + u.search + u.hash);
+      return q;
+    }
+    var s = localStorage.getItem(LANG_KEY);
+    if (s === 'en' || s === 'vi') return s;
+  } catch(e){}
+  return 'vi';
+}
+lang = readLang();
+// Trang VI nao da co ban tieng Anh that. Trang khong co trong day giu link VI —
+// en-notice.js o trang do se hien dai "This page is in Vietnamese" + loi ra /en/.
+const EN_MAP = {
+  '/makeup-co-dau/': '/en/bridal/',
+  '/trang-diem-du-tiec/': '/en/events/',
+  '/photoshoot-editorial/#profile': '/en/headshots/',
+  '/photoshoot-editorial/': '/en/ao-dai-photoshoot/',
+  '/blog/gia-makeup-co-dau-tphcm': '/en/pricing/',
+  '/blog/gia-makeup-co-dau-tphcm/': '/en/pricing/'
+};
+function remapLinks(){
+  document.querySelectorAll('a[href]').forEach(function(a){
+    var h = a.getAttribute('href');
+    if (a.dataset.hrefVi === undefined) {
+      if (!h || h.charAt(0) !== '/' || h.indexOf('/en/') === 0) return;
+      a.dataset.hrefVi = h;
+    }
+    var vi = a.dataset.hrefVi;
+    a.setAttribute('href', (lang === 'en' && EN_MAP[vi]) ? EN_MAP[vi] : vi);
+  });
+}
 
 function get(path){ return path.split('.').reduce((o,k)=>o&&o[k], C); }
 function applyLang(){
@@ -1247,8 +1289,15 @@ function applyLang(){
   // mat dung phan cua no, va loi van vao console de con lan ra.
   [renderCredits, renderSteps, renderServices, renderDecks, renderTesti, renderJournal, renderOffpeak, observeReveals]
     .forEach(function(fn){ try{ fn(); }catch(e){ console.error('[KINKAY] '+fn.name+' loi:', e); } });
+  // Chay SAU cac ham render vi renderServices/renderJournal sinh link moi.
+  try { remapLinks(); } catch(e){ console.error('[KINKAY] remapLinks loi:', e); }
 }
-document.getElementById('langBtn').onclick = ()=>{ lang = lang==='vi'?'en':'vi'; applyLang(); };
+document.getElementById('langBtn').onclick = ()=>{
+  lang = lang==='vi'?'en':'vi';
+  try { localStorage.setItem(LANG_KEY, lang); } catch(e){}
+  if (typeof gtag === 'function') gtag('event', 'lang_switch', { to_lang: lang, click_source: 'home_button' });
+  applyLang();
+};
 
 
 /* credits — caption phải render lại theo ngôn ngữ, nên nằm trong applyLang() bên dưới */
