@@ -716,35 +716,38 @@ border:1px solid rgba(44,24,16,.18);background:var(--paper);padding:28px 30px;ma
   <a class="brand" href="#top">KINKAY</a>
   <button class="burger" id="burger" aria-label="Mở menu" aria-expanded="false">☰</button>
   <ul id="menu">
+    <!-- 01/09/2026: nhan cua nut so cap phai nam trong <span> RIENG. data-t gan textContent,
+         ma truoc day chu nam thang trong <button> canh <span class="cv"> (dau mui ten) —
+         dich mot cai la mui ten bien mat. -->
     <li class="has-sub" data-open="0">
-      <button class="sub-t" type="button" aria-expanded="false">Dịch vụ<span class="cv"></span></button>
+      <button class="sub-t" type="button" aria-expanded="false"><span data-t="nav.services">Dịch vụ</span><span class="cv"></span></button>
       <div class="navsub">
-        <a href="/makeup-co-dau/"><b>Makeup cô dâu</b><i>3 – 5 triệu</i></a>
-        <a href="/trang-diem-du-tiec/"><b>Trang điểm dự tiệc</b><i>Từ 1.8 triệu</i></a>
-        <a href="/hair-styling/"><b>Hair styling</b><i>Trong combo</i></a>
-        <a href="/photoshoot-editorial/"><b>Photoshoot &amp; editorial</b><i>Từ 1.8 triệu</i></a>
-        <a href="/qua-tang/"><b>Quà tặng &amp; voucher</b><i>Từ 500k</i></a>
+        <a href="/makeup-co-dau/"><b data-t="pages.bridal">Makeup cô dâu</b><i data-t="hint.bridalPrice">3 – 5 triệu</i></a>
+        <a href="/trang-diem-du-tiec/"><b data-t="pages.party">Trang điểm dự tiệc</b><i data-t="hint.from18">Từ 1.8 triệu</i></a>
+        <a href="/hair-styling/"><b data-t="pages.hair">Hair styling</b><i data-t="hint.inCombo">Trong combo</i></a>
+        <a href="/photoshoot-editorial/"><b data-t="pages.shoot">Photoshoot &amp; editorial</b><i data-t="hint.from18">Từ 1.8 triệu</i></a>
+        <a href="/qua-tang/"><b data-t="pages.gift">Quà tặng &amp; voucher</b><i data-t="hint.from500k">Từ 500k</i></a>
       </div>
     </li>
     <li class="has-sub" data-open="0">
-      <button class="sub-t" type="button" aria-expanded="false">Cho cô dâu<span class="cv"></span></button>
+      <button class="sub-t" type="button" aria-expanded="false"><span data-t="nav.brides">Cho cô dâu</span><span class="cv"></span></button>
       <div class="navsub">
-        <a href="/cam-nang-co-dau/"><b>Cẩm nang 12 tuần</b><i>Miễn phí</i></a>
-        <a href="/lich-cuoi/"><b>Lịch đếm ngược ngày cưới</b><i>Công cụ</i></a>
-        <a href="/before-after/"><b>Before &amp; After</b><i>Khách thật</i></a>
-        <a href="/doi-tac/"><b>Ekip cưới tin dùng</b></a>
-        <a class="navsub-more" href="/faq/">Câu hỏi thường gặp →</a>
+        <a href="/cam-nang-co-dau/"><b data-t="pages.guide">Cẩm nang 12 tuần</b><i data-t="hint.free">Miễn phí</i></a>
+        <a href="/lich-cuoi/"><b data-t="pages.countdown">Lịch đếm ngược ngày cưới</b><i data-t="hint.tool">Công cụ</i></a>
+        <a href="/before-after/"><b data-t="pages.beforeAfter">Before &amp; After</b><i data-t="hint.realClients">Khách thật</i></a>
+        <a href="/doi-tac/"><b data-t="pages.vendors">Ekip cưới tin dùng</b></a>
+        <a class="navsub-more" href="/faq/" data-t="pages.faqMore">Câu hỏi thường gặp →</a>
       </div>
     </li>
     <li><a href="#portfolio" data-t="nav.portfolio">Portfolio</a></li>
     <li class="has-sub" data-open="0">
-      <button class="sub-t" type="button" aria-expanded="false">Về Kay<span class="cv"></span></button>
+      <button class="sub-t" type="button" aria-expanded="false"><span data-t="nav.about">Về Kay</span><span class="cv"></span></button>
       <div class="navsub">
-        <a href="#about"><b>Về Kay</b><i>Câu chuyện</i></a>
-        <a href="masterclass/"><b>Masterclass 1:1</b><i>Đang nhận</i></a>
-        <a href="blog/"><b>Blog</b></a>
-        <a href="https://g.page/r/Cbm9vzO5j8-vEBE/review" target="_blank" rel="noopener"><b>Đánh giá trên Google</b></a>
-        <a class="navsub-more" href="/en/">English →</a>
+        <a href="#about"><b data-t="pages.about">Về Kay</b><i data-t="hint.story">Câu chuyện</i></a>
+        <a href="masterclass/"><b data-t="pages.masterclass">Masterclass 1:1</b><i data-t="hint.enrolling">Đang nhận</i></a>
+        <a href="blog/"><b data-t="pages.blog">Blog</b></a>
+        <a href="https://g.page/r/Cbm9vzO5j8-vEBE/review" target="_blank" rel="noopener"><b data-t="pages.review">Đánh giá trên Google</b></a>
+        <a class="navsub-more" href="/en/" data-t="pages.englishMore">English →</a>
       </div>
     </li>
     <li><a class="nav-book" id="navBook" href="https://zalo.me/0933953179" target="_blank" rel="noopener" data-t="nav.book">Đặt lịch</a></li>
@@ -844,11 +847,11 @@ border:1px solid rgba(44,24,16,.18);background:var(--paper);padding:28px 30px;ma
 <section class="section" id="beforeafter" hidden>
   <div class="wrap">
     <div class="section-head reveal in">
-      <div class="eyebrow">Khách thật của Kay</div>
+      <div class="eyebrow" data-t="ba.eyebrow">Khách thật của Kay</div>
       <h2>Before / After</h2>
     </div>
     <div class="ba-grid" id="baGrid"></div>
-    <p class="svc-note" style="margin-top:22px">Kéo thanh giữa ảnh để so sánh. Ảnh khách thật, đăng với sự đồng ý của khách — không filter, không chỉnh da.</p>
+    <p class="svc-note" style="margin-top:22px" data-t="ba.note">Kéo thanh giữa ảnh để so sánh. Ảnh khách thật, đăng với sự đồng ý của khách — không filter, không chỉnh da.</p>
   </div>
 </section>
 
@@ -1019,55 +1022,59 @@ Ngồi vào ghế KINKAY, bạn nhận được tư vấn thật — bằng con 
          Xu ly nam trong assets/page.js (KINKAY.leadForm) — dung chung voi cac trang dich vu. -->
     <form class="lead-form reveal in" id="leadForm" novalidate>
       <div class="ff">
+        <!-- 01/09/2026: moi <option> gio co value TIENG VIET co dinh, chi phan CHU HIEN RA
+             moi doi theo ngon ngu (data-t-opts). Ly do: page.js doc el.value de soan tin nhan
+             Zalo va de ban tham so vao GA4. De value chay theo ngon ngu thi bao cao GA4 tach
+             lam hai bo, va Kay nhan tin nhan bang thu tieng cua khach thay vi tieng cua minh. -->
         <div class="fld">
-          <label for="lfName">Tên của bạn <span style="color:var(--gold)">*</span></label>
-          <input id="lfName" name="name" type="text" autocomplete="name" placeholder="Ví dụ: Ngọc Anh" required>
+          <label for="lfName"><span data-t="form.name">Tên của bạn</span> <span style="color:var(--gold)">*</span></label>
+          <input id="lfName" name="name" type="text" autocomplete="name" placeholder="Ví dụ: Ngọc Anh" data-t-ph="form.namePh" required>
         </div>
         <div class="fld">
-          <label for="lfOccasion">Dịp <span style="color:var(--gold)">*</span></label>
-          <select id="lfOccasion" name="occasion" required>
+          <label for="lfOccasion"><span data-t="form.occasion">Dịp</span> <span style="color:var(--gold)">*</span></label>
+          <select id="lfOccasion" name="occasion" required data-t-opts="form.occasionOpts">
             <option value="">— Chọn dịp —</option>
-            <option>Cưới — ngày cưới</option>
-            <option>Cưới — chụp ảnh cưới / pre-wedding</option>
-            <option>Cưới — trial thử look</option>
-            <option>Tiệc / sự kiện</option>
-            <option>Chụp hình cá nhân / photoshoot</option>
-            <option>Ăn hỏi / đám hỏi</option>
-            <option>Mẹ cô dâu / người nhà</option>
-            <option>Khác</option>
+            <option value="Cưới — ngày cưới">Cưới — ngày cưới</option>
+            <option value="Cưới — chụp ảnh cưới / pre-wedding">Cưới — chụp ảnh cưới / pre-wedding</option>
+            <option value="Cưới — trial thử look">Cưới — trial thử look</option>
+            <option value="Tiệc / sự kiện">Tiệc / sự kiện</option>
+            <option value="Chụp hình cá nhân / photoshoot">Chụp hình cá nhân / photoshoot</option>
+            <option value="Ăn hỏi / đám hỏi">Ăn hỏi / đám hỏi</option>
+            <option value="Mẹ cô dâu / người nhà">Mẹ cô dâu / người nhà</option>
+            <option value="Khác">Khác</option>
           </select>
         </div>
         <div class="fld">
-          <label for="lfDate">Ngày cần makeup</label>
+          <label for="lfDate" data-t="form.date">Ngày cần makeup</label>
           <input id="lfDate" name="date" type="date">
         </div>
         <div class="fld">
-          <label for="lfPlace">Địa điểm</label>
-          <input id="lfPlace" name="place" type="text" placeholder="Ví dụ: Quận 7, hoặc tên khách sạn">
+          <label for="lfPlace" data-t="form.place">Địa điểm</label>
+          <input id="lfPlace" name="place" type="text" placeholder="Ví dụ: Quận 7, hoặc tên khách sạn" data-t-ph="form.placePh">
         </div>
         <div class="fld full">
-          <label for="lfBudget">Ngân sách dự kiến</label>
-          <select id="lfBudget" name="budget">
+          <label for="lfBudget" data-t="form.budget">Ngân sách dự kiến</label>
+          <select id="lfBudget" name="budget" data-t-opts="form.budgetOpts">
             <option value="">— Chưa rõ, nhờ Kay tư vấn —</option>
-            <option>Dưới 1.5 triệu</option>
-            <option>1.5 – 3 triệu</option>
-            <option>3 – 5 triệu</option>
-            <option>Trên 5 triệu</option>
+            <option value="Dưới 1.5 triệu">Dưới 1.5 triệu</option>
+            <option value="1.5 – 3 triệu">1.5 – 3 triệu</option>
+            <option value="3 – 5 triệu">3 – 5 triệu</option>
+            <option value="Trên 5 triệu">Trên 5 triệu</option>
           </select>
         </div>
         <div class="fld full">
-          <label for="lfNote">Bạn muốn Kay biết thêm điều gì?</label>
-          <textarea id="lfNote" name="note" placeholder="Số người cần makeup, giờ phải xong, kiểu look bạn thích..."></textarea>
+          <label for="lfNote" data-t="form.note">Bạn muốn Kay biết thêm điều gì?</label>
+          <textarea id="lfNote" name="note" placeholder="Số người cần makeup, giờ phải xong, kiểu look bạn thích..." data-t-ph="form.notePh"></textarea>
         </div>
       </div>
       <div class="form-actions">
-        <button class="btn" type="submit">Kiểm tra ngày trống</button>
-        <p class="form-note">Bấm xong Kay sẽ mở sẵn Zalo và điền giúp bạn tin nhắn — bạn chỉ cần dán và gửi.</p>
+        <button class="btn" type="submit" data-t="form.submit">Kiểm tra ngày trống</button>
+        <p class="form-note" data-t="form.after">Bấm xong Kay sẽ mở sẵn Zalo và điền giúp bạn tin nhắn — bạn chỉ cần dán và gửi.</p>
       </div>
       <div class="form-msg" id="leadMsg" role="status" aria-live="polite"></div>
     </form>
 
-    <p class="book-or reveal in">Hoặc nhắn thẳng</p>
+    <p class="book-or reveal in" data-t="form.or">Hoặc nhắn thẳng</p>
     <a class="btn" id="bookCta" href="https://zalo.me/0933953179" rel="noopener" data-t="booking.cta">Nhắn Zalo cho Kay</a>
     <p class="book-hint reveal in" data-t="booking.hint">Zalo 0933 953 179 — Kay trả lời nhanh nhất ở đây</p>
     <a class="btn-alt reveal in" id="bookCta2" href="https://www.instagram.com/kinkay.official/" rel="noopener" data-t="booking.cta2">Hoặc nhắn Instagram</a>
@@ -1081,7 +1088,7 @@ Ngồi vào ghế KINKAY, bạn nhận được tư vấn thật — bằng con 
       <div class="wordmark">
         <span class="wm-name">KINKAY</span><span class="wm-rule"></span><span class="wm-sub">a beauty atelier</span>
       </div>
-      <p>Makeup cô dâu &amp; trang điểm dự tiệc tại TP.HCM. Studio ở Phường Tân Hưng, nhận lịch toàn quốc.</p>
+      <p data-t="footerCol.tagline">Makeup cô dâu &amp; trang điểm dự tiệc tại TP.HCM. Studio ở Phường Tân Hưng, nhận lịch toàn quốc.</p>
       <div class="fch">
         <a href="https://zalo.me/0933953179" target="_blank" rel="noopener">Zalo · 0933 953 179</a>
         <a href="https://www.instagram.com/kinkay.official/" rel="noopener">Instagram · @kinkay.official</a>
@@ -1089,28 +1096,28 @@ Ngồi vào ghế KINKAY, bạn nhận được tư vấn thật — bằng con 
       </div>
     </div>
     <div class="fcol">
-      <h4>Dịch vụ</h4>
-      <a href="/makeup-co-dau/">Makeup cô dâu</a>
-      <a href="/trang-diem-du-tiec/">Trang điểm dự tiệc</a>
-      <a href="/hair-styling/">Hair styling</a>
-      <a href="/photoshoot-editorial/">Photoshoot &amp; editorial</a>
-      <a href="/qua-tang/">Quà tặng &amp; voucher</a>
+      <h4 data-t="footerCol.services">Dịch vụ</h4>
+      <a href="/makeup-co-dau/" data-t="pages.bridal">Makeup cô dâu</a>
+      <a href="/trang-diem-du-tiec/" data-t="pages.party">Trang điểm dự tiệc</a>
+      <a href="/hair-styling/" data-t="pages.hair">Hair styling</a>
+      <a href="/photoshoot-editorial/" data-t="pages.shoot">Photoshoot &amp; editorial</a>
+      <a href="/qua-tang/" data-t="pages.gift">Quà tặng &amp; voucher</a>
     </div>
     <div class="fcol">
-      <h4>Cho cô dâu</h4>
-      <a href="/cam-nang-co-dau/">Cẩm nang 12 tuần</a>
-      <a href="/lich-cuoi/">Lịch đếm ngược ngày cưới</a>
-      <a href="/before-after/">Before &amp; After</a>
-      <a href="/doi-tac/">Ekip cưới tin dùng</a>
-      <a href="/faq/">Câu hỏi thường gặp</a>
+      <h4 data-t="footerCol.brides">Cho cô dâu</h4>
+      <a href="/cam-nang-co-dau/" data-t="pages.guide">Cẩm nang 12 tuần</a>
+      <a href="/lich-cuoi/" data-t="pages.countdown">Lịch đếm ngược ngày cưới</a>
+      <a href="/before-after/" data-t="pages.beforeAfter">Before &amp; After</a>
+      <a href="/doi-tac/" data-t="pages.vendors">Ekip cưới tin dùng</a>
+      <a href="/faq/" data-t="pages.faq">Câu hỏi thường gặp</a>
     </div>
     <div class="fcol">
       <h4>KINKAY</h4>
-      <a href="#about">Về Kay</a>
-      <a href="masterclass/">Masterclass 1:1</a>
-      <a href="blog/">Blog</a>
-      <a href="https://g.page/r/Cbm9vzO5j8-vEBE/review" target="_blank" rel="noopener">Đánh giá trên Google</a>
-      <a href="/en/">English</a>
+      <a href="#about" data-t="pages.about">Về Kay</a>
+      <a href="masterclass/" data-t="pages.masterclass">Masterclass 1:1</a>
+      <a href="blog/" data-t="pages.blog">Blog</a>
+      <a href="https://g.page/r/Cbm9vzO5j8-vEBE/review" target="_blank" rel="noopener" data-t="pages.review">Đánh giá trên Google</a>
+      <a href="/en/" data-t="pages.english">English</a>
     </div>
   </div>
   <div class="fbase">
@@ -1167,12 +1174,44 @@ function applyLang(){
     if(el.hasAttribute('data-t-html')) el.innerHTML = v[lang];
     else el.textContent = v[lang];
   });
+  /* ----------------------------------------------------------------------
+     01/09/2026 — ba thu data-t KHONG voi toi duoc, vi chung khong phai text node.
+     ---------------------------------------------------------------------- */
+  // Bao ca ba trong try/catch: chung chay TRUOC danh sach render o duoi, nen mot
+  // loi o day la applyLang() dut giua chung va trang mat toan bo phan dong.
+  try {
+    // (1) placeholder cua input/textarea
+    document.querySelectorAll('[data-t-ph]').forEach(function(el){
+      var v = get(el.getAttribute('data-t-ph'));
+      if (v && v[lang] !== undefined) el.placeholder = v[lang];
+    });
+    // (2) nhan cua <option>. CHI doi chu hien ra — value giu nguyen tieng Viet,
+    //     vi page.js doc value de soan tin Zalo va ban tham so vao GA4.
+    document.querySelectorAll('[data-t-opts]').forEach(function(sel){
+      var v = get(sel.getAttribute('data-t-opts'));
+      var list = v && v[lang];
+      if (!Array.isArray(list)) return;
+      Array.prototype.forEach.call(sel.options, function(o, i){
+        if (list[i] !== undefined) o.textContent = list[i];
+      });
+    });
+    // (3) ngay bai blog. build.js pre-render san dang tieng Viet ("Tháng 7, 2026");
+    //     giu ban goc trong dataset de doi qua doi lai khong mat du lieu.
+    var MONTHS_EN = ['January','February','March','April','May','June',
+                     'July','August','September','October','November','December'];
+    document.querySelectorAll('#jGrid .jd').forEach(function(el){
+      if (!el.dataset.vi) el.dataset.vi = el.textContent.trim();
+      var m = el.dataset.vi.match(/Tháng\s+(\d{1,2}),\s*(\d{4})/);
+      el.textContent = (lang === 'en' && m) ? (MONTHS_EN[+m[1]-1] + ' ' + m[2]) : el.dataset.vi;
+    });
+  } catch(e){ console.error('[KINKAY] dich placeholder/option/ngay loi:', e); }
+
   document.getElementById('langBtn').textContent = lang==='vi' ? 'EN' : 'VI';
   // 08/08/2026: chay tung ham trong try/catch rieng. Truoc day chung dung mot dong;
   // renderCredits() nem loi mot cai la gia dich vu, portfolio, testimonial, journal
   // deu khong render — trang van hien nhung mat het phan dong. Mot ham hong thi chi
   // mat dung phan cua no, va loi van vao console de con lan ra.
-  [renderCredits, renderSteps, renderServices, renderDecks, renderTesti, renderJournal, observeReveals]
+  [renderCredits, renderSteps, renderServices, renderDecks, renderTesti, renderJournal, renderOffpeak, observeReveals]
     .forEach(function(fn){ try{ fn(); }catch(e){ console.error('[KINKAY] '+fn.name+' loi:', e); } });
 }
 document.getElementById('langBtn').onclick = ()=>{ lang = lang==='vi'?'en':'vi'; applyLang(); };
@@ -1183,8 +1222,12 @@ function renderCredits(){
   // Giu nguyen chu trong HTML neu du lieu thieu caption, thay vi nem loi.
   const cap = C.credits && C.credits.caption && C.credits.caption[lang];
   if (cap) document.getElementById('creditsCaption').textContent = cap;
+  // 01/09/2026: items co the la chuoi tran (ten rieng khong dich) hoac {vi,en}.
   document.querySelector('#credits .wrap').innerHTML =
-    C.credits.items.map(t=>`<span class="item">${t}</span>`).join('');
+    C.credits.items.map(t=>{
+      const s = (t && typeof t === 'object') ? (t[lang] || t.vi) : t;
+      return `<span class="item">${s}</span>`;
+    }).join('');
 }
 
 /* approach steps */
@@ -1206,7 +1249,11 @@ function renderServices(){
   const S = window.SERVICES || {};
   const show = !!S.show_prices;
   const byName = {};
-  (S.items||[]).forEach(it=>{ if(it&&it.name) byName[String(it.name).trim().toLowerCase()] = it.price||''; });
+  // 01/09/2026: uu tien price_en khi dang o tieng Anh. Chuoi gia tieng Viet co
+  // chu "Từ" va don vi "đ" — de nguyen thi bat EN xong bang gia van nua tieng Viet.
+  (S.items||[]).forEach(it=>{ if(it&&it.name)
+    byName[String(it.name).trim().toLowerCase()] =
+      ((lang==='en' && it.price_en) ? it.price_en : it.price) || ''; });
   // 10/08/2026: build.js pre-render san khoi nay (muc 4b-2) de Googlebot doc duoc gia trong
   // HTML tho. Ham nay van chay — no la duong doi ngon ngu VI/EN va la luoi an toan neu
   // pre-render hong. Viet bang noi chuoi thay vi template literal de ma nguon HTML tho khong
@@ -1551,15 +1598,25 @@ applyLang();
    Bat/tat bang truong offpeak_on trong content/services.json (sua o trang admin).
    An mac dinh trong HTML, chi hien khi CO bat VA co noi dung — de khi Tan tat uu dai
    thi khong con vet gi tren trang. */
-(function(){
+/* 01/09/2026: doi tu IIFE chay MOT LAN sang ham co ten, va dua vao danh sach
+   applyLang() goi lai. Truoc day dong nay hardcode "Ưu đãi ngày thường" nen bat EN
+   xong no van dung nguyen tieng Viet. Ban tieng Anh lay tu offpeak_note_en trong
+   content/services.json; chua khai thi tu dong lui ve ban tieng Viet.
+   Khai bang `function` (khong phai `const`) de duoc hoisting — applyLang() goi no
+   o dong 1587, TRUOC cho nay trong file. */
+function renderOffpeak(){
   var S = window.SERVICES || {};
   var el = document.getElementById('offpeakNote');
-  if(!el || !S.offpeak_on || !S.offpeak_note) return;
+  if(!el) return;
+  if(!S.offpeak_on || !S.offpeak_note){ el.hidden = true; return; }
+  var body = (lang === 'en' && S.offpeak_note_en) ? S.offpeak_note_en : S.offpeak_note;
+  var label = (C.offpeak && C.offpeak.label && C.offpeak.label[lang]) || 'Ưu đãi ngày thường';
   el.hidden = false;
-  el.innerHTML = '<b>Ưu đãi ngày thường</b> · ' +
-    String(S.offpeak_note).replace(/^Ưu đãi ngày thường:\s*/i,'')
+  el.innerHTML = '<b>' + label + '</b> · ' +
+    String(body).replace(/^(Ưu đãi ngày thường|Weekday rate):\s*/i,'')
       .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-})();
+}
+renderOffpeak();
 
 /* 12/08/2026 (dot A1) — noi form "Kiem tra ngay trong".
    Chi goi leadForm(); KHONG goi KINKAY.init() vi trang chu da co nav/reveal/banner in-app rieng. */

@@ -12,7 +12,94 @@ window.CONTENT = {
     services: { vi: "Dịch vụ", en: "Services" },
     about: { vi: "Về Kay", en: "About Kay" },
     blog: { vi: "Blog", en: "Blog" },
-    book: { vi: "Đặt lịch", en: "Book Now" }
+    book: { vi: "Đặt lịch", en: "Book Now" },
+    brides: { vi: "Cho cô dâu", en: "For brides" }
+  },
+
+  /* ======================================================================
+     01/09/2026 — BO SUNG BAN TIENG ANH
+     Bat nut EN tren trang chu truoc day van con 42 cho tieng Viet: nut so cap
+     cua nav, toan bo dropdown, nhan + placeholder + option cua form dat lich,
+     ca ba cot footer, ghi chu Before/After, uu dai ngay thuong, va ngay thang
+     bai blog. Ly do: nhung cho do khong he co thuoc tinh data-t nen bo dich
+     khong voi toi. Khach nuoc ngoai bam EN ma nua trang van tieng Viet thi
+     moi thu con lai cua chien luoc tieng Anh deu vo nghia.
+
+     `pages` va `hint` co y dat rieng va DUNG CHUNG cho ca nav lan footer —
+     mot ten trang chi khai mot lan, khong the co chuyen nav dich mot kieu
+     footer dich mot kieu.
+     ====================================================================== */
+  pages: {
+    bridal:      { vi: "Makeup cô dâu",             en: "Bridal makeup" },
+    party:       { vi: "Trang điểm dự tiệc",        en: "Event makeup" },
+    hair:        { vi: "Hair styling",              en: "Hair styling" },
+    shoot:       { vi: "Photoshoot & editorial",    en: "Photoshoot & editorial" },
+    gift:        { vi: "Quà tặng & voucher",        en: "Gift vouchers" },
+    guide:       { vi: "Cẩm nang 12 tuần",          en: "12-week bridal guide" },
+    countdown:   { vi: "Lịch đếm ngược ngày cưới",  en: "Wedding countdown" },
+    beforeAfter: { vi: "Before & After",            en: "Before & After" },
+    vendors:     { vi: "Ekip cưới tin dùng",        en: "Wedding vendors" },
+    faq:         { vi: "Câu hỏi thường gặp",        en: "FAQ" },
+    faqMore:     { vi: "Câu hỏi thường gặp →",      en: "FAQ →" },
+    about:       { vi: "Về Kay",                    en: "About Kay" },
+    masterclass: { vi: "Masterclass 1:1",           en: "1:1 Masterclass" },
+    blog:        { vi: "Blog",                      en: "Blog" },
+    review:      { vi: "Đánh giá trên Google",      en: "Review on Google" },
+    english:     { vi: "English",                   en: "English" },
+    englishMore: { vi: "English →",                 en: "English →" }
+  },
+  hint: {
+    bridalPrice: { vi: "3 – 5 triệu",   en: "3 – 5M VND" },
+    from18:      { vi: "Từ 1.8 triệu",  en: "From 1.8M" },
+    inCombo:     { vi: "Trong combo",   en: "In every package" },
+    from500k:    { vi: "Từ 500k",       en: "From 500k" },
+    free:        { vi: "Miễn phí",      en: "Free" },
+    tool:        { vi: "Công cụ",       en: "Tool" },
+    realClients: { vi: "Khách thật",    en: "Real clients" },
+    story:       { vi: "Câu chuyện",    en: "Her story" },
+    enrolling:   { vi: "Đang nhận",     en: "Enrolling" }
+  },
+  ba: {
+    eyebrow: { vi: "Khách thật của Kay", en: "Kay's real clients" },
+    note: {
+      vi: "Kéo thanh giữa ảnh để so sánh. Ảnh khách thật, đăng với sự đồng ý của khách — không filter, không chỉnh da.",
+      en: "Drag the handle to compare. Real clients, posted with their consent — no filters, no skin retouching."
+    }
+  },
+  offpeak: {
+    label: { vi: "Ưu đãi ngày thường", en: "Weekday rate" }
+  },
+  form: {
+    name:        { vi: "Tên của bạn",        en: "Your name" },
+    namePh:      { vi: "Ví dụ: Ngọc Anh",    en: "e.g. Sarah" },
+    occasion:    { vi: "Dịp",                en: "Occasion" },
+    occasionOpts: {
+      vi: ["— Chọn dịp —", "Cưới — ngày cưới", "Cưới — chụp ảnh cưới / pre-wedding", "Cưới — trial thử look",
+           "Tiệc / sự kiện", "Chụp hình cá nhân / photoshoot", "Ăn hỏi / đám hỏi", "Mẹ cô dâu / người nhà", "Khác"],
+      en: ["— Select —", "Wedding — the day itself", "Wedding — pre-wedding shoot", "Wedding — bridal trial",
+           "Party / event", "Headshot / personal shoot", "Engagement ceremony", "Mother of the bride / family", "Other"]
+    },
+    date:        { vi: "Ngày cần makeup",    en: "Date you need makeup" },
+    place:       { vi: "Địa điểm",           en: "Location" },
+    placePh:     { vi: "Ví dụ: Quận 7, hoặc tên khách sạn", en: "e.g. District 7, or a hotel name" },
+    budget:      { vi: "Ngân sách dự kiến",  en: "Budget range" },
+    budgetOpts: {
+      vi: ["— Chưa rõ, nhờ Kay tư vấn —", "Dưới 1.5 triệu", "1.5 – 3 triệu", "3 – 5 triệu", "Trên 5 triệu"],
+      en: ["— Not sure, please advise —", "Under 1.5M VND", "1.5 – 3M VND", "3 – 5M VND", "Over 5M VND"]
+    },
+    note:        { vi: "Bạn muốn Kay biết thêm điều gì?", en: "Anything Kay should know?" },
+    notePh:      { vi: "Số người cần makeup, giờ phải xong, kiểu look bạn thích...",
+                   en: "How many people, what time you need to be ready, the look you have in mind..." },
+    submit:      { vi: "Kiểm tra ngày trống", en: "Check my date" },
+    after:       { vi: "Bấm xong Kay sẽ mở sẵn Zalo và điền giúp bạn tin nhắn — bạn chỉ cần dán và gửi.",
+                   en: "Submitting opens Zalo with your message already written — you just paste and send." },
+    or:          { vi: "Hoặc nhắn thẳng",     en: "Or message Kay directly" }
+  },
+  footerCol: {
+    services: { vi: "Dịch vụ",    en: "Services" },
+    brides:   { vi: "Cho cô dâu", en: "For brides" },
+    tagline:  { vi: "Makeup cô dâu & trang điểm dự tiệc tại TP.HCM. Studio ở Phường Tân Hưng, nhận lịch toàn quốc.",
+                en: "Bridal and event makeup in Ho Chi Minh City. Studio in Tân Hưng Ward, bookings nationwide." }
   },
   // 08/08/2026 (dot 3): khoi cong cu. 09/08/2026 (dot 5): chi con banner /lich-cuoi/
   // (the thu-look da go, the bang gia bi che "quê" — bo luon, bai gia co link o Journal).
@@ -57,15 +144,20 @@ window.CONTENT = {
       vi: "Kay tham gia ekip hậu trường tại",
       en: "Kay has worked backstage at"
     },
+    // 01/09/2026: doi tu mang chuoi phang sang {vi,en} de dai credit khong con
+    // dung nguyen tieng Viet khi bat EN. renderCredits() chap nhan CA HAI dang
+    // (chuoi tran van chay), nen ten rieng khong can dich thi cu de nguyen chuoi.
+    // Ten cuoc thi va ten nha thiet ke la danh tu rieng — chi dich cai nao co
+    // ten quoc te chinh thuc, con lai giu nguyen.
     items: [
       "Miss Cosmo Vietnam",
       "Miss Cosmo International",
-      "Hoa Hậu Việt Nam",
+      { vi: "Hoa Hậu Việt Nam", en: "Miss Vietnam" },
       "Miss Grand Vietnam",
       "Aquafina Vietnam Int'l Fashion Week",
       "DCM Design",
-      "Đỗ Long Design",
-      "Adrian Anh Tuấn Shows",
+      { vi: "Đỗ Long Design", en: "Đỗ Long Design" },
+      { vi: "Adrian Anh Tuấn Shows", en: "Adrian Anh Tuấn Shows" },
       "Vietnam Wedding Fest"
     ]
   },

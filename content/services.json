@@ -7,29 +7,34 @@
   "trial_price": "1.500.000đ",
   "offpeak_on": true,
   "offpeak_note": "Ưu đãi ngày thường: đặt lịch Thứ 2 – Thứ 5 (trừ mùa cưới cao điểm và ngày lễ) được giảm 15% cho dịch vụ makeup và Full Glam Combo. Bridal không áp dụng.",
+  "offpeak_note_en": "Weekday rate: bookings Monday to Thursday, outside peak wedding season and public holidays, get 15% off makeup and the Full Glam Combo. Bridal is excluded.",
   "items": [
     {
       "name": "Full Glam Combo",
       "desc": "Makeup + tóc cho tiệc, sự kiện, chụp ảnh cá nhân. Tóc luôn đi cùng, không bán tách rời.",
       "price": "Từ 1.800.000đ",
+      "price_en": "From 1,800,000 VND",
       "link": "/trang-diem-du-tiec/"
     },
     {
       "name": "Business profile photos",
       "desc": "Headshot cá nhân và chụp profile cả team. Grooming nam 900.000đ. Team nửa ngày 4.500.000đ.",
       "price": "Từ 1.500.000đ",
+      "price_en": "From 1,500,000 VND",
       "link": "/photoshoot-editorial/#profile"
     },
     {
       "name": "Pre-wedding",
       "desc": "Makeup và tóc cho buổi chụp ảnh cưới. Kay làm xong rồi về, hoặc đi theo cả buổi.",
       "price": "2.000.000 – 3.500.000đ",
+      "price_en": "2,000,000 – 3,500,000 VND",
       "link": "/photoshoot-editorial/"
     },
     {
       "name": "Bridal",
       "desc": "Ba mức chọn một: trọn ngày cưới, riêng lễ gia tiên, hoặc bà sui. Trial tính riêng.",
       "price": "3.000.000 – 5.000.000đ",
+      "price_en": "3,000,000 – 5,000,000 VND",
       "link": "/makeup-co-dau/"
     }
   ]
