@@ -179,16 +179,34 @@ body>nav.solid .burger{color:var(--espresso);text-shadow:none}
 .hero-inner .sub{max-width:520px;margin:0 0 34px;font-size:clamp(15px,1.8vw,17.5px);color:var(--sand);
   font-family:inherit;font-weight:400;line-height:1.55;letter-spacing:0;
   text-shadow:0 1px 8px rgba(26,15,8,.5)}
-.hero-badge-row{display:block}
-.hero-badge{display:inline-flex;align-items:center;gap:9px;margin-top:30px;padding:8px 17px;
+/* VIÊN KHUYẾN MÃI MASTERCLASS ở hero — 02/09/2026.
+   Đứng KỀ hai nút "Đặt lịch" và "Xem portfolio" nhưng CỐ TÌNH không phải hộp
+   đặc thứ hai: nền trong suốt + viền mảnh = cấp 3, không tranh mắt với nút vàng.
+   Hiệu ứng nháy nằm ở VIỀN và CHẤM, không nháy cả khối chữ — nháy chữ trên nền
+   ảnh cưới đọc ra rẻ tiền, nháy viền thì vẫn bắt mắt mà giữ được chất thương hiệu. */
+/* top:-15px la bu tru DO CAO, khong phai so ma. Nut vang cao 44px, vien cao 38px;
+   vertical-align:middle can theo baseline chu khong can theo tam hop, nen lech 15px.
+   Dung position thay vi margin: margin-top am keo tut ca dong, do bang pixel roi. */
+.hero-badge-row{display:inline-block;vertical-align:middle;margin-left:26px;position:relative;top:-15px}
+.hero-badge{display:inline-flex;align-items:center;gap:9px;padding:9px 18px;
   border:1px solid rgba(196,168,130,.65);border-radius:100px;font-size:11px;letter-spacing:.16em;
-  text-transform:uppercase;color:var(--cream);background:rgba(26,15,8,.28);
-  backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);transition:.3s;text-shadow:none}
+  text-transform:uppercase;color:var(--cream);background:rgba(26,15,8,.3);
+  backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);text-shadow:none;
+  animation:promoGlow 2.4s ease-in-out infinite;
+  transition:background .3s,color .3s,border-color .3s}
 .hero-badge::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--gold);
   box-shadow:0 0 0 0 rgba(196,168,130,.7);animation:pulseDot 2.4s ease-out infinite}
 @keyframes pulseDot{0%{box-shadow:0 0 0 0 rgba(196,168,130,.55)}70%{box-shadow:0 0 0 8px rgba(196,168,130,0)}100%{box-shadow:0 0 0 0 rgba(196,168,130,0)}}
-.hero-badge:hover{background:var(--gold);color:var(--ink);border-color:var(--gold)}
-.hero-badge:hover::before{background:var(--ink)}
+@keyframes promoGlow{
+  0%,100%{border-color:rgba(196,168,130,.4);box-shadow:0 0 0 0 rgba(196,168,130,0)}
+  50%{border-color:rgba(196,168,130,1);box-shadow:0 0 18px 1px rgba(196,168,130,.4)}}
+.hero-badge:hover{background:var(--gold);color:var(--ink);border-color:var(--gold);
+  box-shadow:none;animation:none}
+.hero-badge:hover::before{background:var(--ink);animation:none}
+/* Người bật "giảm chuyển động" trong hệ điều hành thì tắt nháy, giữ viền sáng cố định. */
+@media(prefers-reduced-motion:reduce){
+  .hero-badge{animation:none;border-color:rgba(196,168,130,.9)}
+  .hero-badge::before{animation:none}}
 /* NÚT — ba cấp, thiết kế lại 12/08/2026 (đợt D). Xem giải thích đầy đủ trong assets/page.css.
    Luật: mỗi màn hình CHỈ MỘT nút cấp 1. Cái thứ hai là CHỮ có gạch chân, không phải hộp thứ hai —
    trước đây hero có hai hộp bằng nhau nên mắt không biết đi đâu. */
@@ -411,6 +429,8 @@ footer .foot-links .sep{padding:0 10px;opacity:.6}
   .decks{grid-template-columns:repeat(2,minmax(130px,1fr));gap:40px 22px;padding:0 6px}
   .hero-inner{padding-bottom:16vh}
   .btn-ghost{margin-left:0;margin-top:12px}
+  .hero-badge-row{display:block;margin-left:0;margin-top:18px;top:0}
+  .hero-badge{font-size:10px;letter-spacing:.13em;padding:9px 15px}
   .section{padding:76px 0}
   .credits span.item{border-right:none;padding:0 10px}
   .mcta{left:0;right:0;bottom:0;border-radius:0;box-shadow:0 -4px 18px rgba(26,15,8,.25)}
@@ -561,6 +581,7 @@ border:1px solid rgba(44,24,16,.18);background:var(--paper);padding:28px 30px;ma
   .burger{display:block;z-index:60}
   .topbar{font-size:10px;letter-spacing:.1em;padding:7px 12px}
   .btn-ghost{margin-left:0;display:inline-block;margin-top:6px}
+  .hero-badge-row{display:block;margin-left:0;margin-top:16px;top:0}
 }
 
 </style>
@@ -770,6 +791,7 @@ border:1px solid rgba(44,24,16,.18);background:var(--paper);padding:28px 30px;ma
     <h1 class="sub" data-t="hero.sub">Makeup cô dâu &amp; trang điểm dự tiệc tại TP.HCM — sắc nét, sang, và vẫn là chính bạn.</h1>
     <a class="btn" id="heroCta" href="#services" data-t="hero.cta">Đặt lịch với Kay</a>
     <a class="btn btn-ghost" href="#portfolio" data-t="hero.scroll">Xem portfolio</a>
+    <span class="hero-badge-row"><a class="hero-badge" id="heroMasterclass" href="masterclass/" data-t="hero.masterclass">Masterclass 1:1 · Đang mở lớp</a></span>
   </div>
 </header>
 
@@ -1728,6 +1750,25 @@ if (window.KINKAY && window.KINKAY.leadForm) window.KINKAY.leadForm({ source: 'h
       ga('en_entry_click', { click_source: 'topbar', viewer_lang: langs[0] || 'unknown' });
     });
   }catch(e){ console.error('[KINKAY] en entry loi:', e); }
+})();
+</script>
+
+<!-- ==========================================================================
+     Do luot bam vien khuyen mai Masterclass o hero (02/09/2026).
+     KHOI RIENG, cuoi body — cung ly do voi khoi tren: khoi script lon phia tren
+     render ca trang, mot file du lieu ve cham la moi dong sau do bi bo qua.
+     Param dat ten 'click_source', KHONG dat 'source' — 'source' la ten danh
+     rieng cua GA4, no ghi de attribution session va sinh kenh Unassigned.
+     ========================================================================== -->
+<script>
+(function(){
+  try{
+    var a = document.getElementById('heroMasterclass');
+    if(!a) return;
+    a.addEventListener('click', function(){
+      if(typeof gtag==='function') gtag('event','masterclass_click',{ click_source:'hero_badge' });
+    });
+  }catch(e){ console.error('[KINKAY] masterclass badge loi:', e); }
 })();
 </script>
 

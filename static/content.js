@@ -133,7 +133,8 @@ window.CONTENT = {
       en: "Bridal makeup & event hair styling in Ho Chi Minh City — sculpted, luxurious, and still unmistakably you."
     },
     cta: { vi: "Đặt lịch với Kay", en: "Book with Kay" },
-    scroll: { vi: "Xem portfolio", en: "View portfolio" }
+    scroll: { vi: "Xem portfolio", en: "View portfolio" },
+    masterclass: { vi: "Masterclass 1:1 · Đang mở lớp", en: "1:1 Masterclass · Now enrolling" }
   },
   credits: {
     heading: { vi: "Selected Credits", en: "Selected Credits" },
