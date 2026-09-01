@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="vi"><head>
 <!-- Google Analytics -->
+<script>/* 01/09/2026: chan tham so ?source= den tu LINK NGOAI (bio MXH, QR da in). GA4 coi `source` la ten danh rieng (cung ho voi medium/campaign/term/content) va lay no ghi de attribution cua session -> sinh kenh "Unassigned" + nguon rac kieu `home / (not set)`. Ban sua 26/08 da don het trong code, nhung link ngoai van gan ?source=, nen 28-31/08 Unassigned van chiem 37% session. Xoa param TRUOC khi gtag chay la cach chan dut diem. */(function(){try{var u=new URL(location.href);if(u.searchParams.has('source')){u.searchParams.delete('source');history.replaceState(null,'',u.pathname+u.search+u.hash);}}catch(e){}})();</script>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-HMVQB181BH"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","G-HMVQB181BH");</script>
 <meta charset="utf-8">
@@ -111,6 +112,14 @@ body>nav.solid .lang-btn{color:var(--espresso)}
 .topbar a{border-bottom:1px solid rgba(196,168,130,.45);padding-bottom:2px}
 .topbar a:hover{color:var(--sand);border-bottom-color:var(--sand)}
 body.scrolled .topbar{transform:translateY(-100%)}
+/* 01/09/2026: dai tren cung doi noi dung khi trinh duyet khach KHONG phai tieng Viet.
+   Ly do: GA4 bat duoc page_title tieng Nhat va tieng Anh tren chinh trang chu tieng Viet
+   — do la tieu de do trinh duyet TU DICH. Nghia la khach nuoc ngoai dang dap xuong day
+   roi tu bam dich, khong ai tim ra /en/. Nut EN tren nav qua nho va dich tai cho, khong
+   dua ho toi trang co gia bang tieng Anh. Dung lai chinh dai topbar nen KHONG doi layout.
+   Ban tieng Anh khong tu an khi cuon, vi voi khach do day la loi vao chinh. */
+.topbar--en{background:var(--espresso);letter-spacing:.13em}
+body.scrolled .topbar--en{transform:none}
 body>nav{top:33px;transition:background .3s,box-shadow .3s,padding .3s,top .35s}
 body.scrolled>nav{top:0}
 
@@ -1168,6 +1177,7 @@ function applyLang(){
 }
 document.getElementById('langBtn').onclick = ()=>{ lang = lang==='vi'?'en':'vi'; applyLang(); };
 
+
 /* credits — caption phải render lại theo ngôn ngữ, nên nằm trong applyLang() bên dưới */
 function renderCredits(){
   // Giu nguyen chu trong HTML neu du lieu thieu caption, thay vi nem loi.
@@ -1608,5 +1618,48 @@ if (window.KINKAY && window.KINKAY.leadForm) window.KINKAY.leadForm({ source: 'h
 }); /* 13/08/2026 — dong DOMContentLoaded mo o dau khoi script nay */
 </script>
 
+<!-- ==========================================================================
+     01/09/2026 — LOI VAO TIENG ANH
+     Bang chung: GSC 3 thang co 19 quoc gia, CTR ngoai Viet Nam 7,4% so voi 4,0%
+     trong nuoc; trang /en/ bounce 20% so voi trang chu 81,8%. Nhung GA4 lai ghi
+     nhan page_title tieng Nhat va ban dich tieng Anh CUA CHINH TRANG CHU — do la
+     tieu de do TRINH DUYET TU DICH. Nghia la khach nuoc ngoai dap xuong trang
+     tieng Viet roi tu bam dich; ho khong tim ra /en/, noi co gia bang tieng Anh.
+
+     Cach chua: doi noi dung dai topbar (ribbon Masterclass chi co nghia voi khach
+     Viet) sang loi moi tieng Anh khi ngon ngu trinh duyet khong phai vi-*.
+     Dung lai dung element cu nen KHONG dich chuyen layout mot pixel nao.
+
+     PHAI nam trong khoi <script> RIENG, dat cuoi body. Khoi script lon phia tren
+     render toan bo trang tu content.js/videos.js; chi can mot file du lieu chua
+     ve kip la no nem loi va moi dong sau do trong CUNG khoi bi bo qua. Loi vao
+     tieng Anh khong duoc phu thuoc vao viec phan con lai cua trang chay tron.
+     ========================================================================== -->
+<script>
+(function(){
+  function ga(name, params){ if(typeof gtag==='function') gtag('event', name, params||{}); }
+  try{
+    var bar = document.querySelector('.topbar');
+    if(!bar) return;
+    if(location.pathname.indexOf('/en/') === 0) return;
+
+    var langs = (navigator.languages && navigator.languages.length)
+      ? navigator.languages : [navigator.language || ''];
+    var viewer = langs.join(',').toLowerCase();
+    // Chi doi khi KHONG co dau vet tieng Viet nao trong danh sach ngon ngu.
+    if(viewer.indexOf('vi') === 0 || viewer.indexOf(',vi') > -1) return;
+
+    bar.classList.add('topbar--en');
+    bar.innerHTML = 'English spoken · Prices published · '
+      + '<a href="/en/" id="enEntry">Makeup &amp; hair in English →</a>';
+
+    ga('en_entry_shown', { viewer_lang: langs[0] || 'unknown' });
+    var a = document.getElementById('enEntry');
+    if(a) a.addEventListener('click', function(){
+      ga('en_entry_click', { click_source: 'topbar', viewer_lang: langs[0] || 'unknown' });
+    });
+  }catch(e){ console.error('[KINKAY] en entry loi:', e); }
+})();
+</script>
 
 </body></html>
