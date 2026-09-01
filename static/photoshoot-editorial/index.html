@@ -6,7 +6,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Makeup chụp hình — photoshoot, editorial, profile | KINKAY TP.HCM</title>
-<meta name="description" content="Makeup và hair cho buổi chụp hình tại TP.HCM: ảnh cá nhân, profile công ty, editorial, lookbook thương hiệu. Kay đến từ hậu trường pageant và fashion week. Full Glam Combo từ 1.800.000đ.">
+<meta name="description" content="Makeup và hair cho buổi chụp hình tại TP.HCM: ảnh profile doanh nghiệp, headshot cá nhân 1.500.000đ, grooming nam 900.000đ, chụp profile cả team từ 4.500.000đ nửa ngày. Cả editorial và lookbook thương hiệu.">
 <link rel="canonical" href="https://kinkay.vn/photoshoot-editorial/">
 <!-- 01/09/2026: hreflang doi xung voi cum trang tieng Anh moi. Google chi cong nhan
      quan he ngon ngu khi CA HAI phia cung khai — truoc day chi trang tieng Anh khai,
@@ -42,7 +42,15 @@
    "provider":{"@id":"https://kinkay.vn/#business"},
    "areaServed":[{"@type":"City","name":"Thành phố Hồ Chí Minh"},{"@type":"Country","name":"Việt Nam"}],
    "offers":[{"@type":"Offer","name":"Full Glam Combo cho buổi chụp","priceCurrency":"VND","price":1800000,
-     "url":"https://kinkay.vn/photoshoot-editorial/"}]},
+     "url":"https://kinkay.vn/photoshoot-editorial/"},
+    {"@type":"Offer","name":"Headshot cá nhân — ảnh profile","priceCurrency":"VND","price":1500000,
+     "url":"https://kinkay.vn/photoshoot-editorial/#profile"},
+    {"@type":"Offer","name":"Grooming nam cho ảnh profile","priceCurrency":"VND","price":900000,
+     "url":"https://kinkay.vn/photoshoot-editorial/#profile"},
+    {"@type":"Offer","name":"Chụp profile team — nửa ngày","priceCurrency":"VND","price":4500000,
+     "url":"https://kinkay.vn/photoshoot-editorial/#profile"},
+    {"@type":"Offer","name":"Chụp profile team — trọn ngày","priceCurrency":"VND","price":7500000,
+     "url":"https://kinkay.vn/photoshoot-editorial/#profile"}]},
   {"@type":"BreadcrumbList","itemListElement":[
    {"@type":"ListItem","position":1,"name":"KINKAY","item":"https://kinkay.vn/"},
    {"@type":"ListItem","position":2,"name":"Photoshoot & editorial","item":"https://kinkay.vn/photoshoot-editorial/"}]},
@@ -53,6 +61,12 @@
     "acceptedAnswer":{"@type":"Answer","text":"Có. Với buổi chụp nhiều look hoặc kéo dài, Kay ở lại để đổi look và dặm lại giữa các set. Báo trước lịch chụp để Kay tính thời lượng và báo giá theo buổi."}},
    {"@type":"Question","name":"Chụp ảnh profile công ty có làm được không?",
     "acceptedAnswer":{"@type":"Answer","text":"Được, và đây là nhóm khách Kay làm thường xuyên. Ảnh profile cần look chỉn chu, tự nhiên, không quá đậm — vì bạn sẽ dùng nó trên LinkedIn và hồ sơ công ty trong nhiều năm."}},
+   {"@type":"Question","name":"Chụp ảnh profile cho cả team công ty tính giá thế nào?",
+    "acceptedAnswer":{"@type":"Answer","text":"Tính theo buổi chứ không theo đầu người. Nửa ngày 4.500.000đ cho tối đa 4 giờ và 8 người. Trọn ngày 7.500.000đ cho tối đa 8 giờ và 18 người. Trên 18 người thì cộng 500.000đ mỗi người hoặc thêm thợ, Kay báo trước khi xác nhận. Đã gồm di chuyển trong nội thành TP.HCM và xuất được hoá đơn."}},
+   {"@type":"Question","name":"Headshot cá nhân giá bao nhiêu?",
+    "acceptedAnswer":{"@type":"Answer","text":"1.500.000đ cho một người, gồm makeup và tóc, một look, 45 đến 60 phút, tại studio hoặc văn phòng của khách. Grooming cho nam là 900.000đ, hoặc 500.000đ mỗi người khi nằm trong buổi chụp team."}},
+   {"@type":"Question","name":"Nam giới có cần makeup khi chụp ảnh profile không?",
+    "acceptedAnswer":{"@type":"Answer","text":"Đây là grooming chứ không phải makeup: kiềm dầu, che vùng đỏ, gọn chân mày để máy ảnh không thổi phồng. Trong ảnh cuối không ai nhận ra là có trang điểm — chỉ thấy da đều và gọn gàng hơn."}},
    {"@type":"Question","name":"Nhãn hàng đặt makeup cho lookbook thì làm việc thế nào?",
     "acceptedAnswer":{"@type":"Answer","text":"Gửi Kay moodboard, số mẫu, số look và lịch chụp. Kay báo giá theo buổi và theo số mẫu. Kay quen quy trình ekip từ fashion week và pageant nên vào việc được ngay, không cần ai hướng dẫn cách phối hợp với stylist và photographer."}}]}
  ]}
@@ -190,11 +204,11 @@
             <span class="sub">Makeup + hair cho buổi chụp cá nhân, ảnh profile.</span></td>
           <td class="num">Từ 1.800.000đ</td>
         </tr>
-        <tr>
-          <td>Chỉ makeup — một look
-            <span class="sub">Bạn tự làm tóc hoặc đã có người làm tóc riêng.</span></td>
-          <td class="num">Từ 1.800.000đ</td>
-        </tr>
+        <!-- 01/09/2026: GO dong "Chi makeup - mot look, tu 1.800.000d".
+             Hai ly do. Mot: no mau thuan voi toan bo cum trang tieng Anh, noi tuyen bo
+             toc LUON di kem va khong bao gio ban rieng. Hai: no vo nghia ve thuong mai —
+             cung gia 1,8tr nhung it viec hon, tuc la moi khach chon no. Menu V2 (27/08)
+             da bo han muc makeup rieng, dong nay la sot lai. Dung them lai. -->
         <tr>
           <td>Chụp ảnh cưới / pre-wedding
             <span class="sub">2.000.000đ nếu Kay làm xong rồi về. 3.500.000đ nếu Kay đi theo cả buổi để dặm và đổi look.</span></td>
@@ -212,12 +226,79 @@
         </tr>
       </tbody>
     </table>
-    <p class="form-note" style="margin-top:22px">Giá đã gồm di chuyển trong nội thành TP.HCM.
-      Chụp ngoài thành phố có phụ phí, Kay báo trước khi xác nhận.</p>
+    <p class="form-note" style="margin-top:22px">Tóc nằm trong mọi mức giá phía trên và không
+      bán tách riêng. Giá đã gồm di chuyển trong nội thành TP.HCM. Chụp ngoài thành phố có
+      phụ phí, Kay báo trước khi xác nhận.</p>
   </div>
 </section>
 
-<section class="section alt">
+<!-- 01/09/2026 — GOI ANH PROFILE DOANH NGHIEP.
+     Tach rieng khoi bang gia chup hinh phia tren vi day la mot cong viec KHAC: ngan hon,
+     nhe hon, mot look, va ong kinh o cu ly gan. Ban 1,8tr kieu full glam su kien la ban sai viec.
+     Neo gia: buoi chup headshot o TP.HCM dang o khoang 2-8 trieu (FotoPop tu 3tr, Anastasia
+     Sokyrka 75-130 USD, LocalGrapher/LocalLens 200-375 USD). Makeup khong duoc dat hon mot nua
+     buoi chup, neu khong khach bo makeup.
+     Goi team tinh THEO BUOI chu khong theo dau nguoi: rang buoc cua Kay la thoi gian tai cho,
+     va cong ty can mot con so co dinh de duyet ngan sach chu khong muon nhan dau nguoi roi mac ca. -->
+<section class="section alt" id="profile">
+  <div class="wrap narrow">
+    <div class="section-head reveal">
+      <div class="eyebrow">Ảnh profile doanh nghiệp</div>
+      <h2>Headshot cá nhân và chụp profile cả team</h2>
+      <p>Ảnh profile được xem ở cự ly ba mươi centimet trên màn hình điện thoại, và gần như
+         luôn được retouch sau đó. Đó là một bài toán khác hẳn makeup dự tiệc, và là chỗ
+         makeup sự kiện hỏng nhiều nhất.</p>
+    </div>
+    <ul class="ticks reveal">
+      <li><b>Nền da giữ được kết cấu thay vì xoá nó đi.</b> Phủ dày lên ảnh cận là ra mặt nạ.
+        Da vẫn ra da mới là thứ làm bức ảnh trông đắt tiền.</li>
+      <li><b>Không để lộ đường biên.</b> Quai hàm, chân tóc, khoé mắt — chỗ nào sản phẩm dừng
+        lại là chỗ ống kính cận tìm ra.</li>
+      <li><b>Nhẹ việc cho người retouch.</b> Kay làm sao để hậu kỳ của photographer nhẹ đi.
+        Makeup contour quá tay còn mất công sửa hơn là không makeup.</li>
+      <li><b>Cả team phải đồng bộ.</b> Ba mươi người phải trông như được chụp cùng một ngày,
+        cùng một người. Đó là quyết định của makeup nhiều ngang với của ánh sáng.</li>
+      <li><b>Nam giới là grooming, không phải makeup.</b> Kiềm dầu, che vùng đỏ, gọn chân mày
+        để máy ảnh không thổi phồng. Trong ảnh cuối không ai nhận ra là có trang điểm.</li>
+    </ul>
+    <table class="ptable reveal" style="margin-top:26px">
+      <thead><tr><th>Gói</th><th>Giá</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>Headshot cá nhân
+            <span class="sub">Một người, makeup + tóc, một look, 45–60 phút. Tại studio hoặc văn phòng của khách.</span></td>
+          <td class="num">1.500.000đ</td>
+        </tr>
+        <tr>
+          <td>Grooming nam
+            <span class="sub">Kiềm dầu, che đỏ, gọn chân mày. Trong buổi chụp team tính 500.000đ/người.</span></td>
+          <td class="num">900.000đ</td>
+        </tr>
+        <tr>
+          <td>Team — nửa ngày
+            <span class="sub">Kay có mặt tối đa 4 giờ, tối đa 8 người, dặm lại giữa các lượt.</span></td>
+          <td class="num">4.500.000đ</td>
+        </tr>
+        <tr>
+          <td>Team — trọn ngày
+            <span class="sub">Tối đa 8 giờ, tối đa 18 người. Trên 18 người thì cộng 500.000đ/người hoặc thêm thợ, Kay báo trước khi xác nhận.</span></td>
+          <td class="num">7.500.000đ</td>
+        </tr>
+        <tr>
+          <td>Personal branding — Kay theo cả buổi
+            <span class="sub">Nhiều look trong ngày cho founder, coach, chuyên gia. Đổi look và dặm ngay tại chỗ.</span></td>
+          <td class="num">3.500.000đ</td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="form-note" style="margin-top:22px">Gói team tính theo buổi chứ không theo đầu
+      người — ràng buộc là thời gian Kay có mặt tại chỗ, và một con số cố định dễ duyệt hơn
+      một phép nhân đầu người. Đã gồm di chuyển trong nội thành. Buổi chụp công ty xuất được
+      hoá đơn, báo trước khi đặt để Kay chuẩn bị.</p>
+  </div>
+</section>
+
+<section class="section">
   <div class="wrap">
     <div class="section-head reveal">
       <div class="eyebrow">Ảnh Kay đã làm</div>
@@ -237,7 +318,7 @@
   </div>
 </section>
 
-<section class="section">
+<section class="section alt">
   <div class="wrap">
     <div class="section-head reveal">
       <div class="eyebrow">Hỏi đáp</div>
@@ -271,7 +352,7 @@
   </div>
 </section>
 
-<section class="section alt" id="form">
+<section class="section" id="form">
   <div class="wrap">
     <div class="section-head reveal">
       <div class="eyebrow">Hỏi lịch</div>

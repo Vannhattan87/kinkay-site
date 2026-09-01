@@ -122,11 +122,21 @@ window.CONTENT = {
           en: "Makeup + hair for events, parties and personal shoots. Hair always comes with it."
         }
       },
+      // 01/09/2026: o "Hair Styling" DA BI THAY bang "Anh profile cong ty".
+      // Ly do: the Hair Styling khong ban duoc gi — gia cua no ghi "Da co trong moi goi",
+      // tuc no chiem mot trong bon o cua luoi ma khong dan toi doanh thu nao. Trang
+      // /hair-styling/ VAN CON va van nam trong nav + footer nen khong mat URL.
+      // Luoi la repeat(auto-fit, minmax(230px,1fr)): man 1280px cho 4 cot, nen phai giu
+      // DUNG 4 o thi moi tron mot hang. Them o thu 5-6 la ra 4+2 mo coi. Da dung thu that
+      // tren site truoc khi chot.
+      // LUU Y: `title.en` o day la KHOA ghep voi `name` trong content/services.json
+      // (build.js muc 4b-2, so sanh lowercase). Doi mot ben ma quen ben kia la the mat
+      // gia va mat link, im lang, khong bao loi.
       {
-        title: { vi: "Hair Styling", en: "Hair Styling" },
+        title: { vi: "Ảnh profile công ty", en: "Business profile photos" },
         desc: {
-          vi: "Blowout, soft waves, updo cho tiệc và sự kiện.",
-          en: "Blowouts, soft waves, formal updos."
+          vi: "Headshot cá nhân và chụp profile cả team. Grooming nam 900.000đ. Team nửa ngày 4.500.000đ.",
+          en: "Business headshots and team profile shoots. Men's grooming 900,000đ. Team half day 4,500,000đ."
         }
       },
       {
