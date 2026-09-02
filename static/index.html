@@ -1220,8 +1220,9 @@ function remapLinks(){
   document.querySelectorAll('a[href]').forEach(function(a){
     var h = a.getAttribute('href');
     if (a.dataset.hrefVi === undefined) {
-      if (!h || h.charAt(0) !== '/' || h.indexOf('/en/') === 0) return;
-      a.dataset.hrefVi = h;
+      if (!h || /^(https?:|mailto:|tel:|#|\/\/)/.test(h) || h.indexOf('/en/') === 0) return;
+      // Vai link viet tuong doi ("blog/gia-...") — chuan hoa ve dang co "/" dau de tra EN_MAP.
+      a.dataset.hrefVi = h.charAt(0) === '/' ? h : '/' + h;
     }
     var vi = a.dataset.hrefVi;
     a.setAttribute('href', (lang === 'en' && EN_MAP[vi]) ? EN_MAP[vi] : vi);
