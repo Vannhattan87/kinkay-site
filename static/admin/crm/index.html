@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#faf7f2">
+<title>KINKAY CRM</title>
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<!--
+  KINKAY CRM · v1.0 MVP · 06/09/2026 · CR-20260906-28
+  Một file, không framework, mobile-first. Dữ liệu ở Cloudflare D1 qua /api/crm/*.
+  Đăng nhập: dùng lại popup OAuth GitHub của Sveltia CMS (kinkay-site.pages.dev/auth). Ai đăng bài được thì dùng CRM được.
+  /admin/* đã có X-Frame-Options DENY + no-store + noindex trong static/_headers, không có CSP (cố ý, xem _headers).
+-->
+<style>
+  :root{--bg:#faf7f2;--card:#fff;--ink:#2a2622;--mute:#7b736a;--line:#e9e2d8;--gold:#b8975a;--gold2:#8f7340;--red:#c0392b;--green:#2e7d4f;--blue:#2c5f8a;--amber:#b7791f;--r:14px}
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 -apple-system,BlinkMacSystemFont,"Be Vietnam Pro","Segoe UI",Roboto,sans-serif;-webkit-text-size-adjust:100%}
+  a{color:var(--gold2)}
+  #app{max-width:720px;margin:0 auto;padding:12px 12px calc(84px + env(safe-area-inset-bottom))}
+  header.top{display:flex;align-items:center;justify-content:space-between;padding:6px 2px 10px}
+  header.top h1{font:600 18px/1 "Playfair Display",Georgia,serif;letter-spacing:.06em;margin:0}
+  header.top small{color:var(--mute);font-size:12px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;margin:0 0 10px}
+  .card h2{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);margin:0 0 8px;display:flex;justify-content:space-between;align-items:center}
+  .card h2 b{color:var(--ink);font-weight:600}
+  .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:10px}
+  .kpi .v{font-size:18px;font-weight:600;line-height:1.1}
+  .kpi .l{font-size:11px;color:var(--mute);margin-top:4px}
+  .row{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-top:1px solid var(--line);cursor:pointer}
+  .row:first-of-type{border-top:0}
+  .row .main{flex:1;min-width:0}
+  .row .t{font-weight:600}
+  .row .s{font-size:13px;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .row .right{text-align:right;font-size:12px;color:var(--mute);white-space:nowrap}
+  .pill{display:inline-block;font-size:11px;padding:2px 8px;border-radius:999px;border:1px solid var(--line);background:#f4efe7;color:var(--ink);white-space:nowrap}
+  .pill.New{background:#eef4fb;color:var(--blue);border-color:#d6e4f2}
+  .pill.Quoted,.pill.Qualified,.pill.Contacted,.pill.Waiting\ for\ Response,.pill.Hold{background:#fbf3e4;color:var(--amber);border-color:#f0dfbf}
+  .pill.Deposit\ Paid,.pill.Confirmed{background:#e9f5ee;color:var(--green);border-color:#cfe8d9}
+  .pill.Completed{background:#eee;color:#555}
+  .pill.Lost{background:#fbeaea;color:var(--red);border-color:#f2cfcf}
+  .pill.due{background:#fbf3e4;color:var(--amber)}
+  .pill.over{background:#fbeaea;color:var(--red)}
+  .empty{color:var(--mute);font-size:14px;padding:6px 0}
+  .chips{display:flex;gap:6px;overflow-x:auto;padding:2px 0 8px;-webkit-overflow-scrolling:touch}
+  .chips button{flex:0 0 auto;border:1px solid var(--line);background:var(--card);border-radius:999px;padding:6px 12px;font-size:13px;color:var(--ink)}
+  .chips button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  label{display:block;font-size:12px;color:var(--mute);margin:10px 0 4px}
+  input,select,textarea{width:100%;font:inherit;font-size:16px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink)}
+  textarea{min-height:72px;resize:vertical}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;font:inherit;font-size:15px;font-weight:600;padding:12px 16px;border-radius:12px;border:1px solid var(--gold);background:var(--gold);color:#fff;width:100%;margin-top:12px;cursor:pointer}
+  .btn.sec{background:#fff;color:var(--ink);border-color:var(--line);font-weight:500}
+  .btn.sm{width:auto;padding:8px 12px;font-size:13px;margin:0}
+  .btn:disabled{opacity:.5}
+  .quick{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+  .quick button{font:inherit;font-size:13px;padding:6px 10px;border-radius:999px;border:1px solid var(--line);background:#fff;color:var(--ink)}
+  .quick button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .bar{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:6px 0 calc(6px + env(safe-area-inset-bottom));z-index:5}
+  .bar a{flex:1;text-align:center;text-decoration:none;color:var(--mute);font-size:11px;padding:4px 0}
+  .bar a span{display:block;font-size:20px;line-height:1.1}
+  .bar a.on{color:var(--gold2);font-weight:600}
+  .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(90px + env(safe-area-inset-bottom));background:var(--ink);color:#fff;padding:10px 16px;border-radius:999px;font-size:14px;opacity:0;transition:opacity .2s;z-index:9;pointer-events:none;max-width:90%}
+  .toast.on{opacity:1}
+  .toast.err{background:var(--red)}
+  .hist{font-size:12px;color:var(--mute)}
+  .hist div{padding:4px 0;border-top:1px dashed var(--line)}
+  .money{font-variant-numeric:tabular-nums}
+  .back{background:none;border:0;font:inherit;color:var(--gold2);padding:0;margin:0 0 8px;cursor:pointer}
+  .warn{background:#fbf3e4;border:1px solid #f0dfbf;color:#6b4a0b;border-radius:10px;padding:8px 10px;font-size:13px;margin:8px 0}
+  .login{max-width:360px;margin:15vh auto;text-align:center}
+  .login h1{font:600 26px "Playfair Display",Georgia,serif;letter-spacing:.1em}
+  .muted{color:var(--mute);font-size:13px}
+  details summary{cursor:pointer;color:var(--gold2);font-size:14px;margin:10px 0 4px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function () {
+  'use strict';
+  var API = '/api/crm';
+  var AUTH_BASE = 'https://kinkay-site.pages.dev';   // trùng base_url trong static/admin/config.yml
+  var TOKEN_KEY = 'kk_crm_token';
+  var app = document.getElementById('app');
+  var state = { token: null, lists: null, user: null, dev: false, route: '#/today', filter: '', q: '', pfilter: '' };
+
+  // ---------- helpers ----------
+  function $(sel, root) { return (root || document).querySelector(sel); }
+  function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+  function money(v) { if (v == null || v === '') return '—'; return Number(v).toLocaleString('vi-VN') + ' ₫'; }
+  function dmy(iso) { if (!iso) return ''; var p = String(iso).slice(0, 10).split('-'); return p.length === 3 ? p[2] + '/' + p[1] + '/' + p[0] : iso; }
+  function todayVN() { return new Date(Date.now() + 7 * 3600e3).toISOString().slice(0, 10); }
+  function addDays(iso, n) { var d = new Date(Date.parse(iso || todayVN()) + n * 86400e3); return d.toISOString().slice(0, 10); }
+  var toastT;
+  function toast(msg, isErr) { var t = $('#toast'); t.textContent = msg; t.className = 'toast on' + (isErr ? ' err' : ''); clearTimeout(toastT); toastT = setTimeout(function () { t.className = 'toast'; }, isErr ? 4000 : 2000); }
+  function opts(list, cur, allowEmpty) { var h = allowEmpty ? '<option value="">—</option>' : ''; (list || []).forEach(function (o) { h += '<option' + (o === cur ? ' selected' : '') + '>' + esc(o) + '</option>'; }); return h; }
+  function pill(s, extra) { return '<span class="pill ' + esc(s) + (extra ? ' ' + extra : '') + '">' + esc(s) + '</span>'; }
+  function dueClass(iso, today) { if (!iso) return ''; return iso < today ? 'over' : (iso === today ? 'due' : ''); }
+
+  function api(path, opt) {
+    opt = opt || {};
+    var h = { 'Content-Type': 'application/json' };
+    if (state.token) h.Authorization = 'Bearer ' + state.token;
+    return fetch(API + path, { method: opt.method || 'GET', headers: h, body: opt.body ? JSON.stringify(opt.body) : undefined })
+      .then(function (r) {
+        if (r.status === 401) { logout(false); throw new Error('Phiên đăng nhập hết hạn, đăng nhập lại.'); }
+        return r.json().then(function (j) { if (!r.ok || j.ok === false) throw new Error((j && j.error) ? j.error + (j.detail ? ' · ' + (Array.isArray(j.detail) ? j.detail.join('; ') : j.detail) : '') : 'Lỗi ' + r.status); return j; });
+      });
+  }
+
+  // ---------- auth ----------
+  function login() {
+    var popup = window.open(AUTH_BASE + '/auth?provider=github&site_id=' + encodeURIComponent(location.hostname), 'kk_auth', 'width=600,height=700');
+    if (!popup) { toast('Trình duyệt chặn popup. Cho phép popup rồi thử lại.', true); return; }
+    function onMsg(e) {
+      if (e.origin !== AUTH_BASE) return;
+      if (e.data === 'authorizing:github') { e.source.postMessage('authorizing:github', e.origin); return; }
+      if (typeof e.data === 'string' && e.data.indexOf('authorization:github:') === 0) {
+        window.removeEventListener('message', onMsg);
+        var m = e.data.match(/^authorization:github:(success|error):(.+)$/);
+        try { var payload = JSON.parse(m[2]); } catch (x) { payload = {}; }
+        if (m[1] === 'success' && payload.token) {
+          state.token = payload.token; try { localStorage.setItem(TOKEN_KEY, payload.token); } catch (x) { }
+          boot();
+        } else toast('Đăng nhập không thành công: ' + (payload.error || ''), true);
+        try { popup.close(); } catch (x) { }
+      }
+    }
+    window.addEventListener('message', onMsg);
+  }
+  function logout(clear) { state.token = null; state.user = null; try { localStorage.removeItem(TOKEN_KEY); } catch (x) { } if (clear !== false) render(); else renderLogin(); }
+
+  function renderLogin(msg) {
+    app.innerHTML = '<div class="login"><h1>KINKAY</h1><p class="muted">CRM · sổ khách của Kay</p>' +
+      (msg ? '<div class="warn">' + esc(msg) + '</div>' : '') +
+      '<button class="btn" id="btnLogin">Đăng nhập bằng GitHub (tài khoản đăng bài)</button>' +
+      '<p class="muted" style="margin-top:14px">Dùng đúng tài khoản đang đăng bài trên <a href="/admin/">/admin/</a>. Không có tài khoản riêng.</p></div>';
+    $('#btnLogin').onclick = login;
+  }
+
+  function boot() {
+    try { if (!state.token) state.token = localStorage.getItem(TOKEN_KEY); } catch (x) { }
+    api('/lists').then(function (j) {
+      state.lists = j; state.user = j.user; state.dev = !state.token;
+      if (!location.hash) location.hash = '#/today';
+      render();
+    }).catch(function (e) {
+      state.token = null;
+      renderLogin(/hết hạn|401|Chưa đăng nhập/.test(e.message) ? '' : e.message);
+    });
+  }
+
+  // ---------- layout ----------
+  function shell(title, inner, tab) {
+    app.innerHTML =
+      '<header class="top"><h1>KINKAY · CRM</h1><small>' + esc(state.user || '') + ' · ' + dmy(todayVN()) + '</small></header>' + inner +
+      '<nav class="bar">' +
+      '<a href="#/today" class="' + (tab === 'today' ? 'on' : '') + '"><span>☀️</span>Hôm nay</a>' +
+      '<a href="#/leads" class="' + (tab === 'leads' ? 'on' : '') + '"><span>👥</span>Khách</a>' +
+      '<a href="#/new" class="' + (tab === 'new' ? 'on' : '') + '"><span>➕</span>Thêm</a>' +
+      '<a href="#/partners" class="' + (tab === 'partners' ? 'on' : '') + '"><span>🤝</span>Đối tác</a>' +
+      '<a href="#/more" class="' + (tab === 'more' ? 'on' : '') + '"><span>⋯</span>Thêm</a></nav>';
+  }
+  function loading(tab) { shell('', '<div class="empty">Đang tải…</div>', tab); }
+
+  function leadRow(l, today) {
+    var due = l.next_followup ? '<span class="pill ' + dueClass(l.next_followup, today) + '">' + dmy(l.next_followup) + '</span>' : '';
+    return '<div class="row" data-go="#/lead/' + esc(l.id) + '"><div class="main"><div class="t">' + esc(l.customer_name) + ' ' + pill(l.status) + '</div>' +
+      '<div class="s">' + esc([l.service, l.event_date ? 'sự kiện ' + dmy(l.event_date) : '', l.next_action].filter(Boolean).join(' · ')) + '</div></div>' +
+      '<div class="right">' + due + (l.expected_revenue != null ? '<div class="money">' + esc(money(l.expected_revenue)) + '</div>' : '') + '</div></div>';
+  }
+  function partnerRow(p, today) {
+    var due = p.next_followup ? '<span class="pill ' + dueClass(p.next_followup, today) + '">' + dmy(p.next_followup) + '</span>' : '';
+    return '<div class="row" data-go="#/partner/' + esc(p.id) + '"><div class="main"><div class="t">' + esc(p.name) + ' <span class="pill">' + esc(p.status) + '</span></div>' +
+      '<div class="s">' + esc([p.type, p.next_action].filter(Boolean).join(' · ')) + '</div></div><div class="right">' + due + '</div></div>';
+  }
+  function section(title, rows, emptyMsg) {
+    return '<div class="card"><h2>' + title + '<b>' + rows.length + '</b></h2>' + (rows.length ? rows.join('') : '<div class="empty">' + (emptyMsg || 'Không có') + '</div>') + '</div>';
+  }
+  function bindRows() { app.querySelectorAll('[data-go]').forEach(function (el) { el.addEventListener('click', function () { location.hash = el.getAttribute('data-go'); }); }); }
+
+  // ---------- views ----------
+  function viewToday() {
+    loading('today');
+    api('/dashboard').then(function (d) {
+      var t = d.today, k = d.kpi, q = d.queues;
+      var kpis = '<div class="kpis">' +
+        '<div class="kpi"><div class="v money">' + esc(money(k.expected_revenue_open)) + '</div><div class="l">Expected (đang mở, ' + k.expected_open_count + ' lead)</div></div>' +
+        '<div class="kpi"><div class="v money">' + esc(money(k.verified_actual_revenue)) + '</div><div class="l">Actual đã xác minh (' + k.verified_count + ')</div></div>' +
+        '<div class="kpi"><div class="v money">' + esc(money(k.completed_unverified_expected)) + '</div><div class="l">Completed chưa xác minh tiền (' + k.completed_unverified_count + ')</div></div></div>' +
+        '<div class="kpis"><div class="kpi"><div class="v">' + k.total_leads + '</div><div class="l">Tổng lead</div></div>' +
+        '<div class="kpi"><div class="v">' + k.bookings + '</div><div class="l">Booking (cọc/chốt/xong)</div></div>' +
+        '<div class="kpi"><div class="v">' + (k.booking_conversion == null ? '—' : k.booking_conversion + '%') + '</div><div class="l">Booked / qualified+</div></div></div>';
+      var html = kpis +
+        section('Đến hạn hôm nay', q.due_today.map(function (l) { return leadRow(l, t); }), 'Không có việc đến hạn') +
+        section('Quá hạn', q.overdue.map(function (l) { return leadRow(l, t); }), 'Sạch') +
+        section('Khách mới (New)', q.new_leads.map(function (l) { return leadRow(l, t); })) +
+        section('Đang báo giá / chờ', q.quoted.map(function (l) { return leadRow(l, t); })) +
+        section('Đã cọc / đã chốt', q.booked.map(function (l) { return leadRow(l, t); })) +
+        section('Job 30 ngày tới', q.upcoming_30d.map(function (l) { return leadRow(l, t); })) +
+        section('Completed cần thu tiền / xin review', q.completed_followup.map(function (l) { return leadRow(l, t); })) +
+        section('Đối tác đến hạn', q.partners_due.map(function (p) { return partnerRow(p, t); })) +
+        '<div class="card"><h2>Nguồn khách</h2>' + d.sources.map(function (s) { return '<div class="row" style="cursor:default"><div class="main">' + esc(s.k) + '</div><div class="right">' + s.n + '</div></div>'; }).join('') + '</div>' +
+        '<div class="card"><h2>Dịch vụ</h2>' + d.services.map(function (s) { return '<div class="row" style="cursor:default"><div class="main">' + esc(s.k) + '</div><div class="right">' + s.n + '</div></div>'; }).join('') + '</div>' +
+        (d.meta && d.meta.seed_source ? '<p class="muted">Dữ liệu gốc: ' + esc(d.meta.seed_source) + '</p>' : '');
+      shell('', html, 'today'); bindRows();
+    }).catch(function (e) { shell('', '<div class="warn">' + esc(e.message) + '</div>', 'today'); });
+  }
+
+  function viewLeads() {
+    loading('leads');
+    var qs = '?limit=300' + (state.filter ? '&status=' + encodeURIComponent(state.filter) : '') + (state.q ? '&q=' + encodeURIComponent(state.q) : '');
+    api('/leads' + qs).then(function (d) {
+      var chips = ['', 'New', 'Contacted', 'Qualified', 'Quoted', 'Waiting for Response', 'Hold', 'Deposit Paid', 'Confirmed', 'Completed', 'Lost'];
+      var html = '<input id="q" type="search" placeholder="Tìm tên, contact, ghi chú…" value="' + esc(state.q) + '">' +
+        '<div class="chips" style="margin-top:8px">' + chips.map(function (c) { return '<button data-f="' + esc(c) + '" class="' + (state.filter === c ? 'on' : '') + '">' + (c || 'Tất cả') + '</button>'; }).join('') + '</div>' +
+        '<div class="card">' + (d.leads.length ? d.leads.map(function (l) { return leadRow(l, d.today); }).join('') : '<div class="empty">Không có khách nào</div>') + '</div>';
+      shell('', html, 'leads'); bindRows();
+      app.querySelectorAll('.chips button').forEach(function (b) { b.onclick = function () { state.filter = b.getAttribute('data-f'); viewLeads(); }; });
+      var qi = $('#q'), tm; qi.oninput = function () { clearTimeout(tm); tm = setTimeout(function () { state.q = qi.value.trim(); viewLeads(); }, 350); };
+    }).catch(function (e) { shell('', '<div class="warn">' + esc(e.message) + '</div>', 'leads'); });
+  }
+
+  function quickDates(fieldId, base) {
+    var b = base || todayVN();
+    return '<div class="quick">' + [['Mai', 1], ['+2 ngày', 2], ['+3 ngày', 3], ['+7 ngày', 7], ['+14', 14]].map(function (x) {
+      return '<button type="button" data-d="' + addDays(b, x[1]) + '" data-for="' + fieldId + '">' + x[0] + '</button>';
+    }).join('') + '<button type="button" data-d="" data-for="' + fieldId + '">Xoá hạn</button></div>';
+  }
+  function bindQuickDates(root) {
+    root.querySelectorAll('.quick button[data-for]').forEach(function (b) { b.onclick = function () { var f = $('#' + b.getAttribute('data-for'), root); f.value = b.getAttribute('data-d'); }; });
+  }
+
+  function viewLead(id) {
+    loading('leads');
+    api('/leads/' + encodeURIComponent(id)).then(function (d) {
+      var l = d.lead, L = state.lists, today = todayVN();
+      var showMoney = ['Quoted', 'Hold', 'Deposit Paid', 'Confirmed', 'Completed'].indexOf(l.status) >= 0;
+      var head = '<button class="back" data-go="#/leads">‹ Khách</button>' +
+        '<div class="card"><div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start"><div><div style="font-size:18px;font-weight:600">' + esc(l.customer_name) + '</div>' +
+        '<div class="muted">' + esc(l.id) + ' · ' + esc(l.contact_channel || '') + ' ' + esc(l.contact || '') + '</div></div>' + pill(l.status) + '</div>' +
+        '<div class="muted" style="margin-top:6px">' + esc([l.service, l.event_date ? 'Sự kiện ' + dmy(l.event_date) : 'Chưa có ngày sự kiện', l.source, l.segment].filter(Boolean).join(' · ')) + '</div>' +
+        '<div style="margin-top:6px"><span class="money">Expected ' + esc(money(l.expected_revenue)) + '</span> · Cọc ' + esc(l.deposit || '—') + ' · <span class="money">Actual ' + esc(money(l.actual_revenue)) + (l.actual_revenue != null ? (l.actual_verified ? ' ✓ đã xác minh' : ' (chưa xác minh)') : '') + '</span></div>' +
+        (d.partner ? '<div class="warn">Đối tác: <a href="#/partner/' + esc(d.partner.id) + '">' + esc(d.partner.name) + '</a> · ' + esc(d.partner.commercial_terms || 'referral chuẩn 10%') + '</div>' : '') +
+        (l.next_action ? '<div style="margin-top:8px"><b>Việc tiếp:</b> ' + esc(l.next_action) + (l.next_followup ? ' <span class="pill ' + dueClass(l.next_followup, today) + '">' + dmy(l.next_followup) + '</span>' : '') + '</div>' : '') +
+        '</div>';
+
+      var quick = '<div class="card" id="quick"><h2>Cập nhật nhanh (≤ 60 giây)</h2>' +
+        '<label>Trạng thái</label><select id="f_status">' + opts(L.lead_statuses, l.status) + '</select>' +
+        '<label>Việc tiếp theo (1 việc, bắt đầu bằng động từ)</label><input id="f_next" value="' + esc(l.next_action || '') + '" placeholder="Ví dụ: Xác nhận giờ makeup và khách sạn">' +
+        '<label>Hẹn làm tiếp</label><input id="f_fu" type="date" value="' + esc(l.next_followup || '') + '">' + quickDates('f_fu') +
+        '<label>Ghi 1 dòng vừa xảy ra (tự thêm ngày vào ghi chú)</label><input id="f_note" placeholder="Khách hỏi thêm giá bà sui, đã báo 2,5tr">' +
+        '<div id="moneyBox" style="' + (showMoney ? '' : 'display:none') + '"><div class="grid2"><div><label>Expected (đ)</label><input id="f_exp" inputmode="numeric" value="' + (l.expected_revenue == null ? '' : l.expected_revenue) + '"></div>' +
+        '<div><label>Cọc</label><select id="f_dep">' + opts(L.deposits, l.deposit, true) + '</select></div></div>' +
+        '<div class="grid2"><div><label>Actual đã nhận (đ)</label><input id="f_act" inputmode="numeric" value="' + (l.actual_revenue == null ? '' : l.actual_revenue) + '"></div>' +
+        '<div><label>Xác minh tiền (Tân)</label><select id="f_ver"><option value="0"' + (!l.actual_verified ? ' selected' : '') + '>Chưa xác minh</option><option value="1"' + (l.actual_verified ? ' selected' : '') + '>Đã xác minh</option></select></div></div></div>' +
+        '<button class="btn" id="btnSave">Lưu</button></div>';
+
+      var full = '<details><summary>Sửa đầy đủ hồ sơ</summary><div class="card">' +
+        '<label>Tên khách</label><input id="e_name" value="' + esc(l.customer_name) + '">' +
+        '<div class="grid2"><div><label>Contact</label><input id="e_contact" value="' + esc(l.contact || '') + '"></div><div><label>Kênh nhắn</label><select id="e_channel">' + opts(L.channels, l.contact_channel, true) + '</select></div></div>' +
+        '<div class="grid2"><div><label>Dịch vụ</label><select id="e_service">' + opts(L.services, l.service, true) + '</select></div><div><label>Ngày sự kiện</label><input id="e_event" type="date" value="' + esc(l.event_date || '') + '"></div></div>' +
+        '<div class="grid2"><div><label>Nguồn khách</label><select id="e_source">' + opts(L.sources, l.source, true) + '</select></div><div><label>Phân khúc</label><select id="e_segment">' + opts(L.segments, l.segment, true) + '</select></div></div>' +
+        '<div class="grid2"><div><label>Owner</label><select id="e_owner">' + opts(L.owners, l.owner) + '</select></div><div><label>Partner ID (nếu giới thiệu)</label><input id="e_partner" value="' + esc(l.partner_id || '') + '" placeholder="PT-260901-001"></div></div>' +
+        '<div class="grid2"><div><label>Ngày tạo</label><input id="e_created" type="date" value="' + esc(l.created_date || '') + '"></div></div>' +
+        '<label>Ghi chú đầy đủ</label><textarea id="e_notes" style="min-height:140px">' + esc(l.notes || '') + '</textarea>' +
+        '<button class="btn sec" id="btnSaveFull">Lưu hồ sơ đầy đủ</button></div></details>';
+
+      var hist = '<div class="card"><h2>Lịch sử thay đổi</h2><div class="hist">' + (d.events.length ? d.events.map(function (e) {
+        return '<div>' + esc(e.ts.replace('T', ' ').slice(0, 16)) + ' · ' + esc(e.actor || '') + ' · <b>' + esc(e.field) + '</b>' + (e.field === 'create' ? '' : ': ' + esc(e.old_value == null ? '∅' : e.old_value) + ' → ' + esc(e.new_value == null ? '∅' : e.new_value)) + '</div>';
+      }).join('') : '<div class="empty">Chưa có</div>') + '</div><p class="muted">Cập nhật gần nhất: ' + esc((l.last_updated || '').replace('T', ' ').slice(0, 16)) + ' · ' + esc(l.updated_by || '') + '</p></div>';
+
+      shell('', head + quick + full + hist, 'leads'); bindRows(); bindQuickDates(app);
+      $('#f_status').onchange = function () { $('#moneyBox').style.display = ['Quoted', 'Hold', 'Deposit Paid', 'Confirmed', 'Completed'].indexOf(this.value) >= 0 ? '' : 'none'; };
+
+      $('#btnSave').onclick = function () {
+        var p = {};
+        var st = $('#f_status').value; if (st !== l.status) p.status = st;
+        var na = $('#f_next').value.trim(); if (na !== (l.next_action || '')) p.next_action = na;
+        var fu = $('#f_fu').value; if (fu !== (l.next_followup || '')) p.next_followup = fu;
+        var note = $('#f_note').value.trim();
+        if (note) p.notes = (l.notes ? l.notes + '\n' : '') + '[' + dmy(today) + ' ' + (state.user || '') + '] ' + note;
+        if ($('#moneyBox').style.display !== 'none') {
+          var ex = $('#f_exp').value.replace(/\D/g, ''); if (ex !== String(l.expected_revenue == null ? '' : l.expected_revenue)) p.expected_revenue = ex || null;
+          var dp = $('#f_dep').value; if (dp !== (l.deposit || '')) p.deposit = dp || null;
+          var ac = $('#f_act').value.replace(/\D/g, ''); var ver = $('#f_ver').value === '1';
+          if (ac !== String(l.actual_revenue == null ? '' : l.actual_revenue) || ver !== !!l.actual_verified) { p.actual_revenue = ac || null; p.actual_verified = ver; }
+        }
+        if (!Object.keys(p).length) { toast('Không có gì thay đổi'); return; }
+        this.disabled = true;
+        api('/leads/' + encodeURIComponent(id), { method: 'PATCH', body: p }).then(function (r) { toast('Đã lưu ' + r.changed + ' thay đổi'); viewLead(id); })
+          .catch(function (e) { toast(e.message, true); $('#btnSave').disabled = false; });
+      };
+      $('#btnSaveFull').onclick = function () {
+        var p = { customer_name: $('#e_name').value, contact: $('#e_contact').value, contact_channel: $('#e_channel').value, service: $('#e_service').value,
+          event_date: $('#e_event').value, source: $('#e_source').value, segment: $('#e_segment').value, owner: $('#e_owner').value,
+          partner_id: $('#e_partner').value, created_date: $('#e_created').value, notes: $('#e_notes').value };
+        this.disabled = true;
+        api('/leads/' + encodeURIComponent(id), { method: 'PATCH', body: p }).then(function (r) { toast('Đã lưu ' + r.changed + ' thay đổi'); viewLead(id); })
+          .catch(function (e) { toast(e.message, true); $('#btnSaveFull').disabled = false; });
+      };
+    }).catch(function (e) { shell('', '<div class="warn">' + esc(e.message) + '</div>', 'leads'); });
+  }
+
+  function viewNew() {
+    var L = state.lists;
+    var html = '<div class="card"><h2>Thêm khách mới</h2>' +
+      '<label>Tên khách *</label><input id="n_name" autofocus placeholder="Tên hoặc tên IG">' +
+      '<div class="grid2"><div><label>Contact</label><input id="n_contact" placeholder="@handle / SĐT / email"></div><div><label>Kênh nhắn</label><select id="n_channel">' + opts(L.channels, 'Instagram') + '</select></div></div>' +
+      '<div class="grid2"><div><label>Dịch vụ</label><select id="n_service">' + opts(L.services, 'Bridal Makeup') + '</select></div><div><label>Ngày sự kiện (nếu biết)</label><input id="n_event" type="date"></div></div>' +
+      '<div class="grid2"><div><label>Nguồn khách</label><select id="n_source">' + opts(L.sources, 'Instagram Organic') + '</select></div><div><label>Trạng thái</label><select id="n_status">' + opts(L.lead_statuses, 'New') + '</select></div></div>' +
+      '<label>Việc tiếp theo</label><input id="n_next" value="Trả lời và hỏi ngày, địa điểm, số người">' +
+      '<label>Hẹn làm tiếp</label><input id="n_fu" type="date" value="' + addDays(todayVN(), 1) + '">' + quickDates('n_fu') +
+      '<label>Ghi chú (tuỳ chọn)</label><textarea id="n_notes"></textarea>' +
+      '<p class="muted">Tự động: Lead ID, ngày tạo hôm nay, Owner = Kay, Last Updated.</p>' +
+      '<button class="btn" id="btnNew">Thêm khách</button></div>';
+    shell('', html, 'new'); bindQuickDates(app);
+    $('#btnNew').onclick = function () {
+      var p = { customer_name: $('#n_name').value, contact: $('#n_contact').value, contact_channel: $('#n_channel').value, service: $('#n_service').value,
+        event_date: $('#n_event').value, source: $('#n_source').value, status: $('#n_status').value, next_action: $('#n_next').value, next_followup: $('#n_fu').value,
+        notes: $('#n_notes').value, owner: 'Kay', segment: $('#n_source').value === 'Partner Referral' ? 'Partner-sourced' : 'B2C' };
+      if (!p.customer_name.trim()) { toast('Cần tên khách', true); return; }
+      this.disabled = true;
+      api('/leads', { method: 'POST', body: p }).then(function (r) { toast('Đã thêm ' + r.lead.id); location.hash = '#/lead/' + r.lead.id; })
+        .catch(function (e) { toast(e.message, true); $('#btnNew').disabled = false; });
+    };
+  }
+
+  function viewPartners() {
+    loading('partners');
+    api('/partners' + (state.pfilter ? '?status=' + encodeURIComponent(state.pfilter) : '')).then(function (d) {
+      var chips = [''].concat(state.lists.partner_statuses);
+      var html = '<div class="chips">' + chips.map(function (c) { return '<button data-f="' + esc(c) + '" class="' + (state.pfilter === c ? 'on' : '') + '">' + (c || 'Tất cả') + '</button>'; }).join('') + '</div>' +
+        '<div class="warn">Referral chuẩn 10% (DEC-20260906-11). Hilton 24/10 giảm 20% là ngoại lệ một lần, ghi ở lead KK-260901-001, không áp cho case khác.</div>' +
+        '<div class="card">' + (d.partners.length ? d.partners.map(function (p) { return partnerRow(p, d.today); }).join('') : '<div class="empty">Chưa có đối tác</div>') + '</div>' +
+        '<button class="btn sec" id="btnNewP">+ Thêm đối tác</button>';
+      shell('', html, 'partners'); bindRows();
+      app.querySelectorAll('.chips button').forEach(function (b) { b.onclick = function () { state.pfilter = b.getAttribute('data-f'); viewPartners(); }; });
+      $('#btnNewP').onclick = function () { location.hash = '#/partner-new'; };
+    }).catch(function (e) { shell('', '<div class="warn">' + esc(e.message) + '</div>', 'partners'); });
+  }
+
+  function partnerForm(p, L) {
+    p = p || {};
+    return '<label>Tên đối tác / studio *</label><input id="p_name" value="' + esc(p.name || '') + '">' +
+      '<div class="grid2"><div><label>Loại</label><input id="p_type" value="' + esc(p.type || '') + '" placeholder="Wedding Planner / Photography / Studio"></div><div><label>Trạng thái</label><select id="p_status">' + opts(L.partner_statuses, p.status || 'New') + '</select></div></div>' +
+      '<div class="grid2"><div><label>Kênh</label><select id="p_channel">' + opts(L.channels, p.contact_channel, true) + '</select></div><div><label>Contact</label><input id="p_contact" value="' + esc(p.contact || '') + '"></div></div>' +
+      '<label>Cơ hội</label><input id="p_opp" value="' + esc(p.opportunity || '') + '">' +
+      '<label>Điều khoản thương mại (REFERRAL 10% | base | payee | payout | quote)</label><textarea id="p_terms">' + esc(p.commercial_terms || '') + '</textarea>' +
+      '<div class="grid2"><div><label>Lần trao đổi thật gần nhất</label><input id="p_touch" type="date" value="' + esc(p.last_touch || '') + '"></div><div><label>Hẹn làm tiếp</label><input id="p_fu" type="date" value="' + esc(p.next_followup || '') + '"></div></div>' + quickDates('p_fu') +
+      '<label>Việc tiếp theo</label><input id="p_next" value="' + esc(p.next_action || '') + '">' +
+      '<label>Ghi chú</label><textarea id="p_notes">' + esc(p.notes || '') + '</textarea>';
+  }
+  function readPartnerForm() {
+    return { name: $('#p_name').value, type: $('#p_type').value, status: $('#p_status').value, contact_channel: $('#p_channel').value, contact: $('#p_contact').value,
+      opportunity: $('#p_opp').value, commercial_terms: $('#p_terms').value, last_touch: $('#p_touch').value, next_followup: $('#p_fu').value, next_action: $('#p_next').value, notes: $('#p_notes').value };
+  }
+  function viewPartnerNew() {
+    shell('', '<button class="back" data-go="#/partners">‹ Đối tác</button><div class="card"><h2>Thêm đối tác</h2>' + partnerForm(null, state.lists) + '<button class="btn" id="btnP">Thêm</button></div>', 'partners');
+    bindRows(); bindQuickDates(app);
+    $('#btnP').onclick = function () { var p = readPartnerForm(); if (!p.name.trim()) { toast('Cần tên', true); return; } this.disabled = true;
+      api('/partners', { method: 'POST', body: p }).then(function (r) { toast('Đã thêm ' + r.partner.id); location.hash = '#/partner/' + r.partner.id; }).catch(function (e) { toast(e.message, true); $('#btnP').disabled = false; }); };
+  }
+  function viewPartner(id) {
+    loading('partners');
+    api('/partners/' + encodeURIComponent(id)).then(function (d) {
+      var p = d.partner;
+      var html = '<button class="back" data-go="#/partners">‹ Đối tác</button>' +
+        '<div class="card"><div style="font-size:18px;font-weight:600">' + esc(p.name) + ' <span class="pill">' + esc(p.status) + '</span></div><div class="muted">' + esc(p.id) + ' · ' + esc(p.type || '') + ' · referral ' + Math.round((p.referral_rate || 0) * 100) + '%</div></div>' +
+        '<div class="card"><h2>Khách do đối tác này giới thiệu<b>' + d.leads.length + '</b></h2>' + (d.leads.length ? d.leads.map(function (l) { return leadRow(l, d.today || todayVN()); }).join('') : '<div class="empty">Chưa có</div>') + '</div>' +
+        '<div class="card"><h2>Cập nhật</h2>' + partnerForm(p, state.lists) + '<button class="btn" id="btnP">Lưu</button></div>' +
+        '<div class="card"><h2>Lịch sử</h2><div class="hist">' + (d.events.length ? d.events.map(function (e) { return '<div>' + esc(e.ts.replace('T', ' ').slice(0, 16)) + ' · ' + esc(e.actor || '') + ' · <b>' + esc(e.field) + '</b>' + (e.field === 'create' ? '' : ': ' + esc(e.old_value == null ? '∅' : e.old_value) + ' → ' + esc(e.new_value == null ? '∅' : e.new_value)) + '</div>'; }).join('') : '<div class="empty">Chưa có</div>') + '</div></div>';
+      shell('', html, 'partners'); bindRows(); bindQuickDates(app);
+      $('#btnP').onclick = function () { var b = readPartnerForm(); this.disabled = true;
+        api('/partners/' + encodeURIComponent(id), { method: 'PATCH', body: b }).then(function (r) { toast('Đã lưu ' + r.changed + ' thay đổi'); viewPartner(id); }).catch(function (e) { toast(e.message, true); $('#btnP').disabled = false; }); };
+    }).catch(function (e) { shell('', '<div class="warn">' + esc(e.message) + '</div>', 'partners'); });
+  }
+
+  function viewMore() {
+    var html = '<div class="card"><h2>Xuất dữ liệu (archive / báo cáo)</h2>' +
+      '<p class="muted">Tải CSV rồi dán vào Google Sheet <b>KINKAY_Lead_Tracker_LIVE_v2.0</b> (giờ chỉ là bản lưu / báo cáo). Cột đúng thứ tự tab Leads / Partners. CRM này là nguồn duy nhất; không sửa số trên Sheet.</p>' +
+      '<button class="btn sec" data-x="leads">Tải Leads.csv</button><button class="btn sec" data-x="partners">Tải Partners.csv</button><button class="btn sec" data-x="events">Tải lịch sử thay đổi.csv</button></div>' +
+      '<div class="card"><h2>Tài khoản</h2><p>' + esc(state.user || '') + (state.dev ? ' (chế độ dev, không cần đăng nhập)' : '') + '</p><button class="btn sec" id="btnOut">Đăng xuất</button></div>' +
+      '<div class="card"><h2>Cách dùng 60 giây</h2><p class="muted">1. Hôm nay → bấm khách đến hạn. 2. Đổi trạng thái, ghi 1 việc tiếp, chọn hẹn. 3. Ghi 1 dòng vừa xảy ra. 4. Lưu. Có tiền thì chỉ điền khi đã chắc; Tân bật "Đã xác minh".</p></div>';
+    shell('', html, 'more');
+    app.querySelectorAll('[data-x]').forEach(function (b) {
+      b.onclick = function () {
+        var what = b.getAttribute('data-x');
+        fetch(API + '/export?what=' + what, { headers: state.token ? { Authorization: 'Bearer ' + state.token } : {} }).then(function (r) { if (!r.ok) throw new Error('Lỗi ' + r.status); return r.blob(); })
+          .then(function (blob) { var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'kinkay-crm-' + what + '-' + todayVN() + '.csv'; document.body.appendChild(a); a.click(); a.remove(); })
+          .catch(function (e) { toast(e.message, true); });
+      };
+    });
+    $('#btnOut').onclick = function () { logout(); };
+  }
+
+  // ---------- router ----------
+  function render() {
+    if (!state.lists) { renderLogin(); return; }
+    var h = location.hash || '#/today';
+    var m;
+    if (h === '#/today') viewToday();
+    else if (h === '#/leads') viewLeads();
+    else if ((m = h.match(/^#\/lead\/(.+)$/))) viewLead(decodeURIComponent(m[1]));
+    else if (h === '#/new') viewNew();
+    else if (h === '#/partners') viewPartners();
+    else if (h === '#/partner-new') viewPartnerNew();
+    else if ((m = h.match(/^#\/partner\/(.+)$/))) viewPartner(decodeURIComponent(m[1]));
+    else if (h === '#/more') viewMore();
+    else { location.hash = '#/today'; }
+  }
+  window.addEventListener('hashchange', render);
+  boot();
+})();
+</script>
+</body>
+</html>
