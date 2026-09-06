@@ -87,7 +87,7 @@
   var AUTH_BASE = 'https://kinkay-site.pages.dev';   // trùng base_url trong static/admin/config.yml
   var TOKEN_KEY = 'kk_crm_token';
   var app = document.getElementById('app');
-  var state = { token: null, lists: null, user: null, dev: false, route: '#/today', filter: '', q: '', pfilter: '' };
+  var state = { token: null, lists: null, user: null, dev: false, cutover: false, route: '#/today', filter: '', q: '', pfilter: '' };
 
   // ---------- helpers ----------
   function $(sel, root) { return (root || document).querySelector(sel); }
@@ -146,7 +146,7 @@
   function boot() {
     try { if (!state.token) state.token = localStorage.getItem(TOKEN_KEY); } catch (x) { }
     api('/lists').then(function (j) {
-      state.lists = j; state.user = j.user; state.dev = !state.token;
+      state.lists = j; state.user = j.user; state.dev = !state.token; state.cutover = !!j.cutover;
       if (!location.hash) location.hash = '#/today';
       render();
     }).catch(function (e) {
@@ -158,7 +158,8 @@
   // ---------- layout ----------
   function shell(title, inner, tab) {
     app.innerHTML =
-      '<header class="top"><h1>KINKAY · CRM</h1><small>' + esc(state.user || '') + ' · ' + dmy(todayVN()) + '</small></header>' + inner +
+      '<header class="top"><h1>KINKAY · CRM</h1><small>' + esc(state.user || '') + ' · ' + dmy(todayVN()) + '</small></header>' +
+      (state.cutover ? '' : '<div class="warn"><b>Chế độ CHỈ ĐỌC (đang đối chiếu).</b> Google Sheet LIVE vẫn là nguồn duy nhất. Kay tiếp tục ghi vào Sheet. Tân bật CRM_CUTOVER=1 khi đối chiếu xong.</div>') + inner +
       '<nav class="bar">' +
       '<a href="#/today" class="' + (tab === 'today' ? 'on' : '') + '"><span>☀️</span>Hôm nay</a>' +
       '<a href="#/leads" class="' + (tab === 'leads' ? 'on' : '') + '"><span>👥</span>Khách</a>' +

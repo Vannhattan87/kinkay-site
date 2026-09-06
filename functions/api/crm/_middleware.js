@@ -14,9 +14,11 @@
 //   CRM_DB              (D1 binding, BẮT BUỘC)   — database kinkay-crm
 //   CRM_ALLOWED_USERS   (tuỳ chọn)               — "kinkay-official,Vannhattan87"; để trống = theo quyền repo
 //   CRM_REPO            (tuỳ chọn)               — mặc định Vannhattan87/kinkay-site
+//   CRM_CUTOVER         (BẮT BUỘC để ghi)         — "1" = D1 là master, cho POST/PATCH + form web ghi D1.
+//                                                Chưa đặt / khác "1" = CHỈ ĐỌC (đối chiếu), Sheet vẫn master, form web đi đường cũ.
 //   CRM_DEV_USER        (CHỈ local dev)          — bỏ qua GitHub, coi như user này. KHÔNG BAO GIỜ đặt ở Production.
 
-import { err } from './_lib.js';
+import { err, isCutover } from './_lib.js';
 
 const CACHE = new Map(); // tokenHash -> { login, exp }
 const TTL_MS = 10 * 60 * 1000;
@@ -51,9 +53,16 @@ export async function onRequest(context) {
 
   if (!env.CRM_DB) return err('CRM_DB chưa được gắn (Cloudflare Pages → Settings → Bindings → D1 → CRM_DB).', 503);
 
+  // QA 06/09 điểm 1: chưa cutover thì chặn mọi ghi (sau khi đã xác thực). Đọc/đối chiếu/export vẫn được.
+  const gate = () => {
+    if (!isCutover(env) && request.method !== 'GET' && request.method !== 'HEAD')
+      return err('CRM đang ở chế độ CHỈ ĐỌC (đối chiếu). Sheet LIVE vẫn là nguồn duy nhất. Tân bật CRM_CUTOVER=1 khi đối chiếu xong.', 423, 'cutover_off');
+    return next();
+  };
+
   if (env.CRM_DEV_USER) {                     // local dev only
     data.user = env.CRM_DEV_USER;
-    return next();
+    return gate();
   }
 
   const auth = request.headers.get('Authorization') || '';
@@ -65,7 +74,7 @@ export async function onRequest(context) {
   const hit = CACHE.get(key);
   if (hit && hit.exp > now) {
     data.user = hit.login;
-    return next();
+    return gate();
   }
   let v;
   try { v = await verifyGitHub(token, env); } catch (e) { return err('Không kiểm tra được đăng nhập với GitHub', 502, e && e.message); }
@@ -77,5 +86,5 @@ export async function onRequest(context) {
   CACHE.set(key, { login: v.login, exp: now + TTL_MS });
   if (CACHE.size > 50) { for (const [k, val] of CACHE) if (val.exp <= now) CACHE.delete(k); }
   data.user = v.login;
-  return next();
+  return gate();
 }

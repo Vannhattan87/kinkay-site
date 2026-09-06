@@ -72,9 +72,16 @@ CREATE TABLE IF NOT EXISTS lead_events (
 );
 CREATE INDEX IF NOT EXISTS idx_events_entity ON lead_events(entity, entity_id);
 
+-- Bộ đếm ID theo ngày (QA 06/09 điểm 4): cấp số bằng MỘT câu lệnh UPSERT ... RETURNING, SQLite thực thi
+-- nguyên tử nên 2 request cùng lúc không bao giờ nhận cùng số. Khởi tạo từ MAX id đã có (seed từ Sheet).
+CREATE TABLE IF NOT EXISTS id_counters (
+  key TEXT PRIMARY KEY,                        -- 'KK-260906' / 'PT-260906'
+  n   INTEGER NOT NULL
+);
+
 -- Cấu hình nhỏ (ví dụ: ngày import, phiên bản schema)
 CREATE TABLE IF NOT EXISTS meta (
   key   TEXT PRIMARY KEY,
   value TEXT
 );
-INSERT OR REPLACE INTO meta(key, value) VALUES ('schema_version', '1.0');
+INSERT OR REPLACE INTO meta(key, value) VALUES ('schema_version', '1.1');

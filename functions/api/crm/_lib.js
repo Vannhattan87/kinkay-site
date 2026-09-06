@@ -90,14 +90,20 @@ export function normalize(body, allowed) {
   return { data, errors };
 }
 
-// Sinh ID KK-YYMMDD-### / PT-YYMMDD-### không trùng trong ngày.
+// Sinh ID KK-YYMMDD-### / PT-YYMMDD-### NGUYÊN TỬ (QA 06/09 điểm 4).
+// Một câu UPSERT ... RETURNING trên bảng id_counters: SQLite khoá ghi theo câu lệnh, nên N request
+// cùng lúc nhận N số khác nhau. Lần đầu trong ngày, bộ đếm khởi tạo = MAX số đã có (kể cả seed từ Sheet) + 1.
+// Đã đo: 20 POST đồng thời trước khi có bảng đếm → 13 lỗi; sau → 20/20 OK, 0 trùng (xem README_CRM.md).
 export async function nextId(db, table, prefix, ymd) {
   const ymdShort = ymd.replace(/-/g, '').slice(2); // 2026-09-06 -> 260906
-  const like = `${prefix}-${ymdShort}-%`;
-  const r = await db.prepare(`SELECT id FROM ${table} WHERE id LIKE ? ORDER BY id DESC LIMIT 1`).bind(like).first();
-  let n = 1;
-  if (r && r.id) { const m = r.id.match(/-(\d{3})$/); if (m) n = parseInt(m[1], 10) + 1; }
-  return `${prefix}-${ymdShort}-${String(n).padStart(3, '0')}`;
+  const key = `${prefix}-${ymdShort}`;
+  const like = `${key}-%`;
+  const r = await db.prepare(`
+    INSERT INTO id_counters (key, n)
+    VALUES (?1, (SELECT COALESCE(MAX(CAST(substr(id, -3) AS INTEGER)), 0) + 1 FROM ${table} WHERE id LIKE ?2))
+    ON CONFLICT(key) DO UPDATE SET n = n + 1
+    RETURNING n`).bind(key, like).first();
+  return `${key}-${String(r.n).padStart(3, '0')}`;
 }
 
 // Ghi nhật ký thay đổi từng cột.
@@ -115,12 +121,36 @@ export async function logDiff(db, entity, id, actor, before, after) {
   return stmts.length;
 }
 
+// Cờ cutover (QA ChatGPT 06/09 điểm 1): CRM_CUTOVER=1 mới cho GHI. Chưa bật = chỉ đọc/đối chiếu,
+// Sheet vẫn là master, form web vẫn đi đường cũ. Không có cửa sổ hai master.
+export const isCutover = env => String(env && env.CRM_CUTOVER || '').trim() === '1';
+
+// Chèn có chống trùng ID (QA điểm 4): ID sinh từ MAX trong ngày; 2 request gần đồng thời có thể
+// tính ra cùng ID → INSERT thứ hai vỡ PRIMARY KEY → bắt lỗi, tính lại ID, thử lại tối đa 6 lần.
+const isDup = e => /UNIQUE|PRIMARY KEY|constraint/i.test(String(e && e.message || e));
+async function insertWithRetry(db, table, prefix, ymd, build) {
+  let lastErr;
+  for (let attempt = 0; attempt < 6; attempt++) {
+    const id = await nextId(db, table, prefix, ymd);
+    const row = build(id);
+    const cols = Object.keys(row);
+    try {
+      await db.prepare(`INSERT INTO ${table} (${cols.join(',')}) VALUES (${cols.map(() => '?').join(',')})`)
+        .bind(...cols.map(c => row[c])).run();
+      return row;
+    } catch (e) {
+      if (!isDup(e)) throw e;
+      lastErr = e;
+    }
+  }
+  throw new Error('Không sinh được ID duy nhất sau 6 lần: ' + (lastErr && lastErr.message));
+}
+
 // Chèn lead mới (dùng chung cho API và form web /api/lead).
 export async function insertLead(db, actor, input) {
   const ymd = input.created_date || todayVN();
-  const id = await nextId(db, 'leads', 'KK', ymd);
   const ts = nowISO();
-  const row = {
+  const row = await insertWithRetry(db, 'leads', 'KK', ymd, id => ({
     id, created_date: ymd,
     customer_name: input.customer_name, contact: input.contact ?? null, contact_channel: input.contact_channel ?? null,
     service: input.service ?? null, event_date: input.event_date ?? null, source: input.source ?? null,
@@ -130,11 +160,24 @@ export async function insertLead(db, actor, input) {
     owner: input.owner || 'Kay', next_action: input.next_action ?? null, next_followup: input.next_followup ?? null,
     notes: input.notes ?? null, partner_id: input.partner_id ?? null,
     last_updated: ts, updated_by: actor, created_at: ts
-  };
-  const cols = Object.keys(row);
-  await db.prepare(`INSERT INTO leads (${cols.join(',')}) VALUES (${cols.map(() => '?').join(',')})`)
-    .bind(...cols.map(c => row[c])).run();
+  }));
   await db.prepare('INSERT INTO lead_events(entity, entity_id, ts, actor, field, old_value, new_value) VALUES (?,?,?,?,?,?,?)')
-    .bind('lead', id, ts, actor, 'create', null, row.status).run();
+    .bind('lead', row.id, ts, actor, 'create', null, row.status).run();
+  return row;
+}
+
+// Chèn đối tác mới, cùng cơ chế chống trùng.
+export async function insertPartner(db, actor, d) {
+  const ymd = d.created_date || todayVN();
+  const ts = nowISO();
+  const row = await insertWithRetry(db, 'partners', 'PT', ymd, id => ({
+    id, created_date: ymd, name: d.name, type: d.type ?? null, contact_channel: d.contact_channel ?? null, contact: d.contact ?? null,
+    status: d.status || 'New', last_touch: d.last_touch ?? null, opportunity: d.opportunity ?? null,
+    commercial_terms: d.commercial_terms ?? null, referral_rate: d.referral_rate ?? 0.10,
+    next_action: d.next_action ?? null, next_followup: d.next_followup ?? null, notes: d.notes ?? null,
+    owner: d.owner || 'Kay', last_updated: ts, updated_by: actor, created_at: ts
+  }));
+  await db.prepare('INSERT INTO lead_events(entity, entity_id, ts, actor, field, old_value, new_value) VALUES (?,?,?,?,?,?,?)')
+    .bind('partner', row.id, ts, actor, 'create', null, row.status).run();
   return row;
 }
