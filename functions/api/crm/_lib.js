@@ -184,7 +184,17 @@ export async function insertPartner(db, actor, d) {
 
 // ===================== Booking Confirmation (CR-20260907-29) =====================
 // Trường booking chỉ dành cho khách thấy, lưu trong leads.booking_json. KHÔNG có trường nội bộ ở đây.
-export const BOOKING_FIELDS = ['ready_time', 'venue', 'pax', 'includes', 'excludes', 'deposit_mode', 'deposit_amount', 'payment_terms', 'customer_note', 'special_instructions', 'total_fee'];
+export const BOOKING_FIELDS = ['ready_time', 'venue', 'pax', 'includes', 'excludes', 'deposit_mode', 'deposit_amount', 'payment_terms', 'customer_note', 'special_instructions', 'total_fee', 'preferred_language'];
+export const BC_LANGS = ['vi', 'en']; // ngôn ngữ bản xác nhận khách thấy; KHÔNG tự đoán từ tên/quốc tịch/nguồn
+// Tên dịch vụ chuẩn KINKAY hiển thị theo ngôn ngữ. Dịch vụ lạ/tuỳ chỉnh → giữ nguyên, không tự dịch.
+export const SERVICE_DISPLAY = {
+  vi: { 'Bridal Makeup': 'Makeup cô dâu', 'Destination Wedding': 'Makeup cưới destination', 'Event/Gala Makeup': 'Makeup dự tiệc / gala', 'On-Camera / Interview Makeup': 'Makeup lên hình / phỏng vấn', 'Commercial / Model / Pageant': 'Makeup thương mại / người mẫu / pageant', 'Pre-wedding Makeup': 'Makeup chụp ảnh cưới', 'Masterclass': 'Masterclass', 'Hair Styling': 'Làm tóc', 'Photoshoot Makeup': 'Makeup chụp ảnh' },
+  en: { 'Bridal Makeup': 'Bridal Makeup', 'Destination Wedding': 'Destination Wedding Makeup', 'Event/Gala Makeup': 'Event / Gala Makeup', 'On-Camera / Interview Makeup': 'On-Camera / Interview Makeup', 'Commercial / Model / Pageant': 'Commercial / Model / Pageant Makeup', 'Pre-wedding Makeup': 'Pre-wedding Makeup', 'Masterclass': 'Masterclass', 'Hair Styling': 'Hair Styling', 'Photoshoot Makeup': 'Photoshoot Makeup' }
+};
+export const BC_FOOTER = {
+  vi: 'Thông tin trên phản ánh nội dung booking đã được thống nhất tại thời điểm xác nhận. Vui lòng báo KINKAY nếu cần điều chỉnh.',
+  en: 'This confirmation reflects the booking details agreed at the time of issue. Please let KINKAY know if any information needs to be updated.'
+};
 export const DEPOSIT_MODES = ['amount', 'none', 'na']; // số tiền cọc / không cần cọc (đã thống nhất) / không áp dụng
 export const BC_ELIGIBLE_STATUSES = ['Quoted', 'Hold', 'Deposit Paid', 'Confirmed'];
 
@@ -201,6 +211,7 @@ export function normalizeBooking(b) {
     else if (k === 'pax') { const n = parseInt(String(v).replace(/\D/g, ''), 10); out[k] = Number.isFinite(n) && n > 0 ? n : null; }
     else if (k === 'deposit_mode') { const m = cleanStr(v, 10); if (m && !DEPOSIT_MODES.includes(m)) errors.push('deposit_mode phải là amount / none / na'); out[k] = m; }
     else if (k === 'ready_time') { const t = cleanStr(v, 40); if (t && !/^\d{1,2}:\d{2}/.test(t)) errors.push('ready_time cần dạng HH:MM'); out[k] = t; }
+    else if (k === 'preferred_language') { const l = cleanStr(v, 5); if (l && !BC_LANGS.includes(l)) errors.push('preferred_language phải là vi hoặc en'); out[k] = l; }
     else out[k] = cleanStr(v, k === 'includes' || k === 'customer_note' || k === 'special_instructions' || k === 'excludes' ? 1200 : 300);
   }
   return { data: out, errors };
@@ -222,19 +233,21 @@ export function bookingMissing(lead, booking) {
 }
 
 // Snapshot: chỉ dữ liệu khách thấy + thương hiệu. Không source/segment/owner/next action/notes nội bộ/partner.
-export function buildSnapshot(lead, booking, id, version, issuedAtISO) {
+export function buildSnapshot(lead, booking, id, version, issuedAtISO, language) {
+  const lang = BC_LANGS.includes(language) ? language : 'vi';
   const total = booking.total_fee != null ? booking.total_fee : lead.expected_revenue;
   const depAmt = booking.deposit_mode === 'amount' ? booking.deposit_amount : 0;
+  const map = SERVICE_DISPLAY[lang] || {};
   return {
-    confirmation_id: id, version, booking_id: lead.id, issued_at: issuedAtISO,
-    customer_name: lead.customer_name, service: lead.service, event_date: lead.event_date,
+    confirmation_id: id, version, booking_id: lead.id, issued_at: issuedAtISO, language: lang,
+    customer_name: lead.customer_name, service: lead.service, service_display: map[lead.service] || lead.service,
+    event_date: lead.event_date,
     ready_time: booking.ready_time, venue: booking.venue, pax: booking.pax ?? null,
     includes: booking.includes ?? null, excludes: booking.excludes ?? null,
     total_fee: total, deposit_mode: booking.deposit_mode, deposit_amount: booking.deposit_mode === 'amount' ? booking.deposit_amount : null,
     remaining_balance: total != null ? Math.max(0, total - (depAmt || 0)) : null,
     payment_terms: booking.payment_terms ?? null, customer_note: booking.customer_note ?? null,
     special_instructions: booking.special_instructions ?? null,
-    brand: { name: 'KINKAY', tagline: 'MAKEUP ARTIST', site: 'kinkay.vn', phone: '0933 953 179', instagram: '@kinkay.official',
-      footer: 'This confirmation reflects the booking details agreed at the time of issue. Please let us know if any information needs to be updated.' }
+    brand: { name: 'KINKAY', tagline: 'MAKEUP ARTIST', site: 'kinkay.vn', phone: '0933 953 179', instagram: '@kinkay.official', footer: BC_FOOTER[lang] }
   };
 }

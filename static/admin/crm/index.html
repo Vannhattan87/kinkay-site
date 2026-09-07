@@ -434,16 +434,17 @@
       var h = '<div class="card"><h2>Booking Confirmation<b>' + d.versions.length + '</b></h2>' +
         '<button class="btn bc' + (strong ? '' : ' soft') + '" id="bcGo">' + (d.versions.length ? 'Tạo bản mới (V' + (d.versions.length + 1) + ')' : 'Tạo Booking Confirmation') + '</button>' +
         (d.missing.length ? '<div class="muted" style="margin-top:6px">Còn thiếu: ' + d.missing.map(function (k) { return BC_LABEL[k] || k; }).join(', ') + ' → sẽ hỏi khi bấm.</div>' : '<div class="muted" style="margin-top:6px">Đủ thông tin, bấm là ra bản xem trước.</div>') +
-        (d.versions.length ? '<div class="hist" style="margin-top:8px">' + d.versions.map(function (v) { return '<div style="display:flex;justify-content:space-between;align-items:center;gap:6px"><span>' + esc(v.id) + ' · ' + esc(dmy(v.generated_at)) + ' · ' + esc(v.generated_by || '') + '</span><button class="btn sec sm" data-bcv="' + esc(v.id) + '">Xem / gửi lại</button></div>'; }).join('') + '</div>' : '') + '</div>';
+        (d.versions.length ? '<div class="hist" style="margin-top:8px">' + d.versions.map(function (v) { return '<div style="display:flex;justify-content:space-between;align-items:center;gap:6px"><span>' + esc(v.id) + ' · ' + esc(dmy(v.generated_at)) + ' · ' + esc(v.generated_by || '') + (v.language ? ' · ' + (v.language === 'en' ? 'EN' : 'VI') : '') + '</span><button class="btn sec sm" data-bcv="' + esc(v.id) + '">Xem / gửi lại</button></div>'; }).join('') + '</div>' : '') + '</div>';
       slot.innerHTML = h;
-      $('#bcGo').onclick = function () { bcForm(lead, d.booking, d.missing, false); };
+      $('#bcGo').onclick = function () { bcForm(lead, d.booking, d.missing, false, d.language); };
       slot.querySelectorAll('[data-bcv]').forEach(function (b) { b.onclick = function () { api('/confirmations/' + encodeURIComponent(b.getAttribute('data-bcv'))).then(function (r) { bcPreview(lead, r.confirmation.snapshot, true); }).catch(function (e) { toast(e.message, true); }); }; });
     }).catch(function (e) { slot.innerHTML = '<div class="warn">' + esc(e.message) + '</div>'; });
   }
 
   // Sheet điền thông tin: chỉ trường THIẾU bắt buộc, cộng phần "Thêm chi tiết" tuỳ chọn. Không điền sẵn giá trị đoán.
-  function bcForm(lead, booking, missing, editAll) {
+  function bcForm(lead, booking, missing, editAll, langDefault) {
     booking = booking || {};
+    var lang = (booking.preferred_language === 'en' || booking.preferred_language === 'vi') ? booking.preferred_language : (langDefault === 'en' ? 'en' : 'vi');
     var need = function (k) { return editAll || missing.indexOf(k) >= 0; };
     var f = '';
     if (need('service')) f += '<label>Dịch vụ *</label><select id="b_service">' + opts(state.lists.services, lead.service, true) + '</select>';
@@ -468,12 +469,16 @@
       '<label>Ghi chú cho khách</label><textarea id="b_note" placeholder="Vui lòng để mặt sạch, không makeup trước">' + esc(booking.customer_note || '') + '</textarea>' +
       '<label>Lưu ý đặc biệt</label><input id="b_spec" value="' + esc(booking.special_instructions || '') + '"></details>';
     var sheet = document.createElement('div'); sheet.className = 'sheet-bg';
+    var langSel = '<label>Ngôn ngữ bản xác nhận</label><div class="seg" id="b_lang">' +
+      '<button type="button" data-v="vi" class="' + (lang === 'vi' ? 'on' : '') + '">Tiếng Việt</button>' +
+      '<button type="button" data-v="en" class="' + (lang === 'en' ? 'on' : '') + '">English</button></div>';
     sheet.innerHTML = '<div class="sheet"><div class="grab"></div><h3>' + (editAll ? 'Sửa chi tiết booking' : (f ? 'Điền phần còn thiếu' : 'Xác nhận thông tin')) + '</h3>' +
-      '<div class="muted">' + esc(lead.customer_name) + ' · ' + esc(lead.service || '') + (lead.event_date ? ' · ' + dmy(lead.event_date) : '') + '</div>' +
+      '<div class="muted">' + esc(lead.customer_name) + ' · ' + esc(lead.service || '') + (lead.event_date ? ' · ' + dmy(lead.event_date) : '') + '</div>' + langSel +
       (f && !editAll ? '<div class="miss" style="margin-top:6px">Chưa đủ để gửi khách. Không tự điền giá trị đoán.</div>' : '') + f + more +
       '<div class="bcbtns"><button class="btn sec" id="b_cancel">Huỷ</button><button class="btn bc" id="b_ok">Tạo bản xem trước</button></div></div>';
     document.body.appendChild(sheet);
     var dmv = booking.deposit_mode || '';
+    sheet.querySelectorAll('#b_lang button').forEach(function (b) { b.onclick = function () { lang = b.getAttribute('data-v'); sheet.querySelectorAll('#b_lang button').forEach(function (x) { x.className = x === b ? 'on' : ''; }); }; });
     sheet.querySelectorAll('#b_dm button').forEach(function (b) { b.onclick = function () { dmv = b.getAttribute('data-v'); sheet.querySelectorAll('#b_dm button').forEach(function (x) { x.className = x === b ? 'on' : ''; }); $('#b_depwrap', sheet).style.display = dmv === 'amount' ? '' : 'none'; }; });
     $('#b_cancel', sheet).onclick = function () { sheet.remove(); };
     sheet.addEventListener('click', function (e) { if (e.target === sheet) sheet.remove(); });
@@ -492,7 +497,7 @@
       if ($('#b_dm', sheet) && !dmv) { bcShowErr(sheetEl, 'Chọn một lựa chọn Cọc trước khi tạo.'); return; }
       self.disabled = true; self.textContent = 'Đang tạo…'; var eb = $('#bcErr', sheet); if (eb) eb.hidden = true;
       var pre = Object.keys(leadPatch).length ? api('/leads/' + encodeURIComponent(lead.id), { method: 'PATCH', body: leadPatch }) : Promise.resolve();
-      pre.then(function () { return api('/leads/' + encodeURIComponent(lead.id) + '/confirmations', { method: 'POST', body: { booking: b } }); })
+      pre.then(function () { return api('/leads/' + encodeURIComponent(lead.id) + '/confirmations', { method: 'POST', body: { booking: b, language: lang } }); })
         .then(function (r) { sheet.remove(); toast('Đã tạo ' + r.confirmation.id); bcPreview(lead, r.confirmation.snapshot, false); })
         .catch(function (e) { self.disabled = false; self.textContent = 'Tạo bản xem trước'; bcShowErr(sheetEl, 'Không tạo được: ' + e.message, e); });
     };
@@ -523,14 +528,32 @@
     var cx = align === 'center' ? x - w / 2 : x; var ta = ctx.textAlign; ctx.textAlign = 'left';
     chars.forEach(function (c) { ctx.fillText(c, cx, y); cx += ctx.measureText(c).width + spacing; }); ctx.textAlign = ta;
   }
-  function vnd(v) { return v == null ? '—' : Number(v).toLocaleString('vi-VN') + ' đ'; }
-  function longDate(iso) { if (!iso) return ''; var d = new Date(iso + 'T00:00:00'); var days = ['Chủ nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy']; return days[d.getDay()] + ', ' + dmy(iso); }
+  // Nhãn hệ thống theo ngôn ngữ bản xác nhận. Chỉ dịch nhãn; dữ liệu Kay nhập (địa điểm, gồm, ghi chú) giữ nguyên.
+  var BC_T = {
+    vi: { title: 'XÁC NHẬN ĐẶT LỊCH', id: 'Mã booking', issued: 'Phát hành', client: 'Khách hàng', service: 'Dịch vụ', date: 'Ngày', time: 'Thời gian', venue: 'Địa điểm', pax: 'Số người', includes: 'Bao gồm', excludes: 'Không bao gồm', total: 'Tổng phí', deposit: 'Tiền cọc', remaining: 'Số tiền còn lại', payment: 'Thanh toán', notes: 'Ghi chú', depNone: 'Không cần cọc', depNA: 'Không áp dụng',
+      days: ['Chủ nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'] },
+    en: { title: 'BOOKING CONFIRMATION', id: 'Booking ID', issued: 'Issued', client: 'Client', service: 'Service', date: 'Date', time: 'Time', venue: 'Location', pax: 'Number of People', includes: 'Includes', excludes: 'Excludes', total: 'Total Fee', deposit: 'Deposit', remaining: 'Remaining Balance', payment: 'Payment', notes: 'Notes', depNone: 'No deposit required', depNA: 'Not applicable',
+      days: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'], months: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] }
+  };
+  function bcLang(snap) { return snap && snap.language === 'en' ? 'en' : 'vi'; }
+  // Tiền: VI "1.500.000 ₫" · EN "VND 1,500,000"
+  function vnd(v, lang) { if (v == null) return '—'; return lang === 'en' ? 'VND ' + Number(v).toLocaleString('en-US') : Number(v).toLocaleString('vi-VN') + ' ₫'; }
+  // Ngày: VI "Thứ Bảy, 10/10/2026" · EN "Sat, 10 Oct 2026" (không dùng số/số để tránh nhầm ngày-tháng)
+  function longDate(iso, lang) {
+    if (!iso) return ''; var d = new Date(iso + 'T00:00:00'); var T = BC_T[lang || 'vi'];
+    if (lang === 'en') return T.days[d.getDay()] + ', ' + String(d.getDate()).padStart(2, '0') + ' ' + T.months[d.getMonth()] + ' ' + d.getFullYear();
+    return T.days[d.getDay()] + ', ' + dmy(iso);
+  }
+  function shortDate(iso, lang) { if (!iso) return ''; if (lang !== 'en') return dmy(iso); var d = new Date(String(iso).slice(0, 10) + 'T00:00:00'); return String(d.getDate()).padStart(2, '0') + ' ' + BC_T.en.months[d.getMonth()] + ' ' + d.getFullYear(); }
+  // Giờ: VI 24h "15:00" · EN "3:00 PM"
+  function fmtTime(t, lang) { if (!t) return ''; var m = String(t).match(/^(\d{1,2}):(\d{2})/); if (!m || lang !== 'en') return t; var h = parseInt(m[1], 10); var ap = h >= 12 ? 'PM' : 'AM'; h = h % 12; if (h === 0) h = 12; return h + ':' + m[2] + ' ' + ap; }
 
   // k = hệ số co chữ phần thân (1 → 0.9 → 0.8 → 0.72) khi nội dung dài; trả {canvas, overflow}. Header/footer không co.
   function bcRenderK(snap, k) {
     var c = document.createElement('canvas'); c.width = BC.W; c.height = BC.H; var ctx = c.getContext('2d');
     var W = BC.W, H = BC.H, PAD = 84, CW = W - PAD * 2, y, overflow = false;
     var fs = function (n) { return Math.round(n * k); };
+    var L = bcLang(snap), T = BC_T[L];
     var FOOT_TOP = H - 178;                       // đường kẻ footer
     ctx.fillStyle = BC.cream; ctx.fillRect(0, 0, W, H);
     // Header tối + wordmark (vẽ chữ, cùng kiểu logo SVG trong repo)
@@ -539,23 +562,23 @@
     spaced(ctx, 'KINKAY', W / 2, 108, 26, 'center');
     ctx.strokeStyle = BC.gold; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(W / 2 - 150, 134); ctx.lineTo(W / 2 + 150, 134); ctx.stroke();
     ctx.fillStyle = BC.gold; ctx.font = '400 16px "Be Vietnam Pro", sans-serif'; spaced(ctx, 'MAKEUP ARTIST', W / 2, 164, 7, 'center');
-    ctx.fillStyle = BC.cream; ctx.font = '500 20px "Be Vietnam Pro", sans-serif'; spaced(ctx, 'BOOKING CONFIRMATION', W / 2, 208, 5, 'center');
+    ctx.fillStyle = BC.cream; ctx.font = '500 20px "Be Vietnam Pro", sans-serif'; spaced(ctx, T.title, W / 2, 208, 5, 'center');
     // Mã + ngày phát hành
     y = 288; ctx.textAlign = 'left'; ctx.fillStyle = BC.mute; ctx.font = '400 22px "Be Vietnam Pro", sans-serif';
-    ctx.fillText('Mã booking  ' + snap.booking_id + '   ·   V' + snap.version, PAD, y);
-    ctx.textAlign = 'right'; ctx.fillText('Phát hành ' + dmy(snap.issued_at), W - PAD, y); ctx.textAlign = 'left';
+    ctx.fillText(T.id + '  ' + snap.booking_id + '   ·   V' + snap.version, PAD, y);
+    ctx.textAlign = 'right'; ctx.fillText(T.issued + ' ' + shortDate(snap.issued_at, L), W - PAD, y); ctx.textAlign = 'left';
     // Tên khách + dịch vụ
     y = 360; ctx.fillStyle = BC.ink; ctx.font = '600 ' + fs(54) + 'px "Playfair Display", Georgia, serif';
     var nameLines = wrapLines(ctx, snap.customer_name, CW).slice(0, 2); nameLines.forEach(function (ln) { ctx.fillText(ln, PAD, y); y += fs(62); });
     ctx.fillStyle = BC.gold2; ctx.font = 'italic 400 ' + fs(29) + 'px "Playfair Display", Georgia, serif';
-    wrapLines(ctx, snap.service, CW).slice(0, 2).forEach(function (ln) { ctx.fillText(ln, PAD, y); y += fs(36); });
+    wrapLines(ctx, snap.service_display || snap.service, CW).slice(0, 2).forEach(function (ln) { ctx.fillText(ln, PAD, y); y += fs(36); });
     y += fs(14); ctx.strokeStyle = BC.line; ctx.beginPath(); ctx.moveTo(PAD, y); ctx.lineTo(W - PAD, y); ctx.stroke(); y += fs(42);
 
     // Khối tiền: đo trước để biết cần bao nhiêu chỗ (gồm cả điều khoản thanh toán + ghi chú cho khách bên trong khối)
     var payLines = [], noteLines = [];
-    if (snap.payment_terms) { ctx.font = '400 ' + fs(24) + 'px "Be Vietnam Pro", sans-serif'; payLines = wrapLines(ctx, snap.payment_terms, CW - 64).slice(0, 3); }
+    if (snap.payment_terms) { ctx.font = '400 ' + fs(24) + 'px "Be Vietnam Pro", sans-serif'; payLines = wrapLines(ctx, T.payment + ': ' + snap.payment_terms, CW - 64).slice(0, 3); }
     var noteTxt = [snap.customer_note, snap.special_instructions].filter(Boolean).join(' · ');
-    if (noteTxt) { ctx.font = 'italic 400 ' + fs(24) + 'px "Playfair Display", Georgia, serif'; noteLines = wrapLines(ctx, noteTxt, CW - 64).slice(0, 3); }
+    if (noteTxt) { ctx.font = 'italic 400 ' + fs(24) + 'px "Playfair Display", Georgia, serif'; noteLines = wrapLines(ctx, T.notes + ': ' + noteTxt, CW - 64).slice(0, 3); }
     var feeH = fs(30 + 54 + 46 + 46 + 26) + (payLines.length ? fs(10) + payLines.length * fs(31) : 0) + (noteLines.length ? fs(10) + noteLines.length * fs(31) : 0);
     var feeYMax = FOOT_TOP - 26 - feeH;          // khối tiền không được đè footer
     var limitY = feeYMax - 16;                    // các dòng thông tin phải dừng trước đây
@@ -579,11 +602,11 @@
       yB = y; wrapLines(ctx, v2, half).slice(0, 2).forEach(function (ln) { ctx.fillText(ln, PAD + half + 40, yB); yB += fs(42); });
       y = Math.max(yA, yB) + fs(20);
     }
-    row2('Ngày', longDate(snap.event_date), 'Giờ hẹn', snap.ready_time);
-    row('Địa điểm', snap.venue);
-    if (snap.pax) row('Số người', String(snap.pax));
-    if (snap.includes) row('Gồm', snap.includes);
-    if (snap.excludes) row('Không gồm', snap.excludes);
+    row2(T.date, longDate(snap.event_date, L), T.time, fmtTime(snap.ready_time, L));
+    row(T.venue, snap.venue);
+    if (snap.pax) row(T.pax, String(snap.pax));
+    if (snap.includes) row(T.includes, snap.includes);
+    if (snap.excludes) row(T.excludes, snap.excludes);
 
     // Khối tiền
     var feeY = Math.min(Math.max(y, 0), feeYMax);
@@ -594,9 +617,9 @@
       ctx.textAlign = 'left'; ctx.fillStyle = strong ? BC.ink : BC.mute; ctx.font = (strong ? '500 ' + fs(28) + 'px' : '400 ' + fs(25) + 'px') + ' "Be Vietnam Pro", sans-serif'; ctx.fillText(lbl, col, fy);
       ctx.textAlign = 'right'; ctx.fillStyle = BC.ink; ctx.font = (strong ? '600 ' + fs(34) + 'px' : '500 ' + fs(27) + 'px') + ' "Be Vietnam Pro", sans-serif'; ctx.fillText(val, colR, fy); ctx.textAlign = 'left';
     }
-    moneyRow('Tổng phí', vnd(snap.total_fee), true); fy += fs(50);
-    moneyRow('Cọc', snap.deposit_mode === 'amount' ? vnd(snap.deposit_amount) : (snap.deposit_mode === 'none' ? 'Không cần cọc' : 'Không áp dụng'), false); fy += fs(46);
-    moneyRow('Còn lại', vnd(snap.remaining_balance), false); fy += fs(10);
+    moneyRow(T.total, vnd(snap.total_fee, L), true); fy += fs(50);
+    moneyRow(T.deposit, snap.deposit_mode === 'amount' ? vnd(snap.deposit_amount, L) : (snap.deposit_mode === 'none' ? T.depNone : T.depNA), false); fy += fs(46);
+    moneyRow(T.remaining, vnd(snap.remaining_balance, L), false); fy += fs(10);
     if (payLines.length) { fy += fs(24); ctx.fillStyle = BC.ink; ctx.font = '400 ' + fs(24) + 'px "Be Vietnam Pro", sans-serif'; payLines.forEach(function (ln) { ctx.fillText(ln, col, fy); fy += fs(31); }); }
     if (noteLines.length) { fy += fs(24); ctx.fillStyle = BC.gold2; ctx.font = 'italic 400 ' + fs(24) + 'px "Playfair Display", Georgia, serif'; noteLines.forEach(function (ln) { ctx.fillText(ln, col, fy); fy += fs(31); }); }
 
@@ -675,7 +698,7 @@
       } else { bcShowErr(sheetEl, 'Trình duyệt này không chia sẻ được file trực tiếp. Đang lưu ảnh, mở Zalo/IG rồi chọn ảnh từ máy.'); bcSaveBlob(blob, fname, sheetEl); }
     };
     $('#bcSave', wrap).onclick = function () { if (!blob) { bcShowErr(sheetEl, 'Ảnh chưa sẵn sàng, đợi vài giây rồi thử lại.'); return; } bcSaveBlob(blob, fname, sheetEl); };
-    if (!isHistory) $('#bcEdit', wrap).onclick = function () { wrap.remove(); api('/leads/' + encodeURIComponent(lead.id) + '/confirmations').then(function (d) { bcForm(lead, d.booking, d.missing, true); }).catch(function (e) { toast(e.message, true); }); };
+    if (!isHistory) $('#bcEdit', wrap).onclick = function () { wrap.remove(); api('/leads/' + encodeURIComponent(lead.id) + '/confirmations').then(function (d) { bcForm(lead, d.booking, d.missing, true, d.language); }).catch(function (e) { toast(e.message, true); }); };
     $('#bcClose', wrap).onclick = function () { wrap.remove(); if (!isHistory) viewLead(lead.id); };
   }
   function bcSaveBlob(blob, fname, root) {
