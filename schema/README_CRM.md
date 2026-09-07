@@ -64,3 +64,13 @@ Không cần biến môi trường nào khác. Tuỳ chọn: `CRM_ALLOWED_USERS 
 **Vòng 1:**
 
 Schema + seed chạy sạch (7/4/11 events). Dashboard ra đúng số Sheet (7 leads, 6 booking, 4 completed, 85,7%, 5,2tr chưa xác minh, 3,5tr mở). Thêm lead sinh ID `KK-260906-001/002` không trùng. PATCH nhanh ghi 5 thay đổi vào nhật ký, actual_revenue sửa thì cờ verified tự về 0. Form web POST → lead New `KK-260906-003` với ghi chú địa điểm/ngân sách. Export CSV đúng thứ tự cột Sheet. Không token → 401. Giao diện: 5 màn hình render, quick update lưu 3 thay đổi (test jsdom). Chưa test trên điện thoại thật và chưa test popup GitHub thật (cần deploy).
+
+## Booking Confirmation (CR-20260907-29) · thêm 07/09/2026
+
+Kay mở lead (Quoted / Hold / Deposit Paid / Confirmed) → nút **Tạo Booking Confirmation** → CRM kiểm tra thiếu gì (tên, dịch vụ, ngày, giờ hẹn, địa điểm, tổng phí, cọc) → sheet chỉ hỏi phần thiếu → xem trước ảnh 1080×1350 → **Chia sẻ ảnh** (Web Share API, ra sheet chia sẻ iPhone: Zalo/IG/WhatsApp) hoặc **Lưu ảnh** → snapshot lưu D1 `booking_confirmations` (BC-<lead>-V1, V2… không ghi đè). Không phải hoá đơn; tên khách thấy = "Booking Confirmation".
+
+- Migration: `schema/crm-migration-002-booking-confirmations.sql` (thêm cột `leads.booking_json` + bảng `booking_confirmations`, schema 1.2). Chạy vào D1 sau `crm.sql`, 1 lần.
+- API (sau xác thực CRM, cùng cổng cutover: POST bị 423 khi `CRM_CUTOVER` OFF): `GET/POST /api/crm/leads/:id/confirmations`, `GET /api/crm/confirmations/:id`.
+- Ảnh vẽ bằng Canvas 2D ngay trên máy Kay, không thư viện, không service ảnh, không SaaS; font Playfair + Be Vietnam Pro tự host (`/assets/fonts/`); wordmark vẽ chữ theo đúng logo SVG. Nội dung dài → tự co chữ thân 1 → 0,9 → 0,8 → 0,72, không cắt.
+- Tiền: Tổng phí = `expected_revenue` (chỉ điền khi đang trống). Cọc = số tiền / không cần cọc / không áp dụng, độc lập với cờ Deposit Yes/No/N/A. **Không** đụng `actual_revenue` / `actual_verified`.
+- Không đưa lên ảnh: Source, Segment, Owner, Next Action, Follow-up, ghi chú nội bộ, điều khoản đối tác.

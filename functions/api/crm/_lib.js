@@ -181,3 +181,60 @@ export async function insertPartner(db, actor, d) {
     .bind('partner', row.id, ts, actor, 'create', null, row.status).run();
   return row;
 }
+
+// ===================== Booking Confirmation (CR-20260907-29) =====================
+// Trường booking chỉ dành cho khách thấy, lưu trong leads.booking_json. KHÔNG có trường nội bộ ở đây.
+export const BOOKING_FIELDS = ['ready_time', 'venue', 'pax', 'includes', 'excludes', 'deposit_mode', 'deposit_amount', 'payment_terms', 'customer_note', 'special_instructions', 'total_fee'];
+export const DEPOSIT_MODES = ['amount', 'none', 'na']; // số tiền cọc / không cần cọc (đã thống nhất) / không áp dụng
+export const BC_ELIGIBLE_STATUSES = ['Quoted', 'Hold', 'Deposit Paid', 'Confirmed'];
+
+export function parseBooking(lead) {
+  try { return lead && lead.booking_json ? JSON.parse(lead.booking_json) : {}; } catch (e) { return {}; }
+}
+export function normalizeBooking(b) {
+  const out = {}; const errors = [];
+  if (!b || typeof b !== 'object') return { data: out, errors };
+  for (const k of BOOKING_FIELDS) {
+    if (!(k in b)) continue;
+    const v = b[k];
+    if (k === 'deposit_amount' || k === 'total_fee') out[k] = cleanMoney(v);
+    else if (k === 'pax') { const n = parseInt(String(v).replace(/\D/g, ''), 10); out[k] = Number.isFinite(n) && n > 0 ? n : null; }
+    else if (k === 'deposit_mode') { const m = cleanStr(v, 10); if (m && !DEPOSIT_MODES.includes(m)) errors.push('deposit_mode phải là amount / none / na'); out[k] = m; }
+    else if (k === 'ready_time') { const t = cleanStr(v, 40); if (t && !/^\d{1,2}:\d{2}/.test(t)) errors.push('ready_time cần dạng HH:MM'); out[k] = t; }
+    else out[k] = cleanStr(v, k === 'includes' || k === 'customer_note' || k === 'special_instructions' || k === 'excludes' ? 1200 : 300);
+  }
+  return { data: out, errors };
+}
+
+// Kiểm tra đủ dữ liệu khách thấy chưa. Trả danh sách thiếu (mã trường), KHÔNG tự điền giá trị mặc định.
+export function bookingMissing(lead, booking) {
+  const miss = [];
+  if (!lead.customer_name) miss.push('customer_name');
+  if (!lead.service) miss.push('service');
+  if (!lead.event_date) miss.push('event_date');
+  if (!booking.ready_time) miss.push('ready_time');
+  if (!booking.venue) miss.push('venue');
+  const total = booking.total_fee != null ? booking.total_fee : lead.expected_revenue;
+  if (total == null) miss.push('total_fee');
+  if (!booking.deposit_mode) miss.push('deposit_mode');
+  else if (booking.deposit_mode === 'amount' && booking.deposit_amount == null) miss.push('deposit_amount');
+  return miss;
+}
+
+// Snapshot: chỉ dữ liệu khách thấy + thương hiệu. Không source/segment/owner/next action/notes nội bộ/partner.
+export function buildSnapshot(lead, booking, id, version, issuedAtISO) {
+  const total = booking.total_fee != null ? booking.total_fee : lead.expected_revenue;
+  const depAmt = booking.deposit_mode === 'amount' ? booking.deposit_amount : 0;
+  return {
+    confirmation_id: id, version, booking_id: lead.id, issued_at: issuedAtISO,
+    customer_name: lead.customer_name, service: lead.service, event_date: lead.event_date,
+    ready_time: booking.ready_time, venue: booking.venue, pax: booking.pax ?? null,
+    includes: booking.includes ?? null, excludes: booking.excludes ?? null,
+    total_fee: total, deposit_mode: booking.deposit_mode, deposit_amount: booking.deposit_mode === 'amount' ? booking.deposit_amount : null,
+    remaining_balance: total != null ? Math.max(0, total - (depAmt || 0)) : null,
+    payment_terms: booking.payment_terms ?? null, customer_note: booking.customer_note ?? null,
+    special_instructions: booking.special_instructions ?? null,
+    brand: { name: 'KINKAY', tagline: 'MAKEUP ARTIST', site: 'kinkay.vn', phone: '0933 953 179', instagram: '@kinkay.official',
+      footer: 'This confirmation reflects the booking details agreed at the time of issue. Please let us know if any information needs to be updated.' }
+  };
+}

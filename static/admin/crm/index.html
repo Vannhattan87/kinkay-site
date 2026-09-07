@@ -7,6 +7,7 @@
 <meta name="theme-color" content="#faf7f2">
 <title>KINKAY CRM</title>
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="stylesheet" href="/assets/fonts/fonts.css">
 <!--
   KINKAY CRM · v1.0 MVP · 06/09/2026 · CR-20260906-28
   Một file, không framework, mobile-first. Dữ liệu ở Cloudflare D1 qua /api/crm/*.
@@ -74,6 +75,21 @@
   .login h1{font:600 26px "Playfair Display",Georgia,serif;letter-spacing:.1em}
   .muted{color:var(--mute);font-size:13px}
   details summary{cursor:pointer;color:var(--gold2);font-size:14px;margin:10px 0 4px}
+  /* Booking Confirmation (CR-29) */
+  .btn.bc{background:#1A0F08;border-color:#1A0F08;color:#FAF0E4;letter-spacing:.02em}
+  .btn.bc.soft{background:#fff;color:#1A0F08;border-color:#C4A882}
+  .sheet-bg{position:fixed;inset:0;background:rgba(26,15,8,.45);z-index:20;display:flex;align-items:flex-end;justify-content:center}
+  .sheet{background:var(--bg);width:100%;max-width:720px;max-height:92vh;overflow:auto;border-radius:18px 18px 0 0;padding:14px 16px calc(16px + env(safe-area-inset-bottom));box-shadow:0 -8px 30px rgba(0,0,0,.2)}
+  .sheet h3{margin:4px 0 2px;font:600 17px "Playfair Display",Georgia,serif}
+  .sheet .grab{width:38px;height:4px;border-radius:2px;background:#d9cfc2;margin:0 auto 8px}
+  .miss{color:var(--red);font-size:12px}
+  .bcprev{background:#e9e2d8;border-radius:14px;padding:10px;display:flex;justify-content:center}
+  .bcprev canvas{width:100%;max-width:420px;height:auto;border-radius:8px;box-shadow:0 6px 24px rgba(0,0,0,.18);display:block}
+  .bcbtns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+  .bcbtns .btn{margin:0}
+  .seg{display:flex;gap:6px}
+  .seg button{flex:1;font:inherit;font-size:13px;padding:9px 6px;border-radius:10px;border:1px solid var(--line);background:#fff;color:var(--ink)}
+  .seg button.on{background:#1A0F08;color:#FAF0E4;border-color:#1A0F08}
 </style>
 </head>
 <body>
@@ -276,7 +292,8 @@
         return '<div>' + esc(e.ts.replace('T', ' ').slice(0, 16)) + ' · ' + esc(e.actor || '') + ' · <b>' + esc(e.field) + '</b>' + (e.field === 'create' ? '' : ': ' + esc(e.old_value == null ? '∅' : e.old_value) + ' → ' + esc(e.new_value == null ? '∅' : e.new_value)) + '</div>';
       }).join('') : '<div class="empty">Chưa có</div>') + '</div><p class="muted">Cập nhật gần nhất: ' + esc((l.last_updated || '').replace('T', ' ').slice(0, 16)) + ' · ' + esc(l.updated_by || '') + '</p></div>';
 
-      shell('', head + quick + full + hist, 'leads'); bindRows(); bindQuickDates(app);
+      shell('', head + '<div id="bcSlot"></div>' + quick + full + hist, 'leads'); bindRows(); bindQuickDates(app);
+      bcMount(l);
       $('#f_status').onchange = function () { $('#moneyBox').style.display = ['Quoted', 'Hold', 'Deposit Paid', 'Confirmed', 'Completed'].indexOf(this.value) >= 0 ? '' : 'none'; };
 
       $('#btnSave').onclick = function () {
@@ -398,6 +415,231 @@
       };
     });
     $('#btnOut').onclick = function () { logout(); };
+  }
+
+
+  // ================= Booking Confirmation (CR-20260907-29) =================
+  // Luồng: Lead → "Tạo Booking Confirmation" → kiểm tra thiếu gì → sheet điền phần thiếu → POST snapshot V(n)
+  //        → vẽ canvas 1080×1350 (client, không thư viện) → Chia sẻ (Web Share API file) / Lưu ảnh / Sửa & tạo lại.
+  // Snapshot là bản lịch sử: vẽ lại từ snapshot_json, không từ lead hiện tại.
+  var BC = { W: 1080, H: 1350, dark: '#1A0F08', cream: '#FAF0E4', gold: '#C4A882', gold2: '#8F7340', ink: '#2A2622', mute: '#7B736A', line: '#E4D8C8' };
+  var BC_ELIGIBLE = ['Quoted', 'Hold', 'Deposit Paid', 'Confirmed'];
+  var BC_LABEL = { customer_name: 'Tên khách', service: 'Dịch vụ', event_date: 'Ngày sự kiện', ready_time: 'Giờ hẹn', venue: 'Địa điểm', total_fee: 'Tổng phí', deposit_mode: 'Cọc', deposit_amount: 'Số tiền cọc' };
+
+  function bcMount(lead) {
+    var slot = $('#bcSlot'); if (!slot) return;
+    if (BC_ELIGIBLE.indexOf(lead.status) < 0) return;
+    api('/leads/' + encodeURIComponent(lead.id) + '/confirmations').then(function (d) {
+      var strong = lead.status === 'Confirmed' || lead.status === 'Deposit Paid';
+      var h = '<div class="card"><h2>Booking Confirmation<b>' + d.versions.length + '</b></h2>' +
+        '<button class="btn bc' + (strong ? '' : ' soft') + '" id="bcGo">' + (d.versions.length ? 'Tạo bản mới (V' + (d.versions.length + 1) + ')' : 'Tạo Booking Confirmation') + '</button>' +
+        (d.missing.length ? '<div class="muted" style="margin-top:6px">Còn thiếu: ' + d.missing.map(function (k) { return BC_LABEL[k] || k; }).join(', ') + ' → sẽ hỏi khi bấm.</div>' : '<div class="muted" style="margin-top:6px">Đủ thông tin, bấm là ra bản xem trước.</div>') +
+        (d.versions.length ? '<div class="hist" style="margin-top:8px">' + d.versions.map(function (v) { return '<div style="display:flex;justify-content:space-between;align-items:center;gap:6px"><span>' + esc(v.id) + ' · ' + esc(dmy(v.generated_at)) + ' · ' + esc(v.generated_by || '') + '</span><button class="btn sec sm" data-bcv="' + esc(v.id) + '">Xem / gửi lại</button></div>'; }).join('') + '</div>' : '') + '</div>';
+      slot.innerHTML = h;
+      $('#bcGo').onclick = function () { bcForm(lead, d.booking, d.missing, false); };
+      slot.querySelectorAll('[data-bcv]').forEach(function (b) { b.onclick = function () { api('/confirmations/' + encodeURIComponent(b.getAttribute('data-bcv'))).then(function (r) { bcPreview(lead, r.confirmation.snapshot, true); }).catch(function (e) { toast(e.message, true); }); }; });
+    }).catch(function (e) { slot.innerHTML = '<div class="warn">' + esc(e.message) + '</div>'; });
+  }
+
+  // Sheet điền thông tin: chỉ trường THIẾU bắt buộc, cộng phần "Thêm chi tiết" tuỳ chọn. Không điền sẵn giá trị đoán.
+  function bcForm(lead, booking, missing, editAll) {
+    booking = booking || {};
+    var need = function (k) { return editAll || missing.indexOf(k) >= 0; };
+    var f = '';
+    if (need('service')) f += '<label>Dịch vụ *</label><select id="b_service">' + opts(state.lists.services, lead.service, true) + '</select>';
+    if (need('event_date')) f += '<label>Ngày sự kiện *</label><input id="b_event" type="date" value="' + esc(lead.event_date || '') + '">';
+    if (need('ready_time')) f += '<label>Giờ hẹn (giờ cần xong makeup) *</label><input id="b_time" type="time" value="' + esc(booking.ready_time || '') + '">';
+    if (need('venue')) f += '<label>Địa điểm *</label><input id="b_venue" value="' + esc(booking.venue || '') + '" placeholder="Tên khách sạn / địa chỉ">';
+    var total = booking.total_fee != null ? booking.total_fee : lead.expected_revenue;
+    if (need('total_fee')) f += '<label>Tổng phí (đ) *</label><input id="b_total" inputmode="numeric" value="' + (total == null ? '' : total) + '">';
+    if (need('deposit_mode') || need('deposit_amount')) {
+      var dm = booking.deposit_mode || '';
+      f += '<label>Cọc *</label><div class="seg" id="b_dm">' +
+        '<button type="button" data-v="amount" class="' + (dm === 'amount' ? 'on' : '') + '">Có cọc (số tiền)</button>' +
+        '<button type="button" data-v="none" class="' + (dm === 'none' ? 'on' : '') + '">Không cần cọc</button>' +
+        '<button type="button" data-v="na" class="' + (dm === 'na' ? 'on' : '') + '">Không áp dụng</button></div>' +
+        '<div id="b_depwrap" style="' + (dm === 'amount' ? '' : 'display:none') + '"><label>Số tiền cọc (đ) *</label><input id="b_dep" inputmode="numeric" value="' + (booking.deposit_amount == null ? '' : booking.deposit_amount) + '"></div>';
+    }
+    var more = '<details' + (editAll ? ' open' : '') + '><summary>Thêm chi tiết cho khách (tuỳ chọn)</summary>' +
+      '<label>Số người</label><input id="b_pax" inputmode="numeric" value="' + (booking.pax == null ? '' : booking.pax) + '" placeholder="Ví dụ: 3">' +
+      '<label>Gồm những gì</label><textarea id="b_inc" placeholder="Makeup + làm tóc cô dâu, touch-up 1 lần, đến tận nơi">' + esc(booking.includes || '') + '</textarea>' +
+      '<label>Không gồm</label><input id="b_exc" value="' + esc(booking.excludes || '') + '" placeholder="Phụ kiện, lông mi giả cao cấp…">' +
+      '<label>Thanh toán</label><input id="b_pay" value="' + esc(booking.payment_terms || '') + '" placeholder="Còn lại thanh toán tiền mặt / chuyển khoản sau khi xong">' +
+      '<label>Ghi chú cho khách</label><textarea id="b_note" placeholder="Vui lòng để mặt sạch, không makeup trước">' + esc(booking.customer_note || '') + '</textarea>' +
+      '<label>Lưu ý đặc biệt</label><input id="b_spec" value="' + esc(booking.special_instructions || '') + '"></details>';
+    var sheet = document.createElement('div'); sheet.className = 'sheet-bg';
+    sheet.innerHTML = '<div class="sheet"><div class="grab"></div><h3>' + (editAll ? 'Sửa chi tiết booking' : (f ? 'Điền phần còn thiếu' : 'Xác nhận thông tin')) + '</h3>' +
+      '<div class="muted">' + esc(lead.customer_name) + ' · ' + esc(lead.service || '') + (lead.event_date ? ' · ' + dmy(lead.event_date) : '') + '</div>' +
+      (f && !editAll ? '<div class="miss" style="margin-top:6px">Chưa đủ để gửi khách. Không tự điền giá trị đoán.</div>' : '') + f + more +
+      '<div class="bcbtns"><button class="btn sec" id="b_cancel">Huỷ</button><button class="btn bc" id="b_ok">Tạo bản xem trước</button></div></div>';
+    document.body.appendChild(sheet);
+    var dmv = booking.deposit_mode || '';
+    sheet.querySelectorAll('#b_dm button').forEach(function (b) { b.onclick = function () { dmv = b.getAttribute('data-v'); sheet.querySelectorAll('#b_dm button').forEach(function (x) { x.className = x === b ? 'on' : ''; }); $('#b_depwrap', sheet).style.display = dmv === 'amount' ? '' : 'none'; }; });
+    $('#b_cancel', sheet).onclick = function () { sheet.remove(); };
+    sheet.addEventListener('click', function (e) { if (e.target === sheet) sheet.remove(); });
+    $('#b_ok', sheet).onclick = function () {
+      var g = function (id) { var el = $(id, sheet); return el ? el.value.trim() : undefined; };
+      var b = { pax: g('#b_pax'), includes: g('#b_inc'), excludes: g('#b_exc'), payment_terms: g('#b_pay'), customer_note: g('#b_note'), special_instructions: g('#b_spec') };
+      if ($('#b_time', sheet)) b.ready_time = g('#b_time');
+      if ($('#b_venue', sheet)) b.venue = g('#b_venue');
+      if ($('#b_total', sheet)) b.total_fee = g('#b_total').replace(/\D/g, '');
+      if ($('#b_dm', sheet)) { b.deposit_mode = dmv; if (dmv === 'amount') b.deposit_amount = (g('#b_dep') || '').replace(/\D/g, ''); }
+      Object.keys(b).forEach(function (k) { if (b[k] === '' || b[k] === undefined) delete b[k]; });
+      var leadPatch = {};
+      if ($('#b_service', sheet)) leadPatch.service = g('#b_service');
+      if ($('#b_event', sheet)) leadPatch.event_date = g('#b_event');
+      this.disabled = true; var self = this;
+      var pre = Object.keys(leadPatch).length ? api('/leads/' + encodeURIComponent(lead.id), { method: 'PATCH', body: leadPatch }) : Promise.resolve();
+      pre.then(function () { return api('/leads/' + encodeURIComponent(lead.id) + '/confirmations', { method: 'POST', body: { booking: b } }); })
+        .then(function (r) { sheet.remove(); toast('Đã tạo ' + r.confirmation.id); bcPreview(lead, r.confirmation.snapshot, false); })
+        .catch(function (e) { self.disabled = false; toast(e.message, true); });
+    };
+  }
+
+  // ---------- vẽ canvas 1080×1350 (không thư viện; font tự host trong /assets/fonts) ----------
+  function bcFontsReady() {
+    var probe = 'Nguyễn Thị Hương Đặng Ưu Ơ ăâêôơư';
+    return Promise.all([
+      document.fonts.load('600 60px "Playfair Display"', probe), document.fonts.load('300 60px "Playfair Display"', probe), document.fonts.load('italic 400 30px "Playfair Display"', probe),
+      document.fonts.load('300 30px "Be Vietnam Pro"', probe), document.fonts.load('400 30px "Be Vietnam Pro"', probe), document.fonts.load('500 30px "Be Vietnam Pro"', probe)
+    ]).catch(function () { });
+  }
+  function wrapLines(ctx, text, maxW) {
+    var out = []; String(text == null ? '' : text).split(/\r?\n/).forEach(function (para) {
+      var words = para.split(/\s+/).filter(Boolean), line = '';
+      if (!words.length) { out.push(''); return; }
+      words.forEach(function (w) {
+        var t = line ? line + ' ' + w : w;
+        if (ctx.measureText(t).width <= maxW) line = t;
+        else { if (line) out.push(line); line = w; while (ctx.measureText(line).width > maxW && line.length > 1) { var i = line.length - 1; while (i > 1 && ctx.measureText(line.slice(0, i)).width > maxW) i--; out.push(line.slice(0, i)); line = line.slice(i); } }
+      });
+      out.push(line);
+    }); return out;
+  }
+  function spaced(ctx, text, x, y, spacing, align) {
+    var chars = text.split(''), w = 0; chars.forEach(function (c) { w += ctx.measureText(c).width + spacing; }); w -= spacing;
+    var cx = align === 'center' ? x - w / 2 : x; var ta = ctx.textAlign; ctx.textAlign = 'left';
+    chars.forEach(function (c) { ctx.fillText(c, cx, y); cx += ctx.measureText(c).width + spacing; }); ctx.textAlign = ta;
+  }
+  function vnd(v) { return v == null ? '—' : Number(v).toLocaleString('vi-VN') + ' đ'; }
+  function longDate(iso) { if (!iso) return ''; var d = new Date(iso + 'T00:00:00'); var days = ['Chủ nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy']; return days[d.getDay()] + ', ' + dmy(iso); }
+
+  // k = hệ số co chữ phần thân (1 → 0.9 → 0.8 → 0.72) khi nội dung dài; trả {canvas, overflow}. Header/footer không co.
+  function bcRenderK(snap, k) {
+    var c = document.createElement('canvas'); c.width = BC.W; c.height = BC.H; var ctx = c.getContext('2d');
+    var W = BC.W, H = BC.H, PAD = 84, CW = W - PAD * 2, y, overflow = false;
+    var fs = function (n) { return Math.round(n * k); };
+    var FOOT_TOP = H - 178;                       // đường kẻ footer
+    ctx.fillStyle = BC.cream; ctx.fillRect(0, 0, W, H);
+    // Header tối + wordmark (vẽ chữ, cùng kiểu logo SVG trong repo)
+    ctx.fillStyle = BC.dark; ctx.fillRect(0, 0, W, 232);
+    ctx.fillStyle = BC.cream; ctx.font = '300 60px "Playfair Display", Georgia, serif'; ctx.textBaseline = 'alphabetic';
+    spaced(ctx, 'KINKAY', W / 2, 108, 26, 'center');
+    ctx.strokeStyle = BC.gold; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(W / 2 - 150, 134); ctx.lineTo(W / 2 + 150, 134); ctx.stroke();
+    ctx.fillStyle = BC.gold; ctx.font = '400 16px "Be Vietnam Pro", sans-serif'; spaced(ctx, 'MAKEUP ARTIST', W / 2, 164, 7, 'center');
+    ctx.fillStyle = BC.cream; ctx.font = '500 20px "Be Vietnam Pro", sans-serif'; spaced(ctx, 'BOOKING CONFIRMATION', W / 2, 208, 5, 'center');
+    // Mã + ngày phát hành
+    y = 288; ctx.textAlign = 'left'; ctx.fillStyle = BC.mute; ctx.font = '400 22px "Be Vietnam Pro", sans-serif';
+    ctx.fillText('Mã booking  ' + snap.booking_id + '   ·   V' + snap.version, PAD, y);
+    ctx.textAlign = 'right'; ctx.fillText('Phát hành ' + dmy(snap.issued_at), W - PAD, y); ctx.textAlign = 'left';
+    // Tên khách + dịch vụ
+    y = 360; ctx.fillStyle = BC.ink; ctx.font = '600 ' + fs(54) + 'px "Playfair Display", Georgia, serif';
+    var nameLines = wrapLines(ctx, snap.customer_name, CW).slice(0, 2); nameLines.forEach(function (ln) { ctx.fillText(ln, PAD, y); y += fs(62); });
+    ctx.fillStyle = BC.gold2; ctx.font = 'italic 400 ' + fs(29) + 'px "Playfair Display", Georgia, serif';
+    wrapLines(ctx, snap.service, CW).slice(0, 2).forEach(function (ln) { ctx.fillText(ln, PAD, y); y += fs(36); });
+    y += fs(14); ctx.strokeStyle = BC.line; ctx.beginPath(); ctx.moveTo(PAD, y); ctx.lineTo(W - PAD, y); ctx.stroke(); y += fs(42);
+
+    // Khối tiền: đo trước để biết cần bao nhiêu chỗ (gồm cả điều khoản thanh toán + ghi chú cho khách bên trong khối)
+    var payLines = [], noteLines = [];
+    if (snap.payment_terms) { ctx.font = '400 ' + fs(24) + 'px "Be Vietnam Pro", sans-serif'; payLines = wrapLines(ctx, snap.payment_terms, CW - 64).slice(0, 3); }
+    var noteTxt = [snap.customer_note, snap.special_instructions].filter(Boolean).join(' · ');
+    if (noteTxt) { ctx.font = 'italic 400 ' + fs(24) + 'px "Playfair Display", Georgia, serif'; noteLines = wrapLines(ctx, noteTxt, CW - 64).slice(0, 3); }
+    var feeH = fs(30 + 54 + 46 + 46 + 26) + (payLines.length ? fs(10) + payLines.length * fs(31) : 0) + (noteLines.length ? fs(10) + noteLines.length * fs(31) : 0);
+    var feeYMax = FOOT_TOP - 26 - feeH;          // khối tiền không được đè footer
+    var limitY = feeYMax - 16;                    // các dòng thông tin phải dừng trước đây
+
+    function label(txt, x, yy) { ctx.fillStyle = BC.mute; ctx.font = '500 ' + fs(18) + 'px "Be Vietnam Pro", sans-serif'; spaced(ctx, txt.toUpperCase(), x, yy, 3, 'left'); }
+    function row(lbl, value, big) {
+      if (value == null || value === '') return;
+      var lh = fs(big ? 42 : 37), fits = Math.floor((limitY - (y + fs(32))) / lh);
+      if (fits < 1) { overflow = true; return; }
+      label(lbl, PAD, y); y += fs(32);
+      ctx.fillStyle = BC.ink; ctx.font = (big ? '500 ' + fs(33) + 'px' : '400 ' + fs(29) + 'px') + ' "Be Vietnam Pro", sans-serif';
+      var lines = wrapLines(ctx, value, CW);
+      if (lines.length > fits) { overflow = true; lines = lines.slice(0, fits); lines[fits - 1] = lines[fits - 1].replace(/\s+\S*$/, '') + '…'; }
+      lines.forEach(function (ln) { ctx.fillText(ln, PAD, y); y += lh; }); y += fs(20);
+    }
+    function row2(l1, v1, l2, v2) {
+      var half = (CW - 40) / 2, yA, yB;
+      label(l1, PAD, y); label(l2, PAD + half + 40, y); y += fs(32);
+      ctx.fillStyle = BC.ink; ctx.font = '500 ' + fs(33) + 'px "Be Vietnam Pro", sans-serif';
+      yA = y; wrapLines(ctx, v1, half).slice(0, 2).forEach(function (ln) { ctx.fillText(ln, PAD, yA); yA += fs(42); });
+      yB = y; wrapLines(ctx, v2, half).slice(0, 2).forEach(function (ln) { ctx.fillText(ln, PAD + half + 40, yB); yB += fs(42); });
+      y = Math.max(yA, yB) + fs(20);
+    }
+    row2('Ngày', longDate(snap.event_date), 'Giờ hẹn', snap.ready_time);
+    row('Địa điểm', snap.venue);
+    if (snap.pax) row('Số người', String(snap.pax));
+    if (snap.includes) row('Gồm', snap.includes);
+    if (snap.excludes) row('Không gồm', snap.excludes);
+
+    // Khối tiền
+    var feeY = Math.min(Math.max(y, 0), feeYMax);
+    ctx.fillStyle = '#F3E8D8'; ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(PAD, feeY, CW, feeH, 20); else ctx.rect(PAD, feeY, CW, feeH); ctx.fill();
+    if (y > feeYMax) overflow = true;
+    var fy = feeY + fs(30 + 36), col = PAD + 32, colR = W - PAD - 32;
+    function moneyRow(lbl, val, strong) {
+      ctx.textAlign = 'left'; ctx.fillStyle = strong ? BC.ink : BC.mute; ctx.font = (strong ? '500 ' + fs(28) + 'px' : '400 ' + fs(25) + 'px') + ' "Be Vietnam Pro", sans-serif'; ctx.fillText(lbl, col, fy);
+      ctx.textAlign = 'right'; ctx.fillStyle = BC.ink; ctx.font = (strong ? '600 ' + fs(34) + 'px' : '500 ' + fs(27) + 'px') + ' "Be Vietnam Pro", sans-serif'; ctx.fillText(val, colR, fy); ctx.textAlign = 'left';
+    }
+    moneyRow('Tổng phí', vnd(snap.total_fee), true); fy += fs(50);
+    moneyRow('Cọc', snap.deposit_mode === 'amount' ? vnd(snap.deposit_amount) : (snap.deposit_mode === 'none' ? 'Không cần cọc' : 'Không áp dụng'), false); fy += fs(46);
+    moneyRow('Còn lại', vnd(snap.remaining_balance), false); fy += fs(10);
+    if (payLines.length) { fy += fs(24); ctx.fillStyle = BC.ink; ctx.font = '400 ' + fs(24) + 'px "Be Vietnam Pro", sans-serif'; payLines.forEach(function (ln) { ctx.fillText(ln, col, fy); fy += fs(31); }); }
+    if (noteLines.length) { fy += fs(24); ctx.fillStyle = BC.gold2; ctx.font = 'italic 400 ' + fs(24) + 'px "Playfair Display", Georgia, serif'; noteLines.forEach(function (ln) { ctx.fillText(ln, col, fy); fy += fs(31); }); }
+
+    // Footer
+    ctx.strokeStyle = BC.line; ctx.beginPath(); ctx.moveTo(PAD, FOOT_TOP); ctx.lineTo(W - PAD, FOOT_TOP); ctx.stroke();
+    ctx.fillStyle = BC.mute; ctx.font = '300 21px "Be Vietnam Pro", sans-serif'; ctx.textAlign = 'center';
+    wrapLines(ctx, snap.brand.footer, CW).slice(0, 2).forEach(function (ln, i) { ctx.fillText(ln, W / 2, FOOT_TOP + 44 + i * 30); });
+    ctx.fillStyle = BC.ink; ctx.font = '500 24px "Be Vietnam Pro", sans-serif'; ctx.fillText(snap.brand.site + '   ·   ' + snap.brand.phone + '   ·   Instagram ' + snap.brand.instagram, W / 2, H - 56);
+    ctx.textAlign = 'left';
+    return { canvas: c, overflow: overflow };
+  }
+  function bcRender(snap) {
+    var r; [1, 0.9, 0.8, 0.72].some(function (k) { r = bcRenderK(snap, k); return !r.overflow; });
+    return r.canvas;
+  }
+
+  function bcPreview(lead, snap, isHistory) {
+    var wrap = document.createElement('div'); wrap.className = 'sheet-bg';
+    wrap.innerHTML = '<div class="sheet"><div class="grab"></div><h3>' + esc(snap.confirmation_id) + '</h3><div class="muted">' + (isHistory ? 'Bản đã phát hành ' + esc(dmy(snap.issued_at)) + ' (lịch sử, không đổi)' : 'Bản mới. Kiểm tra rồi chia sẻ.') + '</div>' +
+      '<div class="bcprev" id="bcCanvasWrap" style="margin-top:10px"><div class="empty">Đang vẽ…</div></div>' +
+      '<div class="bcbtns"><button class="btn bc" id="bcShare">Chia sẻ ảnh</button><button class="btn sec" id="bcSave">Lưu ảnh</button>' +
+      (isHistory ? '' : '<button class="btn sec" id="bcEdit">Sửa chi tiết & tạo lại</button>') + '<button class="btn sec" id="bcClose">Đóng</button></div></div>';
+    document.body.appendChild(wrap);
+    var blob = null;
+    bcFontsReady().then(function () {
+      var canvas = bcRender(snap); $('#bcCanvasWrap', wrap).innerHTML = ''; $('#bcCanvasWrap', wrap).appendChild(canvas);
+      canvas.toBlob(function (b) { blob = b; }, 'image/png');
+    });
+    var fname = snap.confirmation_id + '.png';
+    $('#bcShare', wrap).onclick = function () {
+      if (!blob) { toast('Ảnh chưa sẵn sàng, thử lại'); return; }
+      var file = new File([blob], fname, { type: 'image/png' });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        navigator.share({ files: [file], title: 'KINKAY · Booking Confirmation' }).then(function () { toast('Đã mở chia sẻ'); }).catch(function (e) { if (e && e.name !== 'AbortError') toast('Không chia sẻ được: ' + e.message, true); });
+      } else { toast('Trình duyệt không hỗ trợ chia sẻ file, đang lưu ảnh'); bcSaveBlob(blob, fname); }
+    };
+    $('#bcSave', wrap).onclick = function () { if (!blob) { toast('Ảnh chưa sẵn sàng'); return; } bcSaveBlob(blob, fname); };
+    if (!isHistory) $('#bcEdit', wrap).onclick = function () { wrap.remove(); api('/leads/' + encodeURIComponent(lead.id) + '/confirmations').then(function (d) { bcForm(lead, d.booking, d.missing, true); }); };
+    $('#bcClose', wrap).onclick = function () { wrap.remove(); if (!isHistory) viewLead(lead.id); };
+  }
+  function bcSaveBlob(blob, fname) {
+    var url = URL.createObjectURL(blob);
+    if (/iPhone|iPad|iPod/.test(navigator.userAgent)) { window.open(url, '_blank'); toast('Nhấn giữ ảnh → Lưu vào Ảnh'); }
+    else { var a = document.createElement('a'); a.href = url; a.download = fname; document.body.appendChild(a); a.click(); a.remove(); toast('Đã tải ' + fname); }
+    setTimeout(function () { URL.revokeObjectURL(url); }, 60000);
   }
 
   // ---------- router ----------
