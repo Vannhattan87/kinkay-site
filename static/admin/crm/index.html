@@ -63,7 +63,7 @@
   .bar a{flex:1;text-align:center;text-decoration:none;color:var(--mute);font-size:11px;padding:4px 0}
   .bar a span{display:block;font-size:20px;line-height:1.1}
   .bar a.on{color:var(--gold2);font-weight:600}
-  .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(90px + env(safe-area-inset-bottom));background:var(--ink);color:#fff;padding:10px 16px;border-radius:999px;font-size:14px;opacity:0;transition:opacity .2s;z-index:9;pointer-events:none;max-width:90%}
+  .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(90px + env(safe-area-inset-bottom));background:var(--ink);color:#fff;padding:10px 16px;border-radius:999px;font-size:14px;opacity:0;transition:opacity .2s;z-index:40;pointer-events:none;max-width:90%}
   .toast.on{opacity:1}
   .toast.err{background:var(--red)}
   .hist{font-size:12px;color:var(--mute)}
@@ -84,7 +84,7 @@
   .sheet .grab{width:38px;height:4px;border-radius:2px;background:#d9cfc2;margin:0 auto 8px}
   .miss{color:var(--red);font-size:12px}
   .bcprev{background:#e9e2d8;border-radius:14px;padding:10px;display:flex;justify-content:center}
-  .bcprev canvas{width:100%;max-width:420px;height:auto;border-radius:8px;box-shadow:0 6px 24px rgba(0,0,0,.18);display:block}
+  .bcprev canvas{width:100%;max-width:360px;height:auto;border-radius:8px;box-shadow:0 6px 24px rgba(0,0,0,.18);display:block}
   .bcbtns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
   .bcbtns .btn{margin:0}
   .seg{display:flex;gap:6px}
@@ -488,11 +488,13 @@
       var leadPatch = {};
       if ($('#b_service', sheet)) leadPatch.service = g('#b_service');
       if ($('#b_event', sheet)) leadPatch.event_date = g('#b_event');
-      this.disabled = true; var self = this;
+      var self = this, sheetEl = $('.sheet', sheet);
+      if ($('#b_dm', sheet) && !dmv) { bcShowErr(sheetEl, 'Chọn một lựa chọn Cọc trước khi tạo.'); return; }
+      self.disabled = true; self.textContent = 'Đang tạo…'; var eb = $('#bcErr', sheet); if (eb) eb.hidden = true;
       var pre = Object.keys(leadPatch).length ? api('/leads/' + encodeURIComponent(lead.id), { method: 'PATCH', body: leadPatch }) : Promise.resolve();
       pre.then(function () { return api('/leads/' + encodeURIComponent(lead.id) + '/confirmations', { method: 'POST', body: { booking: b } }); })
         .then(function (r) { sheet.remove(); toast('Đã tạo ' + r.confirmation.id); bcPreview(lead, r.confirmation.snapshot, false); })
-        .catch(function (e) { self.disabled = false; toast(e.message, true); });
+        .catch(function (e) { self.disabled = false; self.textContent = 'Tạo bản xem trước'; bcShowErr(sheetEl, 'Không tạo được: ' + e.message, e); });
     };
   }
 
@@ -611,35 +613,85 @@
     return r.canvas;
   }
 
+  // Hiển thị lỗi NGAY TRONG sheet (toast nằm dưới sheet nên trước đây lỗi bị che → "im lặng").
+  function bcShowErr(root, msg, err) {
+    if (err) console.error('[KINKAY BC]', msg, err);
+    var box = $('#bcErr', root); if (!box) { box = document.createElement('div'); box.id = 'bcErr'; box.className = 'warn'; box.style.cssText = 'background:#fbeaea;border-color:#f2cfcf;color:#8a1c1c'; root.insertBefore(box, root.firstChild.nextSibling); }
+    box.textContent = msg; box.hidden = false;
+  }
+  // Font: chờ tối đa 4 giây, không bao giờ treo. Không có font tuỳ chỉnh thì vẫn vẽ bằng font hệ thống.
+  function bcFontsReadyTimeout() {
+    return Promise.race([bcFontsReady(), new Promise(function (r) { setTimeout(r, 4000); })]);
+  }
+  // canvas → Blob, có fallback dataURL (một số WebView Android trả null ở toBlob).
+  function bcToBlob(canvas) {
+    return new Promise(function (resolve, reject) {
+      try {
+        canvas.toBlob(function (b) {
+          if (b) return resolve(b);
+          try { var d = canvas.toDataURL('image/png'); var bin = atob(d.split(',')[1]); var u8 = new Uint8Array(bin.length); for (var i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i); resolve(new Blob([u8], { type: 'image/png' })); }
+          catch (e) { reject(e); }
+        }, 'image/png');
+      } catch (e) { reject(e); }
+    });
+  }
+
   function bcPreview(lead, snap, isHistory) {
     var wrap = document.createElement('div'); wrap.className = 'sheet-bg';
     wrap.innerHTML = '<div class="sheet"><div class="grab"></div><h3>' + esc(snap.confirmation_id) + '</h3><div class="muted">' + (isHistory ? 'Bản đã phát hành ' + esc(dmy(snap.issued_at)) + ' (lịch sử, không đổi)' : 'Bản mới. Kiểm tra rồi chia sẻ.') + '</div>' +
-      '<div class="bcprev" id="bcCanvasWrap" style="margin-top:10px"><div class="empty">Đang vẽ…</div></div>' +
-      '<div class="bcbtns"><button class="btn bc" id="bcShare">Chia sẻ ảnh</button><button class="btn sec" id="bcSave">Lưu ảnh</button>' +
-      (isHistory ? '' : '<button class="btn sec" id="bcEdit">Sửa chi tiết & tạo lại</button>') + '<button class="btn sec" id="bcClose">Đóng</button></div></div>';
+      '<div class="bcbtns" style="margin-top:8px"><button class="btn bc" id="bcShare" disabled>Đang tạo ảnh…</button><button class="btn sec" id="bcSave" disabled>Lưu ảnh</button>' +
+      (isHistory ? '' : '<button class="btn sec" id="bcEdit">Sửa thông tin</button>') + '<button class="btn sec" id="bcClose">Đóng</button></div>' +
+      '<div class="bcprev" id="bcCanvasWrap" style="margin-top:10px"><div class="empty" id="bcSpin">⏳ Đang tạo ảnh 1080×1350…</div></div></div>';
     document.body.appendChild(wrap);
-    var blob = null;
-    bcFontsReady().then(function () {
-      var canvas = bcRender(snap); $('#bcCanvasWrap', wrap).innerHTML = ''; $('#bcCanvasWrap', wrap).appendChild(canvas);
-      canvas.toBlob(function (b) { blob = b; }, 'image/png');
-    });
-    var fname = snap.confirmation_id + '.png';
+    var sheetEl = $('.sheet', wrap), blob = null, canvas = null, fname = snap.confirmation_id + '.png';
+
+    function ready() { $('#bcShare', wrap).disabled = false; $('#bcShare', wrap).textContent = 'Chia sẻ ảnh'; $('#bcSave', wrap).disabled = false; }
+    function fail(e) {
+      bcShowErr(sheetEl, 'Không tạo được ảnh. Vui lòng thử lại.', e);
+      $('#bcCanvasWrap', wrap).innerHTML = '<button class="btn sec" id="bcRetry" style="margin:0">Thử lại</button>';
+      $('#bcShare', wrap).textContent = 'Chia sẻ ảnh';
+      var rb = $('#bcRetry', wrap); if (rb) rb.onclick = function () { $('#bcCanvasWrap', wrap).innerHTML = '<div class="empty">⏳ Đang tạo ảnh…</div>'; var eb = $('#bcErr', wrap); if (eb) eb.hidden = true; run(); };
+    }
+    function run() {
+      bcFontsReadyTimeout().then(function () {
+        canvas = bcRender(snap);
+        if (!canvas || canvas.width !== BC.W) throw new Error('canvas không hợp lệ');
+        $('#bcCanvasWrap', wrap).innerHTML = ''; $('#bcCanvasWrap', wrap).appendChild(canvas);
+        return bcToBlob(canvas);
+      }).then(function (b) {
+        if (!b || !b.size) throw new Error('blob rỗng');
+        blob = b; ready(); console.log('[KINKAY BC] PNG', canvas.width + 'x' + canvas.height, Math.round(b.size / 1024) + ' KB');
+      }).catch(fail);
+    }
+    run();
+
     $('#bcShare', wrap).onclick = function () {
-      if (!blob) { toast('Ảnh chưa sẵn sàng, thử lại'); return; }
-      var file = new File([blob], fname, { type: 'image/png' });
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        navigator.share({ files: [file], title: 'KINKAY · Booking Confirmation' }).then(function () { toast('Đã mở chia sẻ'); }).catch(function (e) { if (e && e.name !== 'AbortError') toast('Không chia sẻ được: ' + e.message, true); });
-      } else { toast('Trình duyệt không hỗ trợ chia sẻ file, đang lưu ảnh'); bcSaveBlob(blob, fname); }
+      if (!blob) { bcShowErr(sheetEl, 'Ảnh chưa sẵn sàng, đợi vài giây rồi thử lại.'); return; }
+      var file; try { file = new File([blob], fname, { type: 'image/png' }); } catch (e) { file = null; }
+      if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
+        navigator.share({ files: [file], title: 'KINKAY · Booking Confirmation' })
+          .then(function () { toast('Đã mở chia sẻ'); })
+          .catch(function (e) { if (e && e.name === 'AbortError') return; bcShowErr(sheetEl, 'Không chia sẻ được (' + (e && e.message) + '). Đang lưu ảnh để gửi tay.', e); bcSaveBlob(blob, fname, sheetEl); });
+      } else { bcShowErr(sheetEl, 'Trình duyệt này không chia sẻ được file trực tiếp. Đang lưu ảnh, mở Zalo/IG rồi chọn ảnh từ máy.'); bcSaveBlob(blob, fname, sheetEl); }
     };
-    $('#bcSave', wrap).onclick = function () { if (!blob) { toast('Ảnh chưa sẵn sàng'); return; } bcSaveBlob(blob, fname); };
-    if (!isHistory) $('#bcEdit', wrap).onclick = function () { wrap.remove(); api('/leads/' + encodeURIComponent(lead.id) + '/confirmations').then(function (d) { bcForm(lead, d.booking, d.missing, true); }); };
+    $('#bcSave', wrap).onclick = function () { if (!blob) { bcShowErr(sheetEl, 'Ảnh chưa sẵn sàng, đợi vài giây rồi thử lại.'); return; } bcSaveBlob(blob, fname, sheetEl); };
+    if (!isHistory) $('#bcEdit', wrap).onclick = function () { wrap.remove(); api('/leads/' + encodeURIComponent(lead.id) + '/confirmations').then(function (d) { bcForm(lead, d.booking, d.missing, true); }).catch(function (e) { toast(e.message, true); }); };
     $('#bcClose', wrap).onclick = function () { wrap.remove(); if (!isHistory) viewLead(lead.id); };
   }
-  function bcSaveBlob(blob, fname) {
-    var url = URL.createObjectURL(blob);
-    if (/iPhone|iPad|iPod/.test(navigator.userAgent)) { window.open(url, '_blank'); toast('Nhấn giữ ảnh → Lưu vào Ảnh'); }
-    else { var a = document.createElement('a'); a.href = url; a.download = fname; document.body.appendChild(a); a.click(); a.remove(); toast('Đã tải ' + fname); }
-    setTimeout(function () { URL.revokeObjectURL(url); }, 60000);
+  function bcSaveBlob(blob, fname, root) {
+    try {
+      var url = URL.createObjectURL(blob);
+      if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
+        // iOS Safari không tải file qua a[download] ổn định: mở ảnh tab mới → nhấn giữ → Lưu vào Ảnh.
+        var w = window.open(url, '_blank');
+        if (!w) { var a0 = document.createElement('a'); a0.href = url; a0.target = '_blank'; a0.rel = 'noopener'; a0.textContent = 'Mở ảnh'; document.body.appendChild(a0); a0.click(); a0.remove(); }
+        if (root) bcShowErr(root, 'Ảnh đã mở ở tab mới: nhấn giữ ảnh → "Lưu vào Ảnh" (Save to Photos).'); else toast('Nhấn giữ ảnh → Lưu vào Ảnh');
+      } else {
+        var a = document.createElement('a'); a.href = url; a.download = fname; document.body.appendChild(a); a.click(); a.remove();
+        toast('Đã lưu ' + fname);
+      }
+      setTimeout(function () { URL.revokeObjectURL(url); }, 60000);
+    } catch (e) { if (root) bcShowErr(root, 'Không lưu được ảnh. Vui lòng thử lại.', e); else toast('Không lưu được ảnh', true); }
   }
 
   // ---------- router ----------

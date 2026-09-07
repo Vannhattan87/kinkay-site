@@ -20,6 +20,8 @@ Mã: CR-20260906-28. Audit: CR-20260906-27. Bản 1.1 · 06/09/2026 (sau QA Chat
 | `functions/api/lead.js` (sửa) | Form web ghi thẳng lead New vào CRM khi có `CRM_DB` **và** `CRM_CUTOVER=1` |
 | `static/admin/crm/index.html` | Giao diện CRM, mobile-first, 1 file |
 
+## TRẠNG THÁI: ĐÃ CUTOVER 13:40 07/09/2026 · D1 = master · Sheet = ARCHIVE · CRM_CUTOVER=1 đang bật trên Production
+
 ## Bật trên Cloudflare (thứ tự bắt buộc · KHÔNG có cửa sổ hai master)
 
 **Giai đoạn A · CHỈ ĐỌC (Sheet vẫn là master).** Biến `CRM_CUTOVER` chưa đặt → API chặn mọi POST/PATCH (423), form web KHÔNG ghi D1, giao diện hiện băng "CHỈ ĐỌC". Kay tiếp tục ghi Sheet như cũ.
