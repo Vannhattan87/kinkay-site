@@ -9,7 +9,7 @@
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="stylesheet" href="/assets/fonts/fonts.css">
 <!--
-  KINKAY CRM · v1.0 MVP · 06/09/2026 · CR-20260906-28
+  KINKAY CRM · v1.0 MVP · 06/09/2026 · CR-20260906-28 · v1.3 11/09/2026: nút Xoá (có lý do, khôi phục được) + dò khách trùng
   Một file, không framework, mobile-first. Dữ liệu ở Cloudflare D1 qua /api/crm/*.
   Đăng nhập: dùng lại popup OAuth GitHub của Sveltia CMS (kinkay-site.pages.dev/auth). Ai đăng bài được thì dùng CRM được.
   /admin/* đã có X-Frame-Options DENY + no-store + noindex trong static/_headers, không có CSP (cố ý, xem _headers).
@@ -90,6 +90,18 @@
   .seg{display:flex;gap:6px}
   .seg button{flex:1;font:inherit;font-size:13px;padding:9px 6px;border-radius:10px;border:1px solid var(--line);background:#fff;color:var(--ink)}
   .seg button.on{background:#1A0F08;color:#FAF0E4;border-color:#1A0F08}
+  /* Xoá + chống trùng (11/09/2026) */
+  .btn.danger{background:#fff;color:var(--red);border-color:#f2cfcf;font-weight:600}
+  .btn.danger.solid{background:var(--red);color:#fff;border-color:var(--red)}
+  .pill.dup{background:#fbeaea;color:var(--red);border-color:#f2cfcf}
+  .pill.rep{background:#f4efe7;color:var(--mute)}
+  .dupbox{border:1px solid #f0dfbf;background:#fffaf1;border-radius:12px;padding:8px 10px;margin-top:10px}
+  .dupbox.hard{border-color:#f2cfcf;background:#fdf3f3}
+  .dupbox h4{margin:0 0 4px;font-size:13px}
+  .dupbox .row{padding:8px 0}
+  .dupbox .acts{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+  .undo{display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .undo button{font:inherit;font-size:13px;font-weight:600;color:var(--gold2);background:none;border:0;padding:4px 0;cursor:pointer;white-space:nowrap}
 </style>
 </head>
 <body>
@@ -103,7 +115,7 @@
   var AUTH_BASE = 'https://kinkay-site.pages.dev';   // trùng base_url trong static/admin/config.yml
   var TOKEN_KEY = 'kk_crm_token';
   var app = document.getElementById('app');
-  var state = { token: null, lists: null, user: null, dev: false, cutover: false, route: '#/today', filter: '', q: '', pfilter: '' };
+  var state = { token: null, lists: null, user: null, dev: false, cutover: false, route: '#/today', filter: '', q: '', pfilter: '', lastDeleted: null };
 
   // ---------- helpers ----------
   function $(sel, root) { return (root || document).querySelector(sel); }
@@ -118,6 +130,91 @@
   function pill(s, extra) { return '<span class="pill ' + esc(s) + (extra ? ' ' + extra : '') + '">' + esc(s) + '</span>'; }
   function dueClass(iso, today) { if (!iso) return ''; return iso < today ? 'over' : (iso === today ? 'due' : ''); }
 
+  // Chuẩn hoá tên/contact để nhận ra cùng khách. PHẢI khớp normName/normContact trong functions/api/crm/_lib.js.
+  var NAME_PREFIX = /^(?:(?:ms|mrs|mr|miss|mdm|madam|dr|chị|cô|bạn)(?:\.\s*|\s+)|(?:c|a|e)\.\s*)/;
+  function normName(v) {
+    var s = String(v || '').normalize('NFC').toLowerCase().trim();
+    for (var i = 0; i < 2; i++) { var t = s.replace(NAME_PREFIX, ''); if (t.trim()) s = t.trim(); }
+    s = s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd');
+    return s.replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
+  }
+  function normContact(v) {
+    var s = String(v || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase();
+    if (!s || /^(not retained|n\/?a|na|none|null|unknown|khong|khong co|chua co|chua|-+|—|\?+|0+)$/.test(s)) return '';
+    var ph = s.replace(/(\d)[\s.()-]+(?=\d)/g, '$1').match(/(?:\+?84|0)\d{8,10}/);
+    if (ph && !/@[a-z]/.test(s)) { var d = ph[0].replace(/\D/g, ''); return d.indexOf('84') === 0 ? '0' + d.slice(2) : d; }
+    s = s.replace(/^https?:\/\/(www\.)?(instagram\.com|facebook\.com|fb\.com|tiktok\.com\/@?)\/?/, '').replace(/^@/, '').replace(/\/+$/, '').trim();
+    return s.length >= 3 ? s : '';
+  }
+  // Đánh dấu trong danh sách: "Trùng?" = cùng khách + cùng ngày + cùng dịch vụ; "N job" = khách có nhiều job.
+  function dupMeta(leads) {
+    var byCust = {}, byJob = {}, meta = {};
+    leads.forEach(function (l) {
+      var keys = []; var n = normName(l.customer_name), c = normContact(l.contact);
+      if (c) keys.push('c:' + c); if (n) keys.push('n:' + n);
+      l._keys = keys;
+      keys.forEach(function (k) { (byCust[k] = byCust[k] || {})[l.id] = 1; if (l.event_date && l.service) { var jk = k + '|' + l.event_date + '|' + l.service; (byJob[jk] = byJob[jk] || {})[l.id] = 1; } });
+    });
+    leads.forEach(function (l) {
+      var jobs = {}, dup = false;
+      l._keys.forEach(function (k) {
+        Object.keys(byCust[k]).forEach(function (id) { jobs[id] = 1; });
+        if (l.event_date && l.service && Object.keys(byJob[k + '|' + l.event_date + '|' + l.service]).length > 1) dup = true;
+      });
+      meta[l.id] = { jobs: Object.keys(jobs).length, dup: dup };
+    });
+    return meta;
+  }
+  var DELETE_REASONS = ['Nhập trùng', 'Nhập sai', 'Test', 'Khác'];
+  function histVal(v) { v = String(v); return v.charAt(0) === '{' && v.length > 80 ? '(bản gốc đã lưu)' : v; }
+  function openSheet(inner) {
+    var bg = document.createElement('div'); bg.className = 'sheet-bg';
+    bg.innerHTML = '<div class="sheet"><div class="grab"></div>' + inner + '</div>';
+    document.body.appendChild(bg);
+    bg.addEventListener('click', function (e) { if (e.target === bg) bg.remove(); });
+    return bg;
+  }
+  function sheetErr(root, msg) {
+    var box = $('.sheet-err', root); if (!box) { box = document.createElement('div'); box.className = 'warn sheet-err'; box.style.cssText = 'background:#fbeaea;border-color:#f2cfcf;color:#8a1c1c'; $('.sheet', root).insertBefore(box, $('.sheet h3', root).nextSibling); }
+    box.textContent = msg;
+  }
+  // Xoá có lý do. Không dùng confirm() của trình duyệt (iPhone/Zalo webview hay chặn).
+  function confirmDelete(entity, rec) {
+    var isLead = entity === 'lead';
+    var reason = '';
+    var bg = openSheet('<h3>Xoá ' + esc(rec.id) + '?</h3>' +
+      '<div class="muted">' + esc(isLead ? [rec.customer_name, rec.service, rec.event_date ? dmy(rec.event_date) : '', rec.expected_revenue != null ? money(rec.expected_revenue) : ''].filter(Boolean).join(' · ') : [rec.name, rec.type].filter(Boolean).join(' · ')) + '</div>' +
+      '<div class="warn" style="margin-top:10px">' + (isLead ? 'Khách thật không chốt → đổi trạng thái <b>Lost</b>, đừng xoá. Chỉ xoá khi nhập trùng, nhập sai hoặc test.' : 'Đối tác ngừng hợp tác → đổi trạng thái <b>Closed</b>. Chỉ xoá khi nhập sai hoặc trùng.') + ' Khôi phục được ở tab <b>Thêm → Đã xoá</b>.</div>' +
+      '<label>Lý do *</label><div class="seg" id="d_reason">' + DELETE_REASONS.map(function (r) { return '<button type="button" data-v="' + esc(r) + '">' + esc(r) + '</button>'; }).join('') + '</div>' +
+      '<div class="bcbtns"><button class="btn sec" id="d_cancel">Huỷ</button><button class="btn danger solid" id="d_ok" disabled>Xoá</button></div>');
+    bg.querySelectorAll('#d_reason button').forEach(function (b) { b.onclick = function () { reason = b.getAttribute('data-v'); bg.querySelectorAll('#d_reason button').forEach(function (x) { x.className = x === b ? 'on' : ''; }); $('#d_ok', bg).disabled = false; }; });
+    $('#d_cancel', bg).onclick = function () { bg.remove(); };
+    $('#d_ok', bg).onclick = function () {
+      var self = this; if (!reason) return; self.disabled = true; self.textContent = 'Đang xoá…';
+      api((isLead ? '/leads/' : '/partners/') + encodeURIComponent(rec.id), { method: 'DELETE', body: { reason: reason } })
+        .then(function () {
+          bg.remove();
+          state.lastDeleted = { entity: entity, id: rec.id, name: isLead ? rec.customer_name : rec.name };
+          toast('Đã xoá ' + rec.id);
+          location.hash = isLead ? '#/leads' : '#/partners';
+        })
+        .catch(function (e) { self.disabled = false; self.textContent = 'Xoá'; sheetErr(bg, e.message); });
+    };
+  }
+  function undoBanner(entity) {
+    var d = state.lastDeleted; if (!d || d.entity !== entity) return '';
+    return '<div class="warn undo" id="undoBox"><span>Đã xoá <b>' + esc(d.name || '') + '</b> (' + esc(d.id) + ')</span><button id="undoDel">Hoàn tác</button></div>';
+  }
+  function bindUndo() {
+    var b = $('#undoDel'); if (!b) return;
+    b.onclick = function () {
+      var d = state.lastDeleted; b.disabled = true;
+      api('/trash', { method: 'POST', body: { entity: d.entity, id: d.id } })
+        .then(function () { state.lastDeleted = null; toast('Đã khôi phục ' + d.id); location.hash = (d.entity === 'lead' ? '#/lead/' : '#/partner/') + d.id; })
+        .catch(function (e) { b.disabled = false; toast(e.message, true); });
+    };
+  }
+
   function api(path, opt) {
     opt = opt || {};
     var h = { 'Content-Type': 'application/json' };
@@ -125,7 +222,7 @@
     return fetch(API + path, { method: opt.method || 'GET', headers: h, body: opt.body ? JSON.stringify(opt.body) : undefined })
       .then(function (r) {
         if (r.status === 401) { logout(false); throw new Error('Phiên đăng nhập hết hạn, đăng nhập lại.'); }
-        return r.json().then(function (j) { if (!r.ok || j.ok === false) throw new Error((j && j.error) ? j.error + (j.detail ? ' · ' + (Array.isArray(j.detail) ? j.detail.join('; ') : j.detail) : '') : 'Lỗi ' + r.status); return j; });
+        return r.json().then(function (j) { if (!r.ok || j.ok === false) { var er = new Error((j && j.error) ? j.error + (j.detail ? ' · ' + (Array.isArray(j.detail) ? j.detail.join('; ') : j.detail) : '') : 'Lỗi ' + r.status); er.status = r.status; er.data = j; throw er; } return j; });
       });
   }
 
@@ -185,9 +282,11 @@
   }
   function loading(tab) { shell('', '<div class="empty">Đang tải…</div>', tab); }
 
-  function leadRow(l, today) {
+  function leadRow(l, today, meta) {
     var due = l.next_followup ? '<span class="pill ' + dueClass(l.next_followup, today) + '">' + dmy(l.next_followup) + '</span>' : '';
-    return '<div class="row" data-go="#/lead/' + esc(l.id) + '"><div class="main"><div class="t">' + esc(l.customer_name) + ' ' + pill(l.status) + '</div>' +
+    var m = meta && meta[l.id];
+    var tags = m ? (m.dup ? ' <span class="pill dup">Trùng?</span>' : '') + (m.jobs > 1 ? ' <span class="pill rep">' + m.jobs + ' job</span>' : '') : '';
+    return '<div class="row" data-go="#/lead/' + esc(l.id) + '"><div class="main"><div class="t">' + esc(l.customer_name) + ' ' + pill(l.status) + tags + '</div>' +
       '<div class="s">' + esc([l.service, l.event_date ? 'sự kiện ' + dmy(l.event_date) : '', l.next_action].filter(Boolean).join(' · ')) + '</div></div>' +
       '<div class="right">' + due + (l.expected_revenue != null ? '<div class="money">' + esc(money(l.expected_revenue)) + '</div>' : '') + '</div></div>';
   }
@@ -234,10 +333,13 @@
     var qs = '?limit=300' + (state.filter ? '&status=' + encodeURIComponent(state.filter) : '') + (state.q ? '&q=' + encodeURIComponent(state.q) : '');
     api('/leads' + qs).then(function (d) {
       var chips = ['', 'New', 'Contacted', 'Qualified', 'Quoted', 'Waiting for Response', 'Hold', 'Deposit Paid', 'Confirmed', 'Completed', 'Lost'];
-      var html = '<input id="q" type="search" placeholder="Tìm tên, contact, ghi chú…" value="' + esc(state.q) + '">' +
+      var meta = dupMeta(d.leads);
+      var nDup = d.leads.filter(function (l) { return meta[l.id].dup; }).length;
+      var html = undoBanner('lead') + '<input id="q" type="search" placeholder="Tìm tên, contact, ghi chú…" value="' + esc(state.q) + '">' +
         '<div class="chips" style="margin-top:8px">' + chips.map(function (c) { return '<button data-f="' + esc(c) + '" class="' + (state.filter === c ? 'on' : '') + '">' + (c || 'Tất cả') + '</button>'; }).join('') + '</div>' +
-        '<div class="card">' + (d.leads.length ? d.leads.map(function (l) { return leadRow(l, d.today); }).join('') : '<div class="empty">Không có khách nào</div>') + '</div>';
-      shell('', html, 'leads'); bindRows();
+        (nDup ? '<div class="warn">' + nDup + ' dòng gắn nhãn <b>Trùng?</b>: cùng khách, cùng ngày, cùng dịch vụ. Mở ra kiểm tra, bản thừa thì bấm Xoá ở cuối trang.</div>' : '') +
+        '<div class="card">' + (d.leads.length ? d.leads.map(function (l) { return leadRow(l, d.today, meta); }).join('') : '<div class="empty">Không có khách nào</div>') + '</div>';
+      shell('', html, 'leads'); bindRows(); bindUndo();
       app.querySelectorAll('.chips button').forEach(function (b) { b.onclick = function () { state.filter = b.getAttribute('data-f'); viewLeads(); }; });
       var qi = $('#q'), tm; qi.oninput = function () { clearTimeout(tm); tm = setTimeout(function () { state.q = qi.value.trim(); viewLeads(); }, 350); };
     }).catch(function (e) { shell('', '<div class="warn">' + esc(e.message) + '</div>', 'leads'); });
@@ -289,11 +391,15 @@
         '<button class="btn sec" id="btnSaveFull">Lưu hồ sơ đầy đủ</button></div></details>';
 
       var hist = '<div class="card"><h2>Lịch sử thay đổi</h2><div class="hist">' + (d.events.length ? d.events.map(function (e) {
-        return '<div>' + esc(e.ts.replace('T', ' ').slice(0, 16)) + ' · ' + esc(e.actor || '') + ' · <b>' + esc(e.field) + '</b>' + (e.field === 'create' ? '' : ': ' + esc(e.old_value == null ? '∅' : e.old_value) + ' → ' + esc(e.new_value == null ? '∅' : e.new_value)) + '</div>';
+        return '<div>' + esc(e.ts.replace('T', ' ').slice(0, 16)) + ' · ' + esc(e.actor || '') + ' · <b>' + esc(e.field) + '</b>' + (e.field === 'create' ? '' : ': ' + esc(e.old_value == null ? '∅' : histVal(e.old_value)) + ' → ' + esc(e.new_value == null ? '∅' : e.new_value)) + '</div>';
       }).join('') : '<div class="empty">Chưa có</div>') + '</div><p class="muted">Cập nhật gần nhất: ' + esc((l.last_updated || '').replace('T', ' ').slice(0, 16)) + ' · ' + esc(l.updated_by || '') + '</p></div>';
 
-      shell('', head + '<div id="bcSlot"></div>' + quick + full + hist, 'leads'); bindRows(); bindQuickDates(app);
+      var del = '<div class="card"><h2>Xoá bản ghi</h2><p class="muted" style="margin:0">Chỉ khi nhập trùng / nhập sai / test. Khách thật không chốt thì đổi <b>Lost</b>.</p>' +
+        '<button class="btn danger" id="btnDel">Xoá job này</button></div>';
+      shell('', head + '<div id="sameSlot"></div><div id="bcSlot"></div>' + quick + full + hist + del, 'leads'); bindRows(); bindQuickDates(app);
       bcMount(l);
+      sameMount(l);
+      $('#btnDel').onclick = function () { confirmDelete('lead', l); };
       $('#f_status').onchange = function () { $('#moneyBox').style.display = ['Quoted', 'Hold', 'Deposit Paid', 'Confirmed', 'Completed'].indexOf(this.value) >= 0 ? '' : 'none'; };
 
       $('#btnSave').onclick = function () {
@@ -325,11 +431,36 @@
     }).catch(function (e) { shell('', '<div class="warn">' + esc(e.message) + '</div>', 'leads'); });
   }
 
+  // "Job khác của khách này" trên trang chi tiết. Cùng ngày + cùng dịch vụ → cảnh báo có thể nhập trùng.
+  function sameMount(l) {
+    var slot = $('#sameSlot'); if (!slot) return;
+    var qs = '?exclude=' + encodeURIComponent(l.id) + '&customer_name=' + encodeURIComponent(l.customer_name || '') + '&contact=' + encodeURIComponent(l.contact || '') +
+      '&event_date=' + encodeURIComponent(l.event_date || '') + '&service=' + encodeURIComponent(l.service || '');
+    api('/duplicates' + qs).then(function (d) {
+      var strong = d.matches.filter(function (m) { return m.level !== 'similar_name'; });
+      if (!strong.length) return;
+      var hard = strong.filter(function (m) { return m.level === 'same_job'; });
+      slot.innerHTML = '<div class="dupbox' + (hard.length ? ' hard' : '') + '"><h4>' + (hard.length ? 'Có thể là bản nhập trùng của ' + hard.map(function (m) { return esc(m.lead.id); }).join(', ') : 'Khách này còn ' + strong.length + ' job khác') + '</h4>' +
+        strong.map(function (m) { return dupRow(m, false); }).join('') +
+        (hard.length ? '<div class="muted">Cùng khách, cùng ngày, cùng dịch vụ. Nếu đúng là trùng: giữ 1 bản, bản thừa bấm Xoá ở cuối trang (lý do Nhập trùng).</div>' : '') + '</div>';
+      slot.querySelectorAll('[data-open]').forEach(function (b) { b.onclick = function (e) { e.stopPropagation(); location.hash = '#/lead/' + b.getAttribute('data-open'); }; });
+    }).catch(function () { });
+  }
+  var DUP_LABEL = { same_job: 'Trùng job', same_contact: 'Cùng contact', same_name: 'Cùng tên', similar_name: 'Tên gần giống' };
+  function dupRow(m, withUse) {
+    var x = m.lead;
+    return '<div class="row" style="cursor:default"><div class="main"><div class="t">' + esc(x.customer_name) + ' ' + pill(x.status) + ' <span class="pill ' + (m.level === 'same_job' ? 'dup' : 'rep') + '">' + DUP_LABEL[m.level] + '</span></div>' +
+      '<div class="s">' + esc([x.id, x.service, x.event_date ? 'sự kiện ' + dmy(x.event_date) : 'chưa có ngày', x.contact && normContact(x.contact) ? x.contact : ''].filter(Boolean).join(' · ')) + '</div>' +
+      '<div class="acts">' + (withUse ? '<button type="button" class="btn sec sm" data-use="' + esc(x.id) + '">Dùng thông tin khách này</button>' : '') + '<button type="button" class="btn sec sm" data-open="' + esc(x.id) + '">Mở</button></div></div>' +
+      '<div class="right">' + (x.expected_revenue != null ? '<div class="money">' + esc(money(x.expected_revenue)) + '</div>' : '') + '</div></div>';
+  }
+
   function viewNew() {
     var L = state.lists;
     var html = '<div class="card"><h2>Thêm khách mới</h2>' +
       '<label>Tên khách *</label><input id="n_name" autofocus placeholder="Tên hoặc tên IG">' +
       '<div class="grid2"><div><label>Contact</label><input id="n_contact" placeholder="@handle / SĐT / email"></div><div><label>Kênh nhắn</label><select id="n_channel">' + opts(L.channels, 'Instagram') + '</select></div></div>' +
+      '<div id="dupBox"></div>' +
       '<div class="grid2"><div><label>Dịch vụ</label><select id="n_service">' + opts(L.services, 'Bridal Makeup') + '</select></div><div><label>Ngày sự kiện (nếu biết)</label><input id="n_event" type="date"></div></div>' +
       '<div class="grid2"><div><label>Nguồn khách</label><select id="n_source">' + opts(L.sources, 'Instagram Organic') + '</select></div><div><label>Trạng thái</label><select id="n_status">' + opts(L.lead_statuses, 'New') + '</select></div></div>' +
       '<label>Việc tiếp theo</label><input id="n_next" value="Trả lời và hỏi ngày, địa điểm, số người">' +
@@ -338,15 +469,68 @@
       '<p class="muted">Tự động: Lead ID, ngày tạo hôm nay, Owner = Kay, Last Updated.</p>' +
       '<button class="btn" id="btnNew">Thêm khách</button></div>';
     shell('', html, 'new'); bindQuickDates(app);
-    $('#btnNew').onclick = function () {
+    // Dò khách đã có khi gõ tên / contact / đổi ngày, dịch vụ (11/09/2026)
+    var dupT, dupSeq = 0, found = {};
+    function checkDup() {
+      clearTimeout(dupT);
+      dupT = setTimeout(function () {
+        var name = $('#n_name').value.trim(), contact = $('#n_contact').value.trim(), box = $('#dupBox');
+        if (!box) return;
+        if (normName(name).length < 2 && !normContact(contact)) { box.innerHTML = ''; return; }
+        var seq = ++dupSeq;
+        api('/duplicates?customer_name=' + encodeURIComponent(name) + '&contact=' + encodeURIComponent(contact) + '&event_date=' + encodeURIComponent($('#n_event').value) + '&service=' + encodeURIComponent($('#n_service').value))
+          .then(function (d) {
+            if (seq !== dupSeq || !$('#dupBox')) return;
+            found = {}; d.matches.forEach(function (m) { found[m.lead.id] = m.lead; });
+            var hard = d.matches.filter(function (m) { return m.level === 'same_job'; });
+            var cust = d.matches.filter(function (m) { return m.level === 'same_contact' || m.level === 'same_name'; });
+            var weak = d.matches.filter(function (m) { return m.level === 'similar_name'; }).slice(0, 3);
+            var h = '';
+            if (hard.length) h += '<div class="dupbox hard"><h4>Job này có vẻ đã nhập rồi</h4>' + hard.map(function (m) { return dupRow(m, false); }).join('') + '<div class="muted">Cùng khách, cùng ngày, cùng dịch vụ. Mở job cũ để cập nhật thay vì thêm mới.</div></div>';
+            if (cust.length) h += '<div class="dupbox"><h4>Khách đã có trong CRM (' + cust.length + ' job)</h4>' + cust.slice(0, 5).map(function (m) { return dupRow(m, true); }).join('') + '<div class="muted">Khách quen đặt job mới: bấm "Dùng thông tin khách này" để điền đúng tên + contact, tránh thành 2 khách rời.</div></div>';
+            if (weak.length && !hard.length && !cust.length) h += '<div class="dupbox"><h4>Tên gần giống</h4>' + weak.map(function (m) { return dupRow(m, true); }).join('') + '</div>';
+            box.innerHTML = h;
+            box.querySelectorAll('[data-open]').forEach(function (b) { b.onclick = function () { location.hash = '#/lead/' + b.getAttribute('data-open'); }; });
+            box.querySelectorAll('[data-use]').forEach(function (b) {
+              b.onclick = function () {
+                var x = found[b.getAttribute('data-use')]; if (!x) return;
+                $('#n_name').value = x.customer_name || '';
+                if (x.contact && normContact(x.contact)) $('#n_contact').value = x.contact;
+                if (x.contact_channel) $('#n_channel').value = x.contact_channel;
+                if (x.source) $('#n_source').value = x.source;
+                toast('Đã điền thông tin ' + x.customer_name);
+                checkDup();
+              };
+            });
+          }).catch(function () { });
+      }, 400);
+    }
+    ['#n_name', '#n_contact'].forEach(function (sel) { $(sel).addEventListener('input', checkDup); });
+    ['#n_event', '#n_service'].forEach(function (sel) { $(sel).addEventListener('change', checkDup); });
+
+    function submitNew(force) {
       var p = { customer_name: $('#n_name').value, contact: $('#n_contact').value, contact_channel: $('#n_channel').value, service: $('#n_service').value,
         event_date: $('#n_event').value, source: $('#n_source').value, status: $('#n_status').value, next_action: $('#n_next').value, next_followup: $('#n_fu').value,
         notes: $('#n_notes').value, owner: 'Kay', segment: $('#n_source').value === 'Partner Referral' ? 'Partner-sourced' : 'B2C' };
       if (!p.customer_name.trim()) { toast('Cần tên khách', true); return; }
-      this.disabled = true;
+      if (force) p.force_duplicate = true;
+      $('#btnNew').disabled = true;
       api('/leads', { method: 'POST', body: p }).then(function (r) { toast('Đã thêm ' + r.lead.id); location.hash = '#/lead/' + r.lead.id; })
-        .catch(function (e) { toast(e.message, true); $('#btnNew').disabled = false; });
-    };
+        .catch(function (e) {
+          $('#btnNew').disabled = false;
+          if (e.status === 409 && e.data && e.data.code === 'duplicate') {
+            var bg = openSheet('<h3>Có vẻ trùng job đã có</h3><div class="muted">Cùng khách, cùng ngày sự kiện, cùng dịch vụ.</div>' +
+              '<div class="dupbox hard">' + e.data.matches.map(function (m) { return dupRow(m, false); }).join('') + '</div>' +
+              '<div class="bcbtns"><button class="btn sec" id="x_force">Vẫn thêm (job khác)</button><button class="btn" id="x_open">Mở job cũ</button></div>');
+            bg.querySelectorAll('[data-open]').forEach(function (b) { b.onclick = function () { bg.remove(); location.hash = '#/lead/' + b.getAttribute('data-open'); }; });
+            $('#x_open', bg).onclick = function () { bg.remove(); location.hash = '#/lead/' + e.data.matches[0].lead.id; };
+            $('#x_force', bg).onclick = function () { bg.remove(); submitNew(true); };
+            return;
+          }
+          toast(e.message, true);
+        });
+    }
+    $('#btnNew').onclick = function () { submitNew(false); };
   }
 
   function viewPartners() {
@@ -357,7 +541,7 @@
         '<div class="warn">Referral chuẩn 10% (DEC-20260906-11). Hilton 24/10 giảm 20% là ngoại lệ một lần, ghi ở lead KK-260901-001, không áp cho case khác.</div>' +
         '<div class="card">' + (d.partners.length ? d.partners.map(function (p) { return partnerRow(p, d.today); }).join('') : '<div class="empty">Chưa có đối tác</div>') + '</div>' +
         '<button class="btn sec" id="btnNewP">+ Thêm đối tác</button>';
-      shell('', html, 'partners'); bindRows();
+      shell('', undoBanner('partner') + html, 'partners'); bindRows(); bindUndo();
       app.querySelectorAll('.chips button').forEach(function (b) { b.onclick = function () { state.pfilter = b.getAttribute('data-f'); viewPartners(); }; });
       $('#btnNewP').onclick = function () { location.hash = '#/partner-new'; };
     }).catch(function (e) { shell('', '<div class="warn">' + esc(e.message) + '</div>', 'partners'); });
@@ -392,8 +576,10 @@
         '<div class="card"><div style="font-size:18px;font-weight:600">' + esc(p.name) + ' <span class="pill">' + esc(p.status) + '</span></div><div class="muted">' + esc(p.id) + ' · ' + esc(p.type || '') + ' · referral ' + Math.round((p.referral_rate || 0) * 100) + '%</div></div>' +
         '<div class="card"><h2>Khách do đối tác này giới thiệu<b>' + d.leads.length + '</b></h2>' + (d.leads.length ? d.leads.map(function (l) { return leadRow(l, d.today || todayVN()); }).join('') : '<div class="empty">Chưa có</div>') + '</div>' +
         '<div class="card"><h2>Cập nhật</h2>' + partnerForm(p, state.lists) + '<button class="btn" id="btnP">Lưu</button></div>' +
-        '<div class="card"><h2>Lịch sử</h2><div class="hist">' + (d.events.length ? d.events.map(function (e) { return '<div>' + esc(e.ts.replace('T', ' ').slice(0, 16)) + ' · ' + esc(e.actor || '') + ' · <b>' + esc(e.field) + '</b>' + (e.field === 'create' ? '' : ': ' + esc(e.old_value == null ? '∅' : e.old_value) + ' → ' + esc(e.new_value == null ? '∅' : e.new_value)) + '</div>'; }).join('') : '<div class="empty">Chưa có</div>') + '</div></div>';
+        '<div class="card"><h2>Lịch sử</h2><div class="hist">' + (d.events.length ? d.events.map(function (e) { return '<div>' + esc(e.ts.replace('T', ' ').slice(0, 16)) + ' · ' + esc(e.actor || '') + ' · <b>' + esc(e.field) + '</b>' + (e.field === 'create' ? '' : ': ' + esc(e.old_value == null ? '∅' : histVal(e.old_value)) + ' → ' + esc(e.new_value == null ? '∅' : e.new_value)) + '</div>'; }).join('') : '<div class="empty">Chưa có</div>') + '</div></div>' +
+        '<div class="card"><h2>Xoá bản ghi</h2><p class="muted" style="margin:0">Chỉ khi nhập sai / trùng. Ngừng hợp tác thì đổi <b>Closed</b>.</p><button class="btn danger" id="btnDelP">Xoá đối tác này</button></div>';
       shell('', html, 'partners'); bindRows(); bindQuickDates(app);
+      $('#btnDelP').onclick = function () { confirmDelete('partner', p); };
       $('#btnP').onclick = function () { var b = readPartnerForm(); this.disabled = true;
         api('/partners/' + encodeURIComponent(id), { method: 'PATCH', body: b }).then(function (r) { toast('Đã lưu ' + r.changed + ' thay đổi'); viewPartner(id); }).catch(function (e) { toast(e.message, true); $('#btnP').disabled = false; }); };
     }).catch(function (e) { shell('', '<div class="warn">' + esc(e.message) + '</div>', 'partners'); });
@@ -403,6 +589,7 @@
     var html = '<div class="card"><h2>Xuất dữ liệu (archive / báo cáo)</h2>' +
       '<p class="muted">Tải CSV rồi dán vào Google Sheet <b>KINKAY_Lead_Tracker_LIVE_v2.0</b> (giờ chỉ là bản lưu / báo cáo). Cột đúng thứ tự tab Leads / Partners. CRM này là nguồn duy nhất; không sửa số trên Sheet.</p>' +
       '<button class="btn sec" data-x="leads">Tải Leads.csv</button><button class="btn sec" data-x="partners">Tải Partners.csv</button><button class="btn sec" data-x="events">Tải lịch sử thay đổi.csv</button></div>' +
+      '<div class="card"><h2>Đã xoá (khôi phục được)</h2><div id="trashSlot"><div class="empty">Đang tải…</div></div></div>' +
       '<div class="card"><h2>Tài khoản</h2><p>' + esc(state.user || '') + (state.dev ? ' (chế độ dev, không cần đăng nhập)' : '') + '</p><button class="btn sec" id="btnOut">Đăng xuất</button></div>' +
       '<div class="card"><h2>Cách dùng 60 giây</h2><p class="muted">1. Hôm nay → bấm khách đến hạn. 2. Đổi trạng thái, ghi 1 việc tiếp, chọn hẹn. 3. Ghi 1 dòng vừa xảy ra. 4. Lưu. Có tiền thì chỉ điền khi đã chắc; Tân bật "Đã xác minh".</p></div>';
     shell('', html, 'more');
@@ -415,6 +602,27 @@
       };
     });
     $('#btnOut').onclick = function () { logout(); };
+    trashMount();
+  }
+  function trashMount() {
+    Promise.all([api('/trash?entity=lead'), api('/trash?entity=partner')]).then(function (rs) {
+      var slot = $('#trashSlot'); if (!slot) return;
+      var items = rs[0].items.concat(rs[1].items).sort(function (a, b) { return String(b.deleted_at).localeCompare(String(a.deleted_at)); });
+      slot.innerHTML = items.length ? items.map(function (it) {
+        return '<div class="row" style="cursor:default"><div class="main"><div class="t">' + esc(it.name) + (it.status ? ' ' + pill(it.status) : '') + '</div>' +
+          '<div class="s">' + esc([it.id, it.service, it.event_date ? dmy(it.event_date) : '', it.reason].filter(Boolean).join(' · ')) + '</div>' +
+          '<div class="s">Xoá ' + esc(String(it.deleted_at || '').replace('T', ' ').slice(0, 16)) + ' · ' + esc(it.deleted_by || '') + '</div></div>' +
+          '<div class="right"><button class="btn sec sm" data-restore="' + esc(it.entity + '|' + it.id) + '">Khôi phục</button></div></div>';
+      }).join('') : '<div class="empty">Chưa xoá gì</div>';
+      slot.querySelectorAll('[data-restore]').forEach(function (b) {
+        b.onclick = function () {
+          var pr = b.getAttribute('data-restore').split('|'); b.disabled = true;
+          api('/trash', { method: 'POST', body: { entity: pr[0], id: pr[1] } })
+            .then(function () { toast('Đã khôi phục ' + pr[1]); if (state.lastDeleted && state.lastDeleted.id === pr[1]) state.lastDeleted = null; location.hash = (pr[0] === 'lead' ? '#/lead/' : '#/partner/') + pr[1]; })
+            .catch(function (e) { b.disabled = false; toast(e.message, true); });
+        };
+      });
+    }).catch(function (e) { var slot = $('#trashSlot'); if (slot) slot.innerHTML = '<div class="warn">' + esc(e.message) + '</div>'; });
   }
 
 

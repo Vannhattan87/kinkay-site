@@ -77,3 +77,25 @@ Kay mở lead (Quoted / Hold / Deposit Paid / Confirmed) → nút **Tạo Bookin
 - Tiền: Tổng phí = `expected_revenue` (chỉ điền khi đang trống). Cọc = số tiền / không cần cọc / không áp dụng, độc lập với cờ Deposit Yes/No/N/A. **Không** đụng `actual_revenue` / `actual_verified`.
 - Không đưa lên ảnh: Source, Segment, Owner, Next Action, Follow-up, ghi chú nội bộ, điều khoản đối tác.
 - **Ngôn ngữ bản xác nhận (07/09 chiều):** chọn `Tiếng Việt` / `English` ở đầu sheet mỗi lần tạo. Không tự đoán từ tên/quốc tịch/nguồn. Ưu tiên: `preferred_language` trên lead (lưu trong `booking_json`) → ngôn ngữ bản gần nhất → `vi`. Chọn 1 lần là nhớ; đổi ngôn ngữ + tạo lại = version mới, bản cũ giữ nguyên. Snapshot có `language`, `service_display` (tên dịch vụ chuẩn theo bảng cố định; dịch vụ lạ giữ nguyên). Chỉ dịch nhãn hệ thống + footer; địa điểm/gồm/ghi chú Kay nhập giữ nguyên. Định dạng: VI `Thứ Bảy, 14/11/2026 · 15:00 · 1.500.000 ₫`; EN `Sat, 14 Nov 2026 · 3:00 PM · VND 1,500,000`. Tiêu đề VI `XÁC NHẬN ĐẶT LỊCH`, EN `BOOKING CONFIRMATION`.
+
+## Xoá bản ghi + chống trùng khách · thêm 11/09/2026 (Tân yêu cầu)
+
+Vấn đề: Kay gõ tay tên khách mỗi lần thêm job → cùng 1 người thành nhiều bản ghi rời, có thể nhập trùng 1 job 2 lần, và không có cách gỡ bản ghi sai (luật cũ "không xoá lead"). Luật cũ đổi thành:
+
+- **Lost** = khách thật không chốt. Vẫn tính vào tỉ lệ chuyển đổi. Không xoá.
+- **Xoá** = nhập trùng / nhập sai / test. Bản ghi rời khỏi mọi KPI ngay. Nút ở cuối trang chi tiết lead / đối tác, bắt chọn lý do.
+- Xoá **chụp nguyên dòng** vào `lead_events` (`field='delete'`, `old_value` = JSON, `new_value` = lý do) rồi mới `DELETE`, trong 1 batch. Khôi phục giữ nguyên ID, không phụ thuộc Time Travel 7 ngày. **Không cần migration.**
+- Chặn xoá: lead đã phát hành Booking Confirmation (khách đang cầm bản xác nhận → đổi Lost); đối tác còn khách gắn `partner_id`.
+- Khôi phục: banner "Hoàn tác" ngay sau khi xoá, hoặc tab **Thêm → Đã xoá**.
+
+Chống trùng:
+
+- Chuẩn hoá tên: bỏ danh xưng đầu (Ms./Mrs./chị/cô/C.) trước khi bỏ dấu, rồi bỏ dấu, chữ thường. `Ms. Diễm` = `Ms Diem` = `chị diễm`. Chuẩn hoá contact: SĐT về dạng số (84 → 0), @handle / link IG về handle, bỏ giá trị giữ chỗ ("Not retained", "N/A"). Hàm ở `_lib.js` (`normName`, `normContact`) và bản sao y hệt trong `index.html`, sửa thì sửa cả hai.
+- Mức: `same_job` (cùng khách + cùng ngày sự kiện + cùng dịch vụ) · `same_contact` · `same_name` · `similar_name` (tên này là đầu/cuối tên kia).
+- Form **Thêm**: gõ tên/contact → hiện "Khách đã có trong CRM" + nút **Dùng thông tin khách này** (điền đúng tên, contact, kênh, nguồn cũ). Cùng ngày + dịch vụ → khung đỏ.
+- `POST /api/crm/leads` trả **409** `code: duplicate` khi `same_job`; giao diện hỏi "Mở job cũ / Vẫn thêm (job khác)"; gửi lại với `force_duplicate: true`. Form web `/api/lead` KHÔNG chặn (khách gửi 2 lần thì Kay xoá bản thừa).
+- Danh sách Khách: nhãn **Trùng?** (same_job) và **N job** (khách quen). Trang chi tiết: khung "Job khác của khách này" / "Có thể là bản nhập trùng của …".
+
+API mới: `DELETE /api/crm/leads/:id` và `DELETE /api/crm/partners/:id` (body `{reason}`), `GET /api/crm/duplicates?customer_name=&contact=&event_date=&service=&exclude=`, `GET /api/crm/trash?entity=lead|partner`, `POST /api/crm/trash {entity,id}`. Tất cả đi qua cổng xác thực + `CRM_CUTOVER` như cũ.
+
+Test 11/09 (sandbox, harness Node + SQLite 3.51 thay wrangler vì npm chặn gói wrangler): API 15/15 ca đúng (409 trùng job, force, 201 khách quen khác ngày, 409 chặn xoá có BC, 409 chặn xoá đối tác còn lead, xoá không body → lý do "Khác", 404 sau xoá, KPI giảm đúng, trash liệt kê, khôi phục nguyên dòng, khôi phục lần 2 → 409, xoá + khôi phục đối tác). Giao diện Playwright 390×844: nhãn Trùng?/N job, khung trùng trong chi tiết, sheet xoá (nút Xoá khoá tới khi chọn lý do), Hoàn tác, chặn BC hiện lỗi trong sheet, gợi ý khi gõ "chị diễm", Dùng thông tin, 409 sheet → Vẫn thêm, Đã xoá → Khôi phục. 0 lỗi JS.

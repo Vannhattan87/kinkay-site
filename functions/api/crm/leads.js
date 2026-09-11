@@ -1,6 +1,8 @@
 // GET  /api/crm/leads?status=&q=&due=today|overdue|upcoming&limit=   → danh sách
 // POST /api/crm/leads                                                  → thêm khách (form tối giản của Kay)
-import { json, err, normalize, LEAD_FIELDS, insertLead, todayVN, OPEN_STATUSES } from './_lib.js';
+//      Chống trùng (11/09/2026): cùng khách (tên chuẩn hoá hoặc contact) + cùng ngày sự kiện + cùng dịch vụ → 409
+//      kèm danh sách job cũ. Giao diện hỏi lại; gửi force_duplicate=true nếu Kay chắc là job khác.
+import { json, err, normalize, LEAD_FIELDS, insertLead, todayVN, OPEN_STATUSES, findSimilarLeads } from './_lib.js';
 
 export async function onRequestGet({ request, env }) {
   const db = env.CRM_DB;
@@ -32,6 +34,10 @@ export async function onRequestPost({ request, env, data }) {
   if (errors.length) return err('Dữ liệu chưa hợp lệ', 400, errors);
   if (!d.status) d.status = 'New';
   if (!d.owner) d.owner = 'Kay';
+  if (!body.force_duplicate) {
+    const dup = (await findSimilarLeads(env.CRM_DB, d)).filter(m => m.level === 'same_job');
+    if (dup.length) return json({ ok: false, error: 'Có vẻ job này đã có: cùng khách, cùng ngày, cùng dịch vụ', code: 'duplicate', matches: dup }, 409);
+  }
   try {
     const row = await insertLead(env.CRM_DB, data.user, d);
     return json({ ok: true, lead: row }, 201);

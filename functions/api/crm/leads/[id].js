@@ -1,7 +1,9 @@
 // GET   /api/crm/leads/KK-260905-001   → 1 lead + nhật ký thay đổi
 // PATCH /api/crm/leads/KK-260905-001   → cập nhật nhanh (chỉ gửi cột cần đổi; Kay 60s)
-// Không có DELETE: lead bỏ thì Status = Lost (đúng luật tracker LIVE "không xóa lead").
-import { json, err, normalize, LEAD_FIELDS, logDiff, nowISO } from '../_lib.js';
+// DELETE /api/crm/leads/KK-260905-001  {reason} → xoá bản ghi NHẬP SAI / TRÙNG / TEST (Tân yêu cầu 11/09/2026)
+//   Khách thật không chốt vẫn là Status = Lost, không xoá. Xoá chụp nguyên dòng vào lead_events → khôi phục ở /api/crm/trash.
+//   Chặn xoá khi job đã phát hành Booking Confirmation (khách đã cầm bản xác nhận).
+import { json, err, normalize, LEAD_FIELDS, logDiff, nowISO, deleteWithSnapshot } from '../_lib.js';
 
 export async function onRequestGet({ params, env }) {
   const db = env.CRM_DB;
@@ -34,4 +36,12 @@ export async function onRequestPatch({ params, request, env, data }) {
   const changed = await logDiff(db, 'lead', params.id, data.user, before, Object.fromEntries(keys.map(k => [k, d[k]])));
   const after = await db.prepare('SELECT * FROM leads WHERE id = ?').bind(params.id).first();
   return json({ ok: true, changed, lead: after });
+}
+
+export async function onRequestDelete({ params, request, env, data }) {
+  let body = {};
+  try { body = await request.json(); } catch (e) { body = {}; }
+  const r = await deleteWithSnapshot(env.CRM_DB, 'lead', params.id, data.user, body.reason);
+  if (!r.ok) return json({ ok: false, error: r.error, code: r.code }, r.status);
+  return json(r);
 }

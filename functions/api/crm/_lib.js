@@ -251,3 +251,93 @@ export function buildSnapshot(lead, booking, id, version, issuedAtISO, language)
     brand: { name: 'KINKAY', tagline: 'MAKEUP ARTIST', site: 'kinkay.vn', phone: '0933 953 179', instagram: '@kinkay.official', footer: BC_FOOTER[lang] }
   };
 }
+
+// ===================== Chống trùng khách + Xoá có khôi phục (11/09/2026, Tân yêu cầu) =====================
+// Bối cảnh: Kay gõ tay tên khách mỗi lần thêm job nên cùng 1 người thành nhiều bản ghi rời, và không có cách
+// gỡ bản ghi nhập sai. Nguyên tắc:
+//   · Lost  = khách thật không chốt (vẫn tính vào tỉ lệ chuyển đổi).
+//   · Xoá   = nhập sai / nhập trùng / test. Bản ghi rời khỏi mọi KPI, nhưng TOÀN BỘ dòng gốc được chụp vào
+//             lead_events (field='delete', old_value = JSON) nên khôi phục được bất cứ lúc nào, không phụ thuộc
+//             Time Travel 7 ngày của D1. Không cần migration.
+
+// Tên: bỏ danh xưng đầu (Ms., Mrs., chị, cô, c.…) TRƯỚC khi bỏ dấu (để "Chi" là tên thật không bị cắt như "chị"),
+// rồi bỏ dấu, đ→d, chữ thường, gộp khoảng trắng. "Ms. Diễm" = "Ms. Diem" = "chị Diễm" → "diem".
+const NAME_PREFIX = /^(?:(?:ms|mrs|mr|miss|mdm|madam|dr|chị|cô|bạn)(?:\.\s*|\s+)|(?:c|a|e)\.\s*)/u;
+export function normName(v) {
+  let s = String(v || '').normalize('NFC').toLowerCase().trim();
+  for (let i = 0; i < 2; i++) { const t = s.replace(NAME_PREFIX, ''); if (t.trim()) s = t.trim(); }
+  s = s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd');
+  return s.replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
+}
+// Contact: bỏ giá trị giữ chỗ ("Not retained", "N/A"...). SĐT → chỉ số, 84 → 0. Handle/email → chữ thường, bỏ @ đầu.
+const CONTACT_PLACEHOLDER = /^(not retained|n\/?a|na|none|null|unknown|khong|khong co|chua co|chua|-+|—|\?+|0+)$/;
+export function normContact(v) {
+  let s = String(v || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase();
+  if (!s || CONTACT_PLACEHOLDER.test(s)) return '';
+  const joined = s.replace(/(\d)[\s.()-]+(?=\d)/g, '$1');
+  const phone = joined.match(/(?:\+?84|0)\d{8,10}/);
+  if (phone && !/@[a-z]/.test(s)) { const d = phone[0].replace(/\D/g, ''); return d.startsWith('84') ? '0' + d.slice(2) : d; }
+  s = s.replace(/^https?:\/\/(www\.)?(instagram\.com|facebook\.com|fb\.com|tiktok\.com\/@?)\/?/, '').replace(/^@/, '').replace(/\/+$/, '').trim();
+  return s.length >= 3 ? s : '';
+}
+
+// Tìm bản ghi giống input. Trả mảng { lead, level, reasons } sắp theo độ chắc:
+//   same_job     = cùng khách (tên hoặc contact) + cùng ngày sự kiện + cùng dịch vụ → gần như chắc là nhập trùng
+//   same_contact = cùng contact → cùng 1 khách (job khác)
+//   same_name    = cùng tên sau chuẩn hoá → có thể cùng khách
+//   similar_name = tên này là đầu tên kia ("Hoa" vs "Hoa Nguyễn") → gợi ý yếu
+export async function findSimilarLeads(db, input, excludeId) {
+  const n = normName(input.customer_name);
+  const c = normContact(input.contact);
+  if (!n && !c) return [];
+  const rows = (await db.prepare('SELECT id, created_date, customer_name, contact, contact_channel, service, event_date, source, segment, status, expected_revenue FROM leads ORDER BY created_date DESC LIMIT 3000').all()).results || [];
+  const rank = { same_job: 0, same_contact: 1, same_name: 2, similar_name: 3 };
+  const out = [];
+  for (const r of rows) {
+    if (excludeId && r.id === excludeId) continue;
+    const rn = normName(r.customer_name), rc = normContact(r.contact);
+    const reasons = [];
+    const contactHit = !!(c && rc && c === rc);
+    const nameHit = !!(n && rn && n === rn);
+    let prefixHit = false;
+    if (!nameHit && n && rn) {
+      const [a, b] = n.length <= rn.length ? [n, rn] : [rn, n];
+      prefixHit = a.length >= 3 && (b === a || b.startsWith(a + ' ') || b.endsWith(' ' + a));
+    }
+    if (contactHit) reasons.push('contact');
+    if (nameHit) reasons.push('name');
+    if (!contactHit && !nameHit && !prefixHit) continue;
+    let level = contactHit ? 'same_contact' : nameHit ? 'same_name' : 'similar_name';
+    const sameDate = !!(input.event_date && r.event_date && input.event_date === r.event_date);
+    const sameService = !!(input.service && r.service && input.service === r.service);
+    if ((contactHit || nameHit) && sameDate && sameService) { level = 'same_job'; reasons.push('event_date', 'service'); }
+    else if (sameDate) reasons.push('event_date');
+    out.push({ lead: r, level, reasons });
+  }
+  out.sort((x, y) => rank[x.level] - rank[y.level] || String(y.lead.created_date).localeCompare(String(x.lead.created_date)));
+  return out.slice(0, 20);
+}
+
+// Xoá có chụp bản gốc. entity: 'lead' | 'partner'. Trả { ok, error?, status? }.
+const DELETE_REASONS = ['Nhập trùng', 'Nhập sai', 'Test', 'Khác'];
+export { DELETE_REASONS };
+export async function deleteWithSnapshot(db, entity, id, actor, reason) {
+  const table = entity === 'partner' ? 'partners' : 'leads';
+  const row = await db.prepare(`SELECT * FROM ${table} WHERE id = ?`).bind(id).first();
+  if (!row) return { ok: false, status: 404, error: entity === 'partner' ? 'Không có đối tác này' : 'Không có lead này' };
+  if (entity === 'lead') {
+    let bc = 0;
+    try { bc = (await db.prepare('SELECT COUNT(*) AS n FROM booking_confirmations WHERE lead_id = ?').bind(id).first()).n || 0; } catch (e) { bc = 0; }
+    if (bc > 0) return { ok: false, status: 409, error: `Job này đã phát hành ${bc} Booking Confirmation cho khách nên không xoá. Khách huỷ thì đổi trạng thái Lost.`, code: 'has_confirmation' };
+  } else {
+    const n = (await db.prepare('SELECT COUNT(*) AS n FROM leads WHERE partner_id = ?').bind(id).first()).n || 0;
+    if (n > 0) return { ok: false, status: 409, error: `Đối tác này đang gắn với ${n} khách. Gỡ Partner ID ở các khách đó trước, hoặc đổi trạng thái Closed.`, code: 'has_leads' };
+  }
+  const why = cleanStr(reason, 200) || 'Khác';
+  await db.batch([
+    db.prepare('INSERT INTO lead_events(entity, entity_id, ts, actor, field, old_value, new_value) VALUES (?,?,?,?,?,?,?)')
+      .bind(entity, id, nowISO(), actor, 'delete', JSON.stringify(row), why),
+    db.prepare(`DELETE FROM ${table} WHERE id = ?`).bind(id)
+  ]);
+  return { ok: true, deleted: { id, entity, reason: why } };
+}

@@ -1,5 +1,6 @@
-// GET / PATCH /api/crm/partners/PT-260905-003
-import { json, err, normalize, PARTNER_FIELDS, logDiff, nowISO } from '../_lib.js';
+// GET / PATCH / DELETE /api/crm/partners/PT-260905-003
+// DELETE {reason}: chỉ cho bản ghi nhập sai/trùng; chặn khi còn khách gắn partner_id. Khôi phục ở /api/crm/trash.
+import { json, err, normalize, PARTNER_FIELDS, logDiff, nowISO, deleteWithSnapshot } from '../_lib.js';
 
 export async function onRequestGet({ params, env }) {
   const db = env.CRM_DB;
@@ -26,4 +27,12 @@ export async function onRequestPatch({ params, request, env, data }) {
   const changed = await logDiff(db, 'partner', params.id, data.user, before, Object.fromEntries(keys.map(k => [k, d[k]])));
   const after = await db.prepare('SELECT * FROM partners WHERE id = ?').bind(params.id).first();
   return json({ ok: true, changed, partner: after });
+}
+
+export async function onRequestDelete({ params, request, env, data }) {
+  let body = {};
+  try { body = await request.json(); } catch (e) { body = {}; }
+  const r = await deleteWithSnapshot(env.CRM_DB, 'partner', params.id, data.user, body.reason);
+  if (!r.ok) return json({ ok: false, error: r.error, code: r.code }, r.status);
+  return json(r);
 }
