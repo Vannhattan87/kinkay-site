@@ -211,6 +211,14 @@
          Zalo with your message already written — you just paste and send.</p>
     </div>
     <form class="lead-form reveal" id="leadForm" novalidate>
+      <!-- 12/09/2026 — BAY BOT (honeypot). O nay an, nguoi that khong bao gio thay va
+           khong tab toi duoc. Bot quet DOM roi dien het moi <input> se dien ca o nay ->
+           server im lang nuot request, khong ghi D1, van tra 204 de bot khong biet minh
+           bi chan. Ten `kk_hp` co y KHONG chua "website"/"url": trinh duyet va trinh quan
+           ly mat khau tu dien vao nhung o ten nhu the, va mot lead that bi nuot nham dat
+           hon nhieu so voi mot dong rac lot luoi. -->
+      <input type="text" name="kk_hp" id="kkHp" tabindex="-1" autocomplete="off" aria-hidden="true"
+             style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none">
       <div class="ff">
         <div class="fld">
           <label for="lfName">Your name <span class="req">*</span></label>
@@ -227,6 +235,27 @@
             <option>Graduation photos</option>
             <option>Other</option>
           </select>
+        </div>
+        <!-- 12/09/2026 — O LIEN HE (bat buoc).
+             Truoc dot nay form KHONG hoi lien he: lead roi vao CRM voi contact rong,
+             cach duy nhat gap lai khach la cho khach tu dan tin vao Zalo. Vu
+             KK-260912-001/002 mat khach dung vi the. Tu nay lien he phai nam trong D1
+             TRUOC khi khach roi trang.
+             CHU hien ra cua hai o nay do assets/page.js ve lai theo <html lang>;
+             `value` cua <option> la ma co dinh (zalo/whatsapp/email/instagram) va
+             KHONG duoc dich — cung ly do da ghi o o Dip ngay 01/09. -->
+        <div class="fld">
+          <label for="lfChannel"><span data-lf="channelLabel">How should Kay reply to you?</span> <span class="req">*</span></label>
+          <select id="lfChannel" name="channel" required>
+            <option value="zalo">Zalo / phone number</option>
+            <option value="whatsapp">WhatsApp (with country code)</option>
+            <option value="email" selected>Email</option>
+            <option value="instagram">Instagram</option>
+          </select>
+        </div>
+        <div class="fld">
+          <label for="lfContact"><span data-lf="contactLabel">Your email</span> <span class="req">*</span></label>
+          <input id="lfContact" name="contact" type="email" autocomplete="email" placeholder="you@email.com" required>
         </div>
         <div class="fld">
           <label for="lfDate">Date</label>
@@ -302,7 +331,7 @@
   <div class="fbase">
     <p class="foot-owner">Website owner: Thạch Bé Trâm · Studio: Tan Hung Ward, Ho Chi Minh City · +84 933 953 179 · kinkay20t@gmail.com</p>
     <p class="foot-links">
-      <a href="/chinh-sach-du-lieu/">Data policy</a><span class="sep">·</span><a href="/dieu-khoan/">Terms of service</a>
+      <a href="/en/privacy/">Data policy</a><span class="sep">·</span><a href="/dieu-khoan/">Terms of service</a>
     </p>
   </div>
 </footer>

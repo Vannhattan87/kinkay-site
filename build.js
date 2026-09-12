@@ -542,6 +542,10 @@ const entries = [
   { loc: 'https://kinkay.vn/en/headshots/',         lastmod: mtime('static/en/headshots/index.html') },
   { loc: 'https://kinkay.vn/en/ao-dai-photoshoot/', lastmod: mtime('static/en/ao-dai-photoshoot/index.html') },
   { loc: 'https://kinkay.vn/en/pricing/',           lastmod: mtime('static/en/pricing/index.html') },
+  // 12/09/2026: ban tieng Anh cua trang chinh sach du lieu. Bat buoc phai co tu khi form
+  // bat dau luu SDT/email cua khach — khach /en/ cung de lai du lieu, khong the chi cong bo
+  // dieu khoan bang tieng Viet. hreflang doi xung voi /chinh-sach-du-lieu/.
+  { loc: 'https://kinkay.vn/en/privacy/',           lastmod: mtime('static/en/privacy/index.html') },
   { loc: 'https://kinkay.vn/cam-nang-co-dau/', lastmod: mtime('static/cam-nang-co-dau/index.html') },
   { loc: 'https://kinkay.vn/qua-tang/',     lastmod: mtime('static/qua-tang/index.html') },
   // 08/08/2026: bổ sung hai trang pháp lý mới.

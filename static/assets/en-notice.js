@@ -40,6 +40,7 @@
 
     // (2) trang tieng Viet nao co ban /en/ tuong ung
     var MAP = {
+      '/chinh-sach-du-lieu/': '/en/privacy/',
       '/makeup-co-dau/': '/en/bridal/',
       '/trang-diem-du-tiec/': '/en/events/',
       '/photoshoot-editorial/': '/en/ao-dai-photoshoot/',

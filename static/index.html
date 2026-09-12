@@ -1047,6 +1047,14 @@ Ngồi vào ghế KINKAY, bạn nhận được tư vấn thật — bằng con 
          co tham so -> soan san tin nhan, copy vao clipboard -> mo Zalo cho khach dan.
          Xu ly nam trong assets/page.js (KINKAY.leadForm) — dung chung voi cac trang dich vu. -->
     <form class="lead-form reveal in" id="leadForm" novalidate>
+      <!-- 12/09/2026 — BAY BOT (honeypot). O nay an, nguoi that khong bao gio thay va
+           khong tab toi duoc. Bot quet DOM roi dien het moi <input> se dien ca o nay ->
+           server im lang nuot request, khong ghi D1, van tra 204 de bot khong biet minh
+           bi chan. Ten `kk_hp` co y KHONG chua "website"/"url": trinh duyet va trinh quan
+           ly mat khau tu dien vao nhung o ten nhu the, va mot lead that bi nuot nham dat
+           hon nhieu so voi mot dong rac lot luoi. -->
+      <input type="text" name="kk_hp" id="kkHp" tabindex="-1" autocomplete="off" aria-hidden="true"
+             style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none">
       <div class="ff">
         <!-- 01/09/2026: moi <option> gio co value TIENG VIET co dinh, chi phan CHU HIEN RA
              moi doi theo ngon ngu (data-t-opts). Ly do: page.js doc el.value de soan tin nhan
@@ -1069,6 +1077,27 @@ Ngồi vào ghế KINKAY, bạn nhận được tư vấn thật — bằng con 
             <option value="Mẹ cô dâu / người nhà">Mẹ cô dâu / người nhà</option>
             <option value="Khác">Khác</option>
           </select>
+        </div>
+        <!-- 12/09/2026 — O LIEN HE (bat buoc).
+             Truoc dot nay form KHONG hoi lien he: lead roi vao CRM voi contact rong,
+             cach duy nhat gap lai khach la cho khach tu dan tin vao Zalo. Vu
+             KK-260912-001/002 mat khach dung vi the. Tu nay lien he phai nam trong D1
+             TRUOC khi khach roi trang.
+             CHU hien ra cua hai o nay do assets/page.js ve lai theo <html lang>;
+             `value` cua <option> la ma co dinh (zalo/whatsapp/email/instagram) va
+             KHONG duoc dich — cung ly do da ghi o o Dip ngay 01/09. -->
+        <div class="fld">
+          <label for="lfChannel"><span data-lf="channelLabel">Kay liên hệ lại bạn bằng</span> <span style="color:var(--gold)">*</span></label>
+          <select id="lfChannel" name="channel" required>
+            <option value="zalo" selected>Zalo / Số điện thoại</option>
+            <option value="whatsapp">WhatsApp (kèm mã nước)</option>
+            <option value="email">Email</option>
+            <option value="instagram">Instagram</option>
+          </select>
+        </div>
+        <div class="fld">
+          <label for="lfContact"><span data-lf="contactLabel">Số Zalo của bạn</span> <span style="color:var(--gold)">*</span></label>
+          <input id="lfContact" name="contact" type="tel" autocomplete="tel" placeholder="0901234567" required>
         </div>
         <div class="fld">
           <label for="lfDate" data-t="form.date">Ngày cần makeup</label>
