@@ -254,7 +254,7 @@ padding:12px 20px;border-radius:2px;font-size:13px;opacity:0;transition:opacity 
       k.addEventListener('click',function(){
         var src=k.getAttribute('data-k')==='trial'?'lich_cuoi_trial':'lich_cuoi_timeline';
         track('booking_click',{method:'zalo',click_source:src});
-        track('generate_lead',{lead_type:'contact',contact_channel:'zalo',service_type:'bridal'});
+        track('booking_click',{method:'zalo',click_source:'lich_cuoi'});
       });
     });
     var u=new URL(location.href); u.searchParams.set('ngay',iso(W));
@@ -280,7 +280,7 @@ padding:12px 20px;border-radius:2px;font-size:13px;opacity:0;transition:opacity 
     var t=$('toast');
     function after(){
       track('booking_click',{method:'zalo',click_source:'lich_cuoi_send'});
-      track('generate_lead',{lead_type:'contact',contact_channel:'zalo',service_type:'bridal'});
+      track('booking_click',{method:'zalo',click_source:'lich_cuoi'});
       if(INAPP){t.textContent='Đã sao chép tin nhắn — mở Zalo, nhắn số 0933 953 179 và dán vào';}
       else{t.textContent='Đã sao chép tin nhắn — dán vào Zalo cho Kay nhé';window.open('https://zalo.me/0933953179','_blank');}
       t.classList.add('on');setTimeout(function(){t.classList.remove('on');t.textContent='Đã sao chép link'},3600);
@@ -291,7 +291,7 @@ padding:12px 20px;border-radius:2px;font-size:13px;opacity:0;transition:opacity 
   };
   $('ctaZalo').addEventListener('click',function(){
     track('booking_click',{method:'zalo',click_source:'lich_cuoi_cta'});
-    track('generate_lead',{lead_type:'contact',contact_channel:'zalo',service_type:'bridal'});
+    track('booking_click',{method:'zalo',click_source:'lich_cuoi'});
   });
 
   var tt=$('t'), dur=$('dur'), durv=$('durv'), sched=$('sched');

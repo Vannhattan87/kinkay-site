@@ -221,27 +221,6 @@
             <option>Other</option>
           </select>
         </div>
-        <!-- 12/09/2026 — O LIEN HE (bat buoc).
-             Truoc dot nay form KHONG hoi lien he: lead roi vao CRM voi contact rong,
-             cach duy nhat gap lai khach la cho khach tu dan tin vao Zalo. Vu
-             KK-260912-001/002 mat khach dung vi the. Tu nay lien he phai nam trong D1
-             TRUOC khi khach roi trang.
-             CHU hien ra cua hai o nay do assets/page.js ve lai theo <html lang>;
-             `value` cua <option> la ma co dinh (zalo/whatsapp/email/instagram) va
-             KHONG duoc dich — cung ly do da ghi o o Dip ngay 01/09. -->
-        <div class="fld">
-          <label for="lfChannel"><span data-lf="channelLabel">How should Kay reply to you?</span> <span class="req">*</span></label>
-          <select id="lfChannel" name="channel" required>
-            <option value="zalo">Zalo / phone number</option>
-            <option value="whatsapp">WhatsApp (with country code)</option>
-            <option value="email" selected>Email</option>
-            <option value="instagram">Instagram</option>
-          </select>
-        </div>
-        <div class="fld">
-          <label for="lfContact"><span data-lf="contactLabel">Your email</span> <span class="req">*</span></label>
-          <input id="lfContact" name="contact" type="email" autocomplete="email" placeholder="you@email.com" required>
-        </div>
         <div class="fld">
           <label for="lfDate">Date</label>
           <input id="lfDate" name="date" type="date">
@@ -263,6 +242,20 @@
         <div class="fld full">
           <label for="lfNote">Anything Kay should know?</label>
           <textarea id="lfNote" name="note" placeholder="How many people, what time you need to be ready, the look you have in mind..."></textarea>
+        </div>
+        <!-- 13/09/2026 — Ô LIÊN HỆ (bắt buộc), MỘT ô tự nhận dạng.
+             Bản 12/09 có HAI ô (chọn kênh + điền giá trị) đặt ngay sau ô Dịp. Hai vấn đề:
+             đổi kênh thì giá trị cũ nằm nguyên rồi báo lỗi oan, và hỏi liên hệ ngay ở ô thứ 3 là
+             hỏi trước khi khách bỏ ra chút công sức nào. Giờ: MỘT ô, đặt CUỐI form ngay trên
+             nút gửi — vẫn giữ 100% liên hệ của người bấm gửi, nhưng lúc bị hỏi thì khách đã
+             điền tên/dịp/ngày nên bỏ đi thì tiếc hơn.
+             Kênh do assets/page.js đoán từ định dạng, server tự đoán LẠI và lấy kết quả server
+             làm chuẩn. font-size 16px là cố ý: dưới 16px Safari iOS tự phóng to trang. -->
+        <div class="fld full">
+          <label for="lfContact"><span data-lf="contactLabel">How can Kay reach you?</span> <span class="req">*</span></label>
+          <input id="lfContact" name="contact" type="text" autocomplete="off"
+                 style="font-size:16px" placeholder="Phone, email or @instagram" required>
+          <p data-lf="contactHint" style="font-size:12.5px;color:var(--taupe);margin-top:7px;line-height:1.6">Phone, email or Instagram, whichever you prefer. Only used to reply to you about your date.</p>
         </div>
       </div>
       <div class="form-actions">

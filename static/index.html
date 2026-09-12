@@ -518,7 +518,7 @@ border:1px solid rgba(44,24,16,.18);background:var(--paper);padding:28px 30px;ma
 .fld{display:flex;flex-direction:column;gap:6px}
 .fld.full{grid-column:1/-1}
 .fld label{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--taupe)}
-.fld input,.fld select,.fld textarea{font-family:inherit;font-size:15px;font-weight:300;color:var(--espresso);
+.fld input,.fld select,.fld textarea{font-family:inherit;font-size:16px;font-weight:300;color:var(--espresso);
   background:var(--paper);border:1px solid rgba(44,24,16,.2);border-radius:2px;padding:12px 13px;
   transition:border-color .22s;width:100%}
 .fld input:focus,.fld select:focus,.fld textarea:focus{outline:none;border-color:var(--gold)}
@@ -1078,27 +1078,6 @@ Ngồi vào ghế KINKAY, bạn nhận được tư vấn thật — bằng con 
             <option value="Khác">Khác</option>
           </select>
         </div>
-        <!-- 12/09/2026 — O LIEN HE (bat buoc).
-             Truoc dot nay form KHONG hoi lien he: lead roi vao CRM voi contact rong,
-             cach duy nhat gap lai khach la cho khach tu dan tin vao Zalo. Vu
-             KK-260912-001/002 mat khach dung vi the. Tu nay lien he phai nam trong D1
-             TRUOC khi khach roi trang.
-             CHU hien ra cua hai o nay do assets/page.js ve lai theo <html lang>;
-             `value` cua <option> la ma co dinh (zalo/whatsapp/email/instagram) va
-             KHONG duoc dich — cung ly do da ghi o o Dip ngay 01/09. -->
-        <div class="fld">
-          <label for="lfChannel"><span data-lf="channelLabel">Kay liên hệ lại bạn bằng</span> <span style="color:var(--gold)">*</span></label>
-          <select id="lfChannel" name="channel" required>
-            <option value="zalo" selected>Zalo / Số điện thoại</option>
-            <option value="whatsapp">WhatsApp (kèm mã nước)</option>
-            <option value="email">Email</option>
-            <option value="instagram">Instagram</option>
-          </select>
-        </div>
-        <div class="fld">
-          <label for="lfContact"><span data-lf="contactLabel">Số Zalo của bạn</span> <span style="color:var(--gold)">*</span></label>
-          <input id="lfContact" name="contact" type="tel" autocomplete="tel" placeholder="0901234567" required>
-        </div>
         <div class="fld">
           <label for="lfDate" data-t="form.date">Ngày cần makeup</label>
           <input id="lfDate" name="date" type="date">
@@ -1120,6 +1099,20 @@ Ngồi vào ghế KINKAY, bạn nhận được tư vấn thật — bằng con 
         <div class="fld full">
           <label for="lfNote" data-t="form.note">Bạn muốn Kay biết thêm điều gì?</label>
           <textarea id="lfNote" name="note" placeholder="Số người cần makeup, giờ phải xong, kiểu look bạn thích..." data-t-ph="form.notePh"></textarea>
+        </div>
+        <!-- 13/09/2026 — Ô LIÊN HỆ (bắt buộc), MỘT ô tự nhận dạng.
+             Bản 12/09 có HAI ô (chọn kênh + điền giá trị) đặt ngay sau ô Dịp. Hai vấn đề:
+             đổi kênh thì giá trị cũ nằm nguyên rồi báo lỗi oan, và hỏi liên hệ ngay ở ô thứ 3 là
+             hỏi trước khi khách bỏ ra chút công sức nào. Giờ: MỘT ô, đặt CUỐI form ngay trên
+             nút gửi — vẫn giữ 100% liên hệ của người bấm gửi, nhưng lúc bị hỏi thì khách đã
+             điền tên/dịp/ngày nên bỏ đi thì tiếc hơn.
+             Kênh do assets/page.js đoán từ định dạng, server tự đoán LẠI và lấy kết quả server
+             làm chuẩn. font-size 16px là cố ý: dưới 16px Safari iOS tự phóng to trang. -->
+        <div class="fld full">
+          <label for="lfContact"><span data-lf="contactLabel">Kay liên hệ lại bạn bằng</span> <span style="color:var(--gold)">*</span></label>
+          <input id="lfContact" name="contact" type="text" autocomplete="off"
+                 style="font-size:16px" placeholder="Số Zalo, email hoặc @instagram" required>
+          <p data-lf="contactHint" style="font-size:12.5px;color:var(--taupe);margin-top:7px;line-height:1.6">Số điện thoại, email hay Instagram đều được. Kay chỉ dùng để trả lời bạn về lịch.</p>
         </div>
       </div>
       <div class="form-actions">
@@ -1586,20 +1579,18 @@ function appLink(e, scheme, web){
 const ZALO_WEB = 'https://zalo.me/0933953179';
 function track(name, params){ if(typeof gtag==='function') gtag('event', name, params||{}); }
 
-/* generate_lead chỉ được đếm MỘT lần mỗi phiên, dù khách bấm bao nhiêu kênh liên hệ.
-   booking_click vẫn bắn mỗi lần bấm — đó là micro conversion, cần biết mức lặp lại.
-   sessionStorage để cờ sống qua các trang trong cùng phiên; chế độ riêng tư chặn thì
-   fallback về biến trong bộ nhớ (vẫn chặn được trùng trong phạm vi một trang). */
-let _leadSent = false;
-function leadOnce(params){
-  if(_leadSent) return;
-  try{
-    if(sessionStorage.getItem('kk_lead')){ _leadSent = true; return; }
-    sessionStorage.setItem('kk_lead','1');
-  }catch(e){ /* riêng tư/chặn storage: dùng cờ bộ nhớ */ }
-  _leadSent = true;
-  track('generate_lead', params);
-}
+/* 13/09/2026 — leadOnce ĐÃ GỠ HẲN. Nó từng bắn `generate_lead` mỗi khi khách bấm một
+   link liên hệ (Zalo / Instagram / email ở chân trang), tối đa 1 lần/phiên.
+   Hai lý do gỡ:
+   (1) Bấm link KHÔNG phải lead. Không có gì vào D1, không ai gọi lại được. Đó là lý do
+       số `generate_lead` xưa nay là số ảo: nó đếm cú bấm chứ không đếm khách.
+   (2) Khoá `kk_lead` dùng chung với /masterclass/ nên một khách bấm link ở đây rồi sang
+       kia đăng ký THẬT thì lần đăng ký thật bị nuốt. Đếm ngược chiều giá trị.
+   Định nghĩa từ nay (Kei + Luna thống nhất 13/09): `generate_lead` = D1 XÁC NHẬN TẠO
+   LEAD MỚI. Chỉ `/api/lead` mới đủ tư cách bắn, và chỉ khi server trả stored && !duplicate.
+   Bấm link giờ bắn `booking_click` (tương tác), gửi form được tiếp nhận bắn
+   `form_submit_success` — kể cả khi là gửi bổ sung vào lead có sẵn.
+   ĐỪNG dựng lại leadOnce. Nếu cần đếm 1 lần/phiên thì lọc trong GA4, đừng giấu trong code. */
 
 const bookBtn = document.getElementById('bookCta');
 if(bookBtn){
@@ -1607,7 +1598,8 @@ if(bookBtn){
   bookBtn.setAttribute('target','_blank');
   bookBtn.addEventListener('click', ()=>{
     track('booking_click', {method:'zalo', click_source:'home'});
-    leadOnce({lead_type:'zalo_click', contact_channel:'zalo', service_type:'unknown', click_source:'home'});
+    /* 13/09: bấm link Zalo KHÔNG phải lead — không có gì vào D1. leadOnce gỡ khỏi mọi
+       điểm bấm link; generate_lead từ nay chỉ bắn khi server xác nhận tạo lead mới. */
   });
 }
 const bookBtn2 = document.getElementById('bookCta2');
@@ -1616,7 +1608,7 @@ if(bookBtn2){
   bookBtn2.removeAttribute('target');
   bookBtn2.addEventListener('click', e=>{
     track('booking_click', {method:'instagram', click_source:'home'});
-    leadOnce({lead_type:'instagram_click', contact_channel:'instagram', service_type:'unknown', click_source:'home'});
+    /* 13/09: xem ghi chú ở nút Zalo phía trên — bấm link không phải lead. */
     appLink(e, IG_APP, IG_WEB);
   });
 }
@@ -1630,7 +1622,7 @@ document.querySelectorAll('#channels a').forEach(a=>{
   const isLead = BOOKING_CH.includes(ch);
   a.addEventListener('click', ()=>{
     track(isLead ? 'booking_click' : 'social_click', {method:ch, click_source:'home_channels'});
-    if(isLead) leadOnce({lead_type:ch+'_click', contact_channel:ch, service_type:'unknown', click_source:'home_channels'});
+    /* 13/09: bỏ leadOnce ở danh sách kênh chân trang — bấm link không phải lead. */
   });
 });
 const igCh = document.querySelector('#channels a[data-ch="Instagram"]');
@@ -1784,7 +1776,7 @@ if (window.KINKAY && window.KINKAY.formCta) window.KINKAY.formCta({ source: 'hom
   document.getElementById('iabCopy').addEventListener('click',function(){
     var n='0933953179',btn=this;
     function ok(){btn.textContent='ĐÃ COPY';
-      track('generate_lead',{lead_type:'contact',contact_channel:'phone_copy',click_source:'inapp_banner'});}
+      track('booking_click',{method:'phone_copy',click_source:'inapp_banner'});}
     function fb(){var a=document.createElement('textarea');a.value=n;document.body.appendChild(a);a.select();
       try{document.execCommand('copy');ok()}catch(e){}finally{a.remove()}}
     if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(n).then(ok,fb)}else{fb()}

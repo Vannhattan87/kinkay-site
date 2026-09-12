@@ -93,8 +93,11 @@ window.CONTENT = {
     notePh:      { vi: "Số người cần makeup, giờ phải xong, kiểu look bạn thích...",
                    en: "How many people, what time you need to be ready, the look you have in mind..." },
     submit:      { vi: "Kiểm tra ngày trống", en: "Check my date" },
-    after:       { vi: "Bấm xong Kay sẽ mở sẵn Zalo và điền giúp bạn tin nhắn — bạn chỉ cần dán và gửi.",
-                   en: "Submitting opens Zalo with your message already written — you just paste and send." },
+    // 13/09/2026: câu cũ hứa "bấm xong mở sẵn Zalo". Từ khi form nhận cả email/
+    // Instagram/WhatsApp thì chỉ còn đúng với khách để số Zalo, và trên trang /en/
+    // thì gần như luôn sai. Nói đúng thứ form thật sự làm.
+    after:       { vi: "Kay nhận được ngay và trả lời trong ngày. Để số Zalo thì Kay mở sẵn khung chat luôn cho bạn.",
+                   en: "Kay gets it straight away and replies within the day. Leave a Zalo number and the chat opens for you too." },
     or:          { vi: "Hoặc nhắn thẳng",     en: "Or message Kay directly" }
   },
   footerCol: {

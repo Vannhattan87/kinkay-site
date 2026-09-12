@@ -175,7 +175,7 @@ padding:12px 20px;border-radius:2px;font-size:13px;opacity:0;transition:opacity 
   track('tryon_open',{in_app:inApp?'yes':'no'});
   document.getElementById('ctaZalo').addEventListener('click',function(){
     track('booking_click',{method:'zalo',click_source:'thu_look'});
-    track('generate_lead',{lead_type:'contact',contact_channel:'zalo',service_type:'tryon'});
+    track('booking_click',{method:'zalo',click_source:'thu_look'});
   });
   document.getElementById('ctaClass').addEventListener('click',function(){
     track('booking_click',{method:'masterclass',click_source:'thu_look'});

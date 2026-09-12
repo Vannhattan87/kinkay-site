@@ -13,87 +13,80 @@
 
   var ZALO = 'https://zalo.me/0933953179';
 
-  /* ---------- 0. Ô LIÊN HỆ (12/09/2026) ----------
-     VÌ SAO CÓ PHẦN NÀY. Trước 12/09 form KHÔNG hỏi liên hệ. functions/api/lead.js ghi
-     thẳng `contact: null` vào CRM, nên cách duy nhất để gặp lại khách là chờ khách tự
-     dán tin nhắn vào Zalo. Khách không dán là mất hẳn — đúng vụ KK-260912-001/002.
-     Luật mới: liên hệ phải nằm trong D1 TRƯỚC khi khách rời trang. Zalo là chỗ nói
-     chuyện, không phải chỗ lưu khách.
+  /* ---------- 0. Ô LIÊN HỆ (12/09, sửa lại 13/09) ----------
+     VÌ SAO CÓ PHẦN NÀY. Trước 12/09 form KHÔNG hỏi liên hệ: lead vào CRM với contact
+     rỗng, cách duy nhất gặp lại khách là chờ khách tự dán tin vào Zalo. Không dán là
+     mất hẳn.
 
-     KHÔNG ép Zalo. Khách nước ngoài chọn WhatsApp / Email / Instagram vẫn gửi được.
-     `value` của <option> là mã cố định (zalo/whatsapp/email/instagram) và KHÔNG đổi
-     theo ngôn ngữ — cùng lý do đã ghi ở form 01/09: value chạy theo ngôn ngữ thì báo
-     cáo GA4 tách làm hai bộ và server phải đoán khách chọn gì. Chỉ CHỮ HIỆN RA mới
-     đổi, và JS vẽ lại (xem paintContact) thay vì nhân đôi chuỗi trong 13 file HTML.
+     BẢN 13/09 — MỘT Ô, TỰ NHẬN DẠNG. Bản 12/09 có hai ô (chọn kênh + điền giá trị) và
+     tự sinh ra lỗi: khách gõ số vào ô Zalo rồi đổi kênh sang Email thì giá trị cũ nằm
+     nguyên, bấm gửi báo "Email chưa đúng" trong khi khách không làm gì sai. Giờ chỉ còn
+     MỘT ô, JS đoán kênh từ định dạng. Bớt một bước, xoá luôn lớp lỗi đó.
 
-     Regex ở đây phải khớp với bản trong functions/api/lead.js. Sửa một bên là phải sửa
-     cả hai — đúng cái bẫy đã dính với normName/normContact hôm 11/09. */
+     Kênh suy ra ở client chỉ để soạn tin nhắn và bắn GA4. SERVER TỰ ĐOÁN LẠI và lấy
+     kết quả của server làm chuẩn — client sửa được bằng console.
+
+     Bảng regex + thứ tự nhận dạng phải khớp với functions/api/lead.js. Sửa một bên là
+     phải sửa cả hai, đúng cái bẫy đã dính với normName/normContact hôm 11/09. */
   var CONTACT = {
     zalo: {
       // Cố ý nới hơn "chỉ đầu số di động": 2 = cố định (028/024...), 3/5/7/8/9 = di động.
-      // Chặt quá thì một khách thật có số lạ bị chặn không gửi được form — mất khách
-      // đắt hơn nhiều so với một dòng rác trong CRM. Chạy SAU normContact nên +84 đã
-      // thành 0 rồi.
+      // Chặn nhầm một khách thật đắt hơn nhiều một dòng rác trong CRM.
       re: /^0(?:2|3|5|7|8|9)\d{7,9}$/,
-      type: 'tel', ac: 'tel',
-      opt: { vi: 'Zalo / Số điện thoại', en: 'Zalo / phone number' },
-      lb: { vi: 'Số Zalo của bạn', en: 'Your Zalo number' },
-      ph: { vi: '0901234567', en: '0901234567' },
-      er: { vi: 'Số điện thoại Việt Nam chưa đúng. Ví dụ: 0901234567.',
-            en: 'That is not a valid Vietnamese number. Example: 0901234567.' }
+      opt: { vi: 'Zalo', en: 'Zalo' }
     },
-    whatsapp: {
-      re: /^\+[1-9]\d{6,14}$/,
-      type: 'tel', ac: 'tel',
-      opt: { vi: 'WhatsApp (kèm mã nước)', en: 'WhatsApp (with country code)' },
-      lb: { vi: 'Số WhatsApp của bạn', en: 'Your WhatsApp number' },
-      ph: { vi: '+14155550123', en: '+14155550123' },
-      er: { vi: 'WhatsApp phải có mã nước. Ví dụ: +14155550123.',
-            en: 'WhatsApp needs the country code. Example: +14155550123.' }
-    },
-    email: {
-      re: /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/,
-      type: 'email', ac: 'email',
-      opt: { vi: 'Email', en: 'Email' },
-      lb: { vi: 'Email của bạn', en: 'Your email' },
-      ph: { vi: 'ban@email.com', en: 'you@email.com' },
-      er: { vi: 'Email chưa đúng.', en: 'That email does not look right.' }
-    },
-    instagram: {
-      re: /^@[A-Za-z0-9._]{1,30}$/,
-      type: 'text', ac: 'off',
-      opt: { vi: 'Instagram', en: 'Instagram' },
-      lb: { vi: 'Instagram của bạn', en: 'Your Instagram' },
-      ph: { vi: '@tenban', en: '@yourhandle' },
-      er: { vi: 'Handle Instagram chưa đúng. Ví dụ: @kinkay.official.',
-            en: 'That Instagram handle does not look right. Example: @kinkay.official.' }
-    }
+    whatsapp:  { re: /^\+[1-9]\d{6,14}$/,              opt: { vi: 'WhatsApp', en: 'WhatsApp' } },
+    email:     { re: /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/,  opt: { vi: 'Email', en: 'Email' } },
+    instagram: { re: /^@[A-Za-z0-9._]{1,30}$/,          opt: { vi: 'Instagram', en: 'Instagram' } }
   };
 
   function lang2() {
     return String(document.documentElement.lang || 'vi').slice(0, 2) === 'en' ? 'en' : 'vi';
   }
 
-  /* Chuẩn hoá TRƯỚC khi validate và trước khi gửi đi, để một khách gõ "0933 953 179",
-     "+84933953179" hay "0084933953179" đều thành đúng một chuỗi trong CRM. Nếu không,
-     chống trùng bên server nhìn ba chuỗi khác nhau và tạo ba khách. */
+  // Bỏ khoảng trắng, dấu chấm, ngoặc và mọi loại gạch ngang (kể cả gạch dài kiểu Word).
+  function stripSep(v) { return String(v || '').replace(/[\s.()\u2010-\u2015-]/g, ''); }
+
+  /* Đoán kênh từ định dạng. THỨ TỰ QUAN TRỌNG:
+     - "@kinkay.official" có cả @ lẫn dấu chấm nên phải xét Instagram TRƯỚC email,
+       nếu không nó bị đọc thành email.
+     - "+84..." là số Việt Nam viết kiểu quốc tế -> vẫn là Zalo, không phải WhatsApp.
+     - "933953179" (thiếu số 0 đầu) rất hay gặp khi khách copy từ danh bạ -> Zalo. */
+  function detectChannel(raw) {
+    var v = String(raw == null ? '' : raw).trim();
+    if (!v) return null;
+    if (/instagram\.com/i.test(v)) return 'instagram';
+    if (v.charAt(0) === '@') return 'instagram';
+    if (v.indexOf('@') > 0) return 'email';
+    var d = stripSep(v);
+    if (/^(?:\+84|0084|84)\d{8,10}$/.test(d)) return 'zalo';
+    if (/^0\d{8,10}$/.test(d)) return 'zalo';
+    if (/^[3579]\d{8}$/.test(d)) return 'zalo';       // thiếu số 0 đầu
+    if (/^(?:\+|00)\d{6,15}$/.test(d)) return 'whatsapp';
+    if (/^\d{7,15}$/.test(d)) return 'whatsapp';
+    return null;
+  }
+
+  /* Chuẩn hoá để "0933 953 179", "+84933953179", "+84 (0) 933 953 179" và "933953179"
+     đều thành đúng một chuỗi trong CRM. Không thì chống trùng bên server nhìn thành
+     bốn khách khác nhau. */
   function normContact(ch, v) {
     v = String(v == null ? '' : v).trim();
     if (!v) return '';
     if (ch === 'zalo') {
-      v = v.replace(/[\s.()‐-―-]/g, '');
-      v = v.replace(/^\+?84/, '0').replace(/^0084/, '0');
-      return v;
+      v = stripSep(v).replace(/^0084/, '0').replace(/^\+?84/, '0');
+      // "+84 (0) 933..." -> sau khi bỏ ngoặc thành "+840933..." -> "00933..." -> "0933..."
+      // Đây là dạng in trên danh thiếp Việt Nam, bản 12/09 chặn oan nó.
+      return v.replace(/^0{2,}(?=\d)/, '0').replace(/^([3579]\d{8})$/, '0$1');
     }
     if (ch === 'whatsapp') {
-      v = v.replace(/[\s.()‐-―-]/g, '').replace(/^00/, '+');
-      if (v.charAt(0) !== '+') v = '+' + v;
-      return v;
+      v = stripSep(v).replace(/^00/, '+');
+      return v.charAt(0) === '+' ? v : '+' + v;
     }
     if (ch === 'email') return v.toLowerCase();
     if (ch === 'instagram') {
-      v = v.replace(/^(?:https?:\/\/)?(?:www\.)?instagram\.com\//i, '').replace(/[\/?#].*$/, '').trim();
-      v = v.replace(/^@+/, '');
+      v = v.replace(/^(?:https?:\/\/)?(?:www\.)?instagram\.com\//i, '')
+           .replace(/[\/?#].*$/, '').trim().replace(/^@+/, '');
       return v ? '@' + v : '';
     }
     return v;
@@ -266,30 +259,27 @@
   /* Vẽ lại chữ của ô kênh + ô liên hệ theo ngôn ngữ đang bật và theo kênh đang chọn.
      Gọi lúc khởi động, mỗi lần khách đổi kênh, và mỗi lần <html lang> đổi (trang chủ
      có nút VI/EN gọi applyLang() đặt lại thuộc tính đó). */
-  function paintContact(form, forceDefault) {
-    var sel = form.elements['channel'], inp = form.elements['contact'];
-    if (!sel || !inp) return;
+  /* Chỉ còn đổi CHỮ theo ngôn ngữ. Không còn select nên không còn chuyện đổi kênh
+     làm giá trị cũ mắc kẹt, và không còn chuyện đổi ngôn ngữ âm thầm đổi kênh của
+     khách (lỗi bản 12/09 trên trang chủ). */
+  var LF_T = {
+    label: { vi: 'Kay liên hệ lại bạn bằng', en: 'How can Kay reach you?' },
+    ph:    { vi: 'Số Zalo, email hoặc @instagram', en: 'Phone, email or @instagram' },
+    hint:  { vi: 'Số điện thoại, email hay Instagram đều được. Kay chỉ dùng để trả lời bạn về lịch.',
+             en: 'Phone, email or Instagram, whichever you prefer. Only used to reply to you about your date.' },
+    bad:   { vi: 'Kay chưa đọc được liên hệ này. Bạn thử số điện thoại (0901234567), email, hoặc @instagram nhé.',
+             en: 'Kay could not read that. Try a phone number with country code (+14155550123), an email, or @instagram.' }
+  };
+
+  function paintContact(form) {
+    var inp = form.elements['contact'];
+    if (!inp) return;
     var L = lang2();
-
-    // Khách chưa tự chọn kênh thì mặc định đi theo ngôn ngữ: VI -> Zalo, EN -> Email.
-    // Người nước ngoài không có Zalo, còn email thì Kay chắc chắn trả lời được.
-    if (forceDefault && !sel.dataset.touched) sel.value = (L === 'en' ? 'email' : 'zalo');
-    if (!CONTACT[sel.value]) sel.value = 'zalo';
-
-    Array.prototype.forEach.call(sel.options, function (o) {
-      if (CONTACT[o.value]) o.textContent = CONTACT[o.value].opt[L];
-    });
-
-    var c = CONTACT[sel.value];
     var lab = form.querySelector('[data-lf="contactLabel"]');
-    if (lab) lab.textContent = c.lb[L];
-    var clab = form.querySelector('[data-lf="channelLabel"]');
-    if (clab) clab.textContent = (L === 'en' ? 'How should Kay reply to you?' : 'Kay liên hệ lại bạn bằng');
-    inp.placeholder = c.ph[L];
-    inp.setAttribute('autocomplete', c.ac);
-    // type đổi theo kênh để điện thoại bật đúng bàn phím. Form có novalidate nên
-    // type="email" không sinh thêm bong bóng lỗi của trình duyệt chồng lên lỗi của mình.
-    try { inp.type = c.type; } catch (e) { }
+    if (lab) lab.textContent = LF_T.label[L];
+    var hint = form.querySelector('[data-lf="contactHint"]');
+    if (hint) hint.textContent = LF_T.hint[L];
+    inp.placeholder = LF_T.ph[L];
   }
 
   function leadForm(opts) {
@@ -298,143 +288,184 @@
     if (!form) return;
     var box = document.getElementById(opts.msgId || 'leadMsg');
     var source = opts.source || 'page';
-    var chSel = form.elements['channel'];
     var btn = form.querySelector('button[type="submit"]');
     var btnText = btn ? btn.textContent : '';
     var sending = false;
 
-    if (chSel) {
-      chSel.addEventListener('change', function () {
-        chSel.dataset.touched = '1';
-        paintContact(form, false);
-      });
-      paintContact(form, true);
-      // Trang chủ đổi ngôn ngữ bằng applyLang() -> đổi <html lang>. Theo dõi thuộc tính
-      // đó thay vì bắt applyLang() phải biết tới form, để hai bên không dính vào nhau.
-      try {
-        new MutationObserver(function () { paintContact(form, true); })
-          .observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
-      } catch (e) { }
-    }
+    paintContact(form);
+    // Trang chu doi ngon ngu bang applyLang() -> doi <html lang>. Theo doi thuoc tinh
+    // do thay vi bat applyLang() phai biet toi form. Gio chi ve lai CHU, KHONG dung
+    // vao gia tri khach da go (loi ban 12/09: doi ngon ngu lam kenh tu nhay).
+    try {
+      new MutationObserver(function () { paintContact(form); })
+        .observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
+    } catch (e) { }
 
-    function fail(html) {
+    /* Ban 12/09 do moi loi vao #leadMsg o DAY form roi cuon xuong do, trong khi o sai
+       nam cach 4-5 o phia tren, khong highlight, khong focus. Tren dien thoai la mot
+       vong do tim va khach bo di. Gio dua con tro ve dung o sai. */
+    function fail(html, field) {
+      track('form_error', { error_field: field || 'unknown', click_source: source });
+      var el = field ? form.elements[field] : null;
+      if (el) {
+        try { el.focus({ preventScroll: true }); } catch (e) { try { el.focus(); } catch (e2) { } }
+        try { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) { }
+      }
       if (!box) return;
       box.className = 'form-msg on form-err';
       box.innerHTML = html;
-      box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      if (!el) { try { box.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) { } }
     }
+
+    // Khach cham vao form lan dau -> do duoc ti le bo do. Truoc 13/09 khuc giua phieu
+    // mu hoan toan: khong biet co ai bat dau dien ma bo khong.
+    var started = false;
+    form.addEventListener('focusin', function () {
+      if (started) return;
+      started = true;
+      track('form_start', { click_source: source, form_id: form.id || 'leadForm' });
+    });
 
     form.addEventListener('submit', function (ev) {
       ev.preventDefault();
-      if (sending) return;                       // chặn bấm hai lần -> hai lead y hệt nhau
+      if (sending) return;                       // chan bam hai lan -> hai lead y het nhau
       var L = lang2();
       var g = function (n) { var el = form.elements[n]; return el ? String(el.value || '').trim() : ''; };
 
       var d = {
-        name: g('name'),
-        channel: g('channel') || 'zalo',
-        contact: '',
-        occasion: g('occasion'),
-        date: g('date'),
-        place: g('place'),
-        budget: g('budget'),
-        note: g('note')
+        name: g('name'), contact: '', channel: null,
+        occasion: g('occasion'), date: g('date'), place: g('place'),
+        budget: g('budget'), note: g('note')
       };
-      var c = CONTACT[d.channel] || CONTACT.zalo;
-      d.contact = normContact(d.channel, g('contact'));
       d.dateText = fmtDateVN(d.date);
 
-      if (!d.name || !d.occasion) {
-        return fail(L === 'en'
-          ? 'Kay needs at least your <b>name</b> and the <b>occasion</b>.'
-          : 'Kay cần ít nhất <b>tên</b> và <b>dịp</b> để kiểm tra lịch giúp bạn.');
-      }
-      // Bắt buộc có liên hệ. Đây là thay đổi chính của 12/09: thà mất một form
-      // dở dang còn hơn có một lead mà không ai gọi lại được.
-      if (!d.contact) {
-        return fail(L === 'en'
-          ? 'Please leave a contact so Kay can reply to you.'
-          : 'Bạn để lại liên hệ giúp Kay nhé, không có thì Kay không trả lời bạn được.');
-      }
-      if (!c.re.test(d.contact)) return fail(escHtml(c.er[L]));
+      var rawContact = g('contact');
+      d.channel = detectChannel(rawContact);
+      d.contact = d.channel ? normContact(d.channel, rawContact) : '';
+      var c = d.channel ? CONTACT[d.channel] : null;
+
+      if (!d.name) return fail(L === 'en' ? 'Kay needs your <b>name</b>.'
+                                          : 'Cho KINKAY xin <b>t\u00ean</b> b\u1ea1n nh\u00e9.', 'name');
+      if (!d.occasion) return fail(L === 'en' ? 'Please pick the <b>occasion</b>.'
+                                              : 'Ch\u1ecdn gi\u00fap <b>d\u1ecbp</b> b\u1ea1n c\u1ea7n nh\u00e9.', 'occasion');
+      // Bat buoc co lien he. Tha mat mot form do dang con hon co mot lead ma khong
+      // ai goi lai duoc.
+      if (!rawContact) return fail(L === 'en'
+        ? 'Please leave a contact so Kay can reply to you.'
+        : 'B\u1ea1n \u0111\u1ec3 l\u1ea1i li\u00ean h\u1ec7 gi\u00fap Kay nh\u00e9, kh\u00f4ng c\u00f3 th\u00ec Kay kh\u00f4ng tr\u1ea3 l\u1eddi b\u1ea1n \u0111\u01b0\u1ee3c.', 'contact');
+      if (!c || !c.re.test(d.contact)) return fail(escHtml(LF_T.bad[L]), 'contact');
 
       var msg = buildMessage(d);
       var da = daysAhead(d.date);
       var toZalo = d.channel === 'zalo';
 
-      // Chỉ mở Zalo khi khách chọn Zalo. Mở NGAY trong nhịp bấm nút — để chậm một
-      // nhịp là trình duyệt chặn popup. Khách chọn kênh khác thì không mở gì cả:
-      // liên hệ đã nằm trong CRM rồi, Kay chủ động nhắn lại.
+      // Chi mo Zalo khi lien he cua khach CHINH LA Zalo. Mo NGAY trong nhip bam nut,
+      // cham mot nhip la trinh duyet chan popup.
       var w = toZalo ? window.open(ZALO, '_blank', 'noopener') : null;
+      if (toZalo) {
+        // Cu cham Zalo co y dinh cao nhat tren site — khach vua de so vua sang Zalo.
+        // Truoc 13/09 nhanh nay khong ban gi nen no vo hinh trong moi so sanh.
+        track('booking_click', { method: 'zalo', click_source: source + '_form_handoff' });
+        copyText(msg);
+      }
 
       sending = true;
-      if (btn) { btn.disabled = true; btn.textContent = (L === 'en' ? 'Sending...' : 'Đang gửi...'); }
+      if (btn) { btn.disabled = true; btn.textContent = (L === 'en' ? 'Sending...' : '\u0110ang g\u1eedi...'); }
 
-      track('generate_lead', {
-        lead_type: 'booking_form',
-        // 26/08/2026: KHONG duoc dat ten param la `source`. Do la ten danh rieng cua GA4
-        // (cung ho voi medium/campaign/term/content) — GA4 lay no ghi de attribution cua
-        // session, sinh ra kenh "Unassigned" va thoi phong so session. Dung `click_source`.
-        click_source: source,
-        contact_channel: d.channel,
-        occasion: d.occasion,
-        budget_band: d.budget || 'chua_chon',
-        has_date: d.date ? 'yes' : 'no',
-        days_ahead: da === null ? -1 : da
-      });
-
-      // Gửi về server. Từ 12/09 đây KHÔNG còn là "bản sao" — nó là đường giữ khách
-      // chính, vì nó là chỗ duy nhất có liên hệ của khách. Lỗi thì vẫn không được
-      // làm hỏng trang, nhưng phải nói thật với khách là chưa gửi được.
-      var done = function (ok) {
-        sending = false;
-        if (btn) { btn.disabled = false; btn.textContent = btnText; }
-        if (!box) return;
+      /* `stored` = server XAC NHAN da ghi vao CRM. Ban 12/09 ban generate_lead ngay luc
+         bam nut, truoc ca khi fetch xong, nen no dem ca lead khong luu duoc va dem them
+         mot lan nua moi khi khach bam gui lai. Tu 13/09: CHI ban khi stored === true. */
+      var done = function (ok, res) {
+        var stored = !!res.stored, duplicate = !!res.duplicate;
         if (!ok) {
+          sending = false;
+          if (btn) { btn.disabled = false; btn.textContent = btnText; }
+          track('lead_send_failed', { click_source: source, contact_channel: d.channel });
           return fail(L === 'en'
-            ? '<b>Could not send.</b> Please message Kay on Zalo <b>+84 933 953 179</b> or ' +
-              'email <b>kinkay20t@gmail.com</b> — sorry about this.'
-            : '<b>Gửi không thành công.</b> Bạn nhắn giúp Kay qua Zalo <b>0933 953 179</b> ' +
-              'hoặc email <b>kinkay20t@gmail.com</b> nhé.');
+            ? '<b>Could not send.</b> Please message Kay on Zalo <b>+84 933 953 179</b> or email <b>kinkay20t@gmail.com</b>.'
+            : '<b>G\u1eedi kh\u00f4ng th\u00e0nh c\u00f4ng.</b> B\u1ea1n nh\u1eafn gi\u00fap Kay qua Zalo <b>0933 953 179</b> ho\u1eb7c email <b>kinkay20t@gmail.com</b> nh\u00e9.', null);
         }
+        // Thanh cong thi KHONG mo khoa nut — tranh khach bam lan hai tao ban ghi trung.
+        if (btn) btn.textContent = (L === 'en' ? 'Sent' : '\u0110\u00e3 g\u1eedi');
+        // Luna QA 13/09: `generate_lead` = D1 XÁC NHẬN TẠO LEAD MỚI. Khách bấm gửi lại
+        // thì server trả duplicate:true (đã ghi bổ sung vào lead cũ, không tạo dòng mới)
+        // -> KHÔNG bắn lại, nếu không một khách bị đếm thành hai lead.
+        // `form_submit_success` đếm mọi lần gửi được tiếp nhận, kể cả gửi bổ sung.
+        if (stored) track('form_submit_success', {
+          click_source: source, contact_channel: d.channel, is_duplicate: duplicate ? 'yes' : 'no'
+        });
+        if (stored && !duplicate) {
+          track('generate_lead', {
+            lead_type: 'booking_form',
+            // 26/08/2026: KHONG duoc dat ten param la `source` (ten danh rieng cua GA4,
+            // no ghi de attribution cua session -> kenh "Unassigned"). Dung `click_source`.
+            click_source: source,
+            contact_channel: d.channel,
+            occasion: d.occasion,
+            budget_band: d.budget || 'chua_chon',
+            has_date: d.date ? 'yes' : 'no',
+            // days_ahead la so thuc -> KHONG gui -1 khi khong co ngay, no keo tut trung binh.
+            days_ahead: da === null ? undefined : da
+          });
+        }
+        if (!box) return;
         box.className = 'form-msg on';
+
+        // Cau tran an "Kay da co so cua ban" CHI duoc noi khi server xac nhan da luu.
+        var saved = stored
+          ? (L === 'en'
+              ? 'Kay has your ' + escHtml(c.opt.en) + ' <b>' + escHtml(d.contact) + '</b> and will reply within the day.'
+              : 'Kay \u0111\u00e3 nh\u1eadn ' + escHtml(c.opt.vi) + ' <b>' + escHtml(d.contact) + '</b> c\u1ee7a b\u1ea1n v\u00e0 s\u1ebd tr\u1ea3 l\u1eddi trong ng\u00e0y.')
+          : (L === 'en'
+              ? 'Please message Kay directly so your request does not get lost.'
+              : 'B\u1ea1n nh\u1eafn th\u1eb3ng cho Kay gi\u00fap nh\u00e9, \u0111\u1ec3 y\u00eau c\u1ea7u c\u1ee7a b\u1ea1n kh\u00f4ng b\u1ecb th\u1ea5t l\u1ea1c.');
+
         if (toZalo) {
-          box.innerHTML =
-            (w ? '<b>Đã mở Zalo của Kay.</b> Tin nhắn đã được copy sẵn — bạn chỉ cần dán vào khung chat rồi gửi.'
-               : '<b>Đã nhận thông tin của bạn.</b> Trình duyệt này chặn mở Zalo tự động — ' +
-                 'bạn nhắn Zalo <b>0933 953 179</b> và dán tin nhắn đã copy vào giúp Kay nhé.') +
-            '<div style="margin-top:8px">Kay đã có số của bạn rồi, nếu bạn chưa kịp nhắn thì Kay chủ động gọi lại.</div>' +
+          box.innerHTML = (L === 'en'
+            ? (w ? '<b>Kay\u2019s Zalo is open.</b> Your message is already copied \u2014 just paste it and send.'
+                 : '<b>Got your details.</b> This browser blocked Zalo \u2014 please message Zalo <b>+84 933 953 179</b> and paste the copied message.')
+            : (w ? '<b>\u0110\u00e3 m\u1edf Zalo c\u1ee7a Kay.</b> Tin nh\u1eafn \u0111\u00e3 \u0111\u01b0\u1ee3c copy s\u1eb5n \u2014 b\u1ea1n ch\u1ec9 c\u1ea7n d\u00e1n v\u00e0o khung chat r\u1ed3i g\u1eedi.'
+                 : '<b>\u0110\u00e3 nh\u1eadn th\u00f4ng tin c\u1ee7a b\u1ea1n.</b> Tr\u00ecnh duy\u1ec7t n\u00e0y ch\u1eb7n m\u1edf Zalo t\u1ef1 \u0111\u1ed9ng \u2014 b\u1ea1n nh\u1eafn Zalo <b>0933 953 179</b> v\u00e0 d\u00e1n tin nh\u1eafn \u0111\u00e3 copy v\u00e0o gi\u00fap Kay nh\u00e9.')) +
+            '<div style="margin-top:8px">' + saved + '</div>' +
             '<div style="margin-top:12px;font-size:13.5px;white-space:pre-line;color:var(--taupe);' +
             'border-left:2px solid var(--gold);padding-left:12px">' + escHtml(msg) + '</div>' +
-            '<div style="margin-top:12px"><a class="btn-line" href="' + ZALO + '" target="_blank" rel="noopener">' +
-            'Mở lại Zalo</a></div>';
+            '<div style="margin-top:12px"><a class="btn-line" data-zalo-reopen href="' + ZALO + '" target="_blank" rel="noopener">' +
+            (L === 'en' ? 'Open Zalo again' : 'M\u1edf l\u1ea1i Zalo') + '</a></div>';
+          // Nut nay duoc chen SAU khi initCtaTracking da chay nen khong co listener.
+          // Gan tay, neu khong cu bam Zalo de xay ra nhat lai la cu khong duoc dem.
+          var re = box.querySelector('[data-zalo-reopen]');
+          if (re) re.addEventListener('click', function () {
+            track('booking_click', { method: 'zalo', click_source: source + '_reopen' });
+          });
         } else {
-          box.innerHTML = L === 'en'
-            ? '<b>Thank you, ' + escHtml(d.name) + '.</b> Kay has your ' + escHtml(c.opt.en) +
-              ' <b>' + escHtml(d.contact) + '</b> and will reply within the day.'
-            : '<b>Cảm ơn bạn ' + escHtml(d.name) + '.</b> Kay đã nhận ' + escHtml(c.opt.vi) +
-              ' <b>' + escHtml(d.contact) + '</b> của bạn và sẽ trả lời trong ngày.';
+          box.innerHTML = (L === 'en' ? '<b>Thank you, ' : '<b>C\u1ea3m \u01a1n b\u1ea1n ') +
+            escHtml(d.name) + '.</b> ' + saved;
         }
         box.scrollIntoView({ behavior: 'smooth', block: 'center' });
       };
+
+      // Mang rot giua chung thi promise treo hang phut, nut ket "Dang gui...", khach bo di.
+      var settled = false;
+      var finish = function (ok, res) { if (settled) return; settled = true; done(ok, res || {}); };
+      setTimeout(function () { finish(false); }, 15000);
 
       try {
         fetch('/api/lead', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            name: d.name, channel: d.channel, contact: d.contact,
-            kk_hp: g('kk_hp'),          // bẫy bot — người thật luôn để trống ô này
+            name: d.name, contact: d.contact, channel: d.channel,
+            kk_hp: g('kk_hp'),          // bay bot — nguoi that luon de trong o nay
             occasion: d.occasion, date: d.date, place: d.place,
             budget: d.budget, note: d.note, source: source,
             page: location.pathname, ts: new Date().toISOString()
           })
-        }).then(function (r) { done(r && r.status < 400); })
-          .catch(function () { done(false); });
-      } catch (e) { done(false); }
-
-      // Khách chọn Zalo thì vẫn copy sẵn tin nhắn ngay, không chờ server.
-      if (toZalo) copyText(msg);
+        }).then(function (r) {
+          if (!r || r.status >= 400) return finish(false);
+          return r.json().then(function (j) { finish(true, j || {}); },
+                               function () { finish(true, {}); });
+        }).catch(function () { finish(false); });
+      } catch (e) { finish(false); }
     });
   }
 
@@ -557,7 +588,8 @@
       var btn = this;
       copyText('0933953179').then(function () {
         btn.textContent = 'ĐÃ COPY';
-        track('generate_lead', { lead_type: 'contact', contact_channel: 'phone_copy', click_source: 'inapp_banner' });
+        // 13/09: copy số KHÔNG phải lead — không có gì vào D1. Đây là tương tác.
+        track('booking_click', { method: 'phone_copy', click_source: 'inapp_banner' });
       });
     });
   }
