@@ -114,16 +114,16 @@ window.CONTENT = {
     go2: { vi: "Xem lộ trình →", en: "See the timeline →" }
   },
   cta: {
-    sticky: { vi: "Nhắn Zalo cho Kay", en: "Message Kay on Zalo" },
+    sticky: { vi: "Kiểm tra ngày trống", en: "Check my date" },
     stickyAlt: { vi: "Dịch vụ", en: "Services" },
     afterPriceText: {
-      vi: "Ngày của bạn còn trống không? Nhắn Kay để nhận menu giá đầy đủ và giữ lịch.",
-      en: "Is your date still open? Message Kay for the full price menu and to hold your slot."
+      vi: "Ngày của bạn còn trống không? Để lại thông tin, Kay gửi menu giá đầy đủ và giữ lịch giúp bạn.",
+      en: "Is your date still open? Leave your details and Kay will send the full price menu and hold your slot."
     },
-    afterPriceBtn: { vi: "Nhắn Zalo cho Kay", en: "Message Kay on Zalo" },
+    afterPriceBtn: { vi: "Kiểm tra ngày trống", en: "Check my date" },
     afterPriceHint: {
-      vi: "Zalo 0933 953 179 · Kay phản hồi trong ngày",
-      en: "Zalo 0933 953 179 · Kay replies within the day"
+      vi: "Kay phản hồi trong ngày · hoặc nhắn thẳng Zalo 0933 953 179",
+      en: "Kay replies within the day · or message Zalo +84 933 953 179 directly"
     }
   },
   hero: {

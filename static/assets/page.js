@@ -482,6 +482,51 @@
     });
   }
 
+  /* ---------- 6b. NÚT DẪN TỚI FORM (12/09/2026) ----------
+     Trước đợt này nút "Đặt lịch" trên thanh nav mở thẳng zalo.me. Mỗi cú bấm đó là một
+     khách rơi vào hộp Zalo cá nhân của Kay, vô hình với cả CRM lẫn GA4 — và nếu khách
+     không nhắn thì mất hẳn (vụ KK-260912-001/002). Giờ nút dẫn tới form, nơi liên hệ
+     được ghi vào D1 trước khi khách rời trang.
+
+     Vẫn GIỮ Zalo trực tiếp ở: chân trang, dòng "Hoặc nhắn thẳng" ngay dưới form, dải
+     cảnh báo trình duyệt trong app (chỗ đó zalo.me bị chặn nên chỉ còn cách copy số),
+     nút hỏi nhanh ở /faq/ và nút vendor ở /doi-tac/. Bắt khách điền 5 ô chỉ để hỏi
+     "có làm ở Bình Dương không" là mất khách.
+
+     Bắn `booking_click` với method='form' — CÙNG tên event cũ để key event trong GA4
+     không gãy, chỉ khác method, nên so được đường form với đường zalo. KHÔNG bắn
+     generate_lead ở đây: bấm nút chưa phải là lead, lead là lúc submit.
+
+     opts.track = false dùng cho trang chủ: ở đó ba nút CTA đã có handler GA riêng trong
+     index.html, chạy thêm ở đây là đếm đôi. Trang chủ chỉ mượn phần cuộn + focus. */
+  function initFormCta(opts) {
+    if (typeof opts === 'string') opts = { source: opts };
+    opts = opts || {};
+    var source = opts.source || 'page';
+    var doTrack = opts.track !== false;
+    // Bắt cả link cùng trang (#form) lẫn link sang trang khác (/#booking): link sang
+    // trang khác không có đích để cuộn, nhưng vẫn cần đếm cú bấm.
+    var sel = 'a[href="#form"], a[href="#booking"], a[href$="/#booking"], a[href$="/#form"]';
+    document.querySelectorAll(sel).forEach(function (a) {
+      a.addEventListener('click', function (ev) {
+        var h = a.getAttribute('href') || '';
+        var id = h.slice(h.indexOf('#') + 1);
+        var t = h.charAt(0) === '#' ? document.getElementById(id) : null;
+        if (doTrack) track('booking_click', { method: 'form', click_source: source });
+        if (!t) return;                       // link sang trang khác — để trình duyệt tự đi
+        ev.preventDefault();
+        try { t.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+        catch (e) { t.scrollIntoView(); }
+        // Đưa con trỏ vào ô đầu tiên, nhưng KHÔNG cuộn lần hai (preventScroll) kẻo
+        // giật ngược lên giữa lúc đang cuộn mượt. Chờ một nhịp cho cuộn xong.
+        setTimeout(function () {
+          var f = document.getElementById('lfName');
+          if (f) { try { f.focus({ preventScroll: true }); } catch (e) { } }
+        }, 520);
+      });
+    });
+  }
+
   /* ---------- 6. đo lượt bấm mọi link Zalo/IG trên trang ---------- */
   function initCtaTracking(source) {
     document.querySelectorAll('a[href*="zalo.me"]').forEach(function (a) {
@@ -521,6 +566,7 @@
   window.KINKAY = {
     track: track,
     leadForm: leadForm,
+    formCta: initFormCta,
     beforeAfter: beforeAfter,
     // Trang chu goi rieng nav() vi no da co reveal/banner in-app cua chinh no.
     nav: initNav,
@@ -528,6 +574,7 @@
       initNav();
       initReveal();
       initCtaTracking(source);
+      initFormCta(source);
       initInAppBanner();
     }
   };
