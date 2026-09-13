@@ -251,10 +251,13 @@ export async function onRequestPost({ request, env, waitUntil }) {
            Bản trước đọc `notes` cũ ở bước dò trùng rồi ghi đè bằng chuỗi đã nối. Hai lần
            bổ sung gần nhau thì lần sau ghi đè lần trước, mất một phần ghi chú của khách.
            Nối ngay trong câu UPDATE nên D1 tự giữ thứ tự, không có cửa sổ đọc-ghi. */
+        /* BẪY 13/09: `last_touch` là cột của bảng PARTNERS, KHÔNG phải leads. Bản đầu
+           dùng nhầm nên nhánh này ném "no such column: last_touch" và trả 500 cho khách
+           dù lead đã có sẵn. Bảng leads dùng `last_updated` + `updated_by`. */
         await env.CRM_DB.prepare(
           'UPDATE leads SET notes = CASE WHEN COALESCE(notes, \'\') = \'\' THEN ? ' +
-          'ELSE notes || char(10) || ? END, last_touch = ? WHERE id = ?'
-        ).bind(add, add, new Date().toISOString().slice(0, 10), dupId).run();
+          'ELSE notes || char(10) || ? END, last_updated = ?, updated_by = ? WHERE id = ?'
+        ).bind(add, add, new Date().toISOString(), 'website-form', dupId).run();
         // Ghi vết chỉ phần THÊM VÀO. Không khai `old_value` vì không đọc lại notes hiện tại.
         await logDiff(env.CRM_DB, 'lead', dupId, 'website-form', {}, { notes_appended: add });
         crmOk = true;
