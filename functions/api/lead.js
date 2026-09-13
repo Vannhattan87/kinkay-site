@@ -219,13 +219,23 @@ export async function onRequestPost({ request, env, waitUntil }) {
         // `same_job` của _lib.js đòi TRÙNG CẢ NGÀY. Khách không chọn ngày thì không
         // bao giờ khớp, nên bổ sung nhánh: cùng liên hệ + cùng dịp + cả hai đều chưa
         // có ngày cũng là trùng. Đây đúng là kiểu trùng do bấm gửi hai lần.
+        // 13/09 VÒNG 4 — LỖI Luna bắt được trong QA 08:27, đã LIVE từ ~08:00 sáng nay.
+        // `same_job` của _lib.js bật khi (contactHit HOẶC nameHit) + cùng ngày + cùng dịch vụ.
+        // Nhánh nameHit là một đường MẤT KHÁCH: hai cô dâu khác nhau cùng tên "Nguyễn Thị Hương",
+        // cùng một ngày đẹp, cùng "Cưới — ngày cưới", SỐ ĐIỆN THOẠI KHÁC NHAU → người thứ hai bị
+        // nuốt vào lead của người thứ nhất và liên hệ của cô ấy không bao giờ được ghi vào CRM.
+        // Tên tiếng Việt trùng nhau rất nhiều và ngày cưới dồn vào ngày đẹp, nên đây không phải
+        // ca hiếm. TÊN KHÔNG BAO GIỜ ĐỦ ĐỂ TỰ GỘP — bắt buộc phải trùng liên hệ đã chuẩn hoá.
+        // KHÔNG sửa `_lib.js`: trong `/admin/crm/` nó chỉ GỢI Ý cho người ngồi xem quyết định,
+        // ở đó gợi ý theo tên là đúng. Chỉ đường TỰ ĐỘNG của form web mới cần chặt.
         const hit = (Array.isArray(sim) ? sim : []).find(x => {
           if (!x || !x.lead) return false;
-          if (x.level === 'same_job') return true;
           const sameContact = Array.isArray(x.reasons) && x.reasons.indexOf('contact') >= 0;
+          if (!sameContact) return false;
+          if (x.level === 'same_job') return true;
           const sameSvc = !!(x.lead.service && lead.occasion && x.lead.service === lead.occasion);
           const noDates = !cleanDate(lead.date) && !x.lead.event_date;
-          return sameContact && sameSvc && noDates;
+          return sameSvc && noDates;
         });
         if (hit && hit.lead) { duplicate = true; dupId = hit.lead.id; }
       } catch (e) {
