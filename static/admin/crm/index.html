@@ -471,11 +471,24 @@
      đưa lên website/Instagram. */
   function mediaMount(l) {
     var slot = $('#mediaSlot'); if (!slot) return;
+    /* Luna QA 14/09 điểm 3 — PHÒNG THỦ HAI LỚP.
+       `esc()` chỉ đổi & < > " nên nó KHÔNG vô hiệu hoá được scheme `javascript:` nằm trong
+       href. Server đã chặn, nhưng dòng cũ trong DB (hoặc một đường ghi khác sau này) vẫn có
+       thể mang chuỗi bẩn. Nên ở đây: không phải https:// thì KHÔNG dựng thẻ <a> — in ra dạng
+       chữ thường kèm cảnh báo. Nhãn luôn đi qua `esc()`, không bao giờ nối chuỗi thô. */
+    function safeUrl(u) {
+      var s = String(u == null ? '' : u).trim();
+      return /^https:\/\//i.test(s) && !/[\s<>"'`\\]/.test(s) ? s : null;
+    }
     function draw(list) {
       var items = list.length ? list.map(function (m) {
+        var href = safeUrl(m.url);
+        var text = esc(m.label || (m.kind === 'image' ? 'Ảnh' : 'Album Drive'));
+        var link = href
+          ? '<a href="' + esc(href) + '" target="_blank" rel="noopener noreferrer">' + text + '</a>'
+          : text + ' <span class="pill dup">link không hợp lệ, không mở được</span>';
         return '<div class="row" style="cursor:default"><div class="main">' +
-          '<div class="t"><a href="' + esc(m.url) + '" target="_blank" rel="noopener">' +
-            esc(m.label || (m.kind === 'image' ? 'Ảnh' : 'Album Drive')) + '</a>' +
+          '<div class="t">' + link +
             (m.marketing_ok ? ' <span class="pill rep">được dùng marketing</span>' : ' <span class="pill">chỉ xem nội bộ</span>') + '</div>' +
           '<div class="s">' + esc(String(m.added_at || '').replace('T', ' ').slice(0, 16) + ' · ' + (m.added_by || '')) + '</div>' +
           '<div class="acts"><button type="button" class="btn sec sm" data-rm="' + esc(m.url) + '">Gỡ</button></div>' +

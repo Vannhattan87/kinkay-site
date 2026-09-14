@@ -392,11 +392,19 @@ export function parseMedia(row) {
   try { const a = JSON.parse(row && row.media_json || '[]'); return Array.isArray(a) ? a : []; }
   catch (e) { return []; }   // dữ liệu hỏng thì coi như chưa có, không làm gãy trang chi tiết
 }
-// Chỉ nhận http(s). Chặn javascript:, data:, file: — link này sẽ được render thành thẻ <a>.
+/* CHỈ NHẬN https://. Luna QA 14/09 điểm 3 yêu cầu chặn cả non-HTTPS, không chỉ
+   javascript:/data:. Bản trước cho qua http:// — album Drive vốn luôn là https nên siết
+   lại không mất gì, mà bỏ được đường link khách bị nghe lén hoặc bị chèn giữa đường.
+   Chặn luôn khoảng trắng và ký tự điều khiển trong URL (dạng "https://a b" hay
+   "java\nscript:" là mẹo lách quen thuộc). Link này sẽ thành thẻ <a> nên phải sạch từ server. */
 export function cleanMediaUrl(v) {
   const s = String(v == null ? '' : v).trim();
-  if (!/^https:\/\//i.test(s) && !/^http:\/\//i.test(s)) return '';
-  return s.length <= 2000 ? s : '';
+  if (!/^https:\/\//i.test(s)) return '';
+  if (/[\s<>"'`\\]/.test(s)) return '';          // khoảng trắng + ký tự có thể thoát khỏi thuộc tính
+  if (/[\u0000-\u001f\u007f]/.test(s)) return ''; // ký tự điều khiển
+  if (s.length > 2000) return '';
+  try { const u = new URL(s); return u.protocol === 'https:' ? s : ''; }
+  catch (e) { return ''; }                        // URL không phân tích được thì loại
 }
 export function buildMediaItem(input, actor) {
   const url = cleanMediaUrl(input && input.url);
@@ -405,7 +413,9 @@ export function buildMediaItem(input, actor) {
   return {
     item: {
       url,
-      label: String(input.label == null ? '' : input.label).trim().slice(0, 120),
+      // Nhãn do người gõ. Giữ nguyên chữ tiếng Việt, chỉ bỏ ký tự điều khiển; phần chống
+      // chèn mã là việc của giao diện (escape + không dùng innerHTML cho chuỗi thô).
+      label: String(input.label == null ? '' : input.label).replace(/[\u0000-\u001f\u007f]/g, '').trim().slice(0, 120),
       kind,
       marketing_ok: input.marketing_ok === true,   // mặc định false, phải gửi đúng true
       added_at: nowISO(),

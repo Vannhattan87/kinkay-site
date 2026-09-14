@@ -3,10 +3,17 @@
 -- Packet phạm vi: `_LUNA_TO_KEI_CR32_20260914` (Google Drive).
 --
 -- VÌ SAO LÀ 004 CHỨ KHÔNG PHẢI 003:
---   Repo hiện chỉ có tới `crm-migration-002-booking-confirmations.sql`, nên 003 đang trống.
---   NHƯNG nhãn 003 đã được CR-31 Đ8 giữ chỗ cho việc request_id / idempotency (chưa duyệt, chưa chạy).
---   Luna cảnh báo không được để hai migration khác nhau mang cùng một số. Nên đợt này lấy 004
---   và ĐỂ NGUYÊN 003 cho Đ8. Chạy 004 trước 003 không sao: hai migration không đụng nhau.
+--   Repo chỉ có tới `crm-migration-002-booking-confirmations.sql`, nên về file thì 003 đang trống.
+--   Nhưng nhãn 003 từng được CR-31 Đ8 giữ chỗ cho request_id / idempotency (chưa duyệt, chưa chạy),
+--   và không được để hai migration khác nhau mang cùng một số.
+--
+--   *** SỐ 003 NAY KHAI TỬ — Luna QA 14/09 điểm 4 ***
+--   004 đã chạy trước và đã đẩy schema_version lên 1.3. Một migration mang số 003 chạy SAU 004
+--   sẽ làm dãy số không còn phản ánh thứ tự thật, và người đọc sổ sau này sẽ suy ra sai trạng thái
+--   database. Vì vậy:
+--     - KHÔNG bao giờ tạo `crm-migration-003-*.sql`.
+--     - CR-31 Đ8 khi làm phải dùng **005** và schema_version **1.4**.
+--   Ghi vào đây thay vì chỉ ghi trong Control Room, vì người chạy migration đọc file này trước.
 --
 -- Chạy SAU `schema/crm.sql` (v1.1) và `crm-migration-002` (v1.2).
 -- An toàn chạy lại: phần CREATE/INSERT có IF NOT EXISTS / OR REPLACE.
