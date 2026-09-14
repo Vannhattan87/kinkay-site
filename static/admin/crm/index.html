@@ -396,9 +396,11 @@
 
       var del = '<div class="card"><h2>Xoá bản ghi</h2><p class="muted" style="margin:0">Chỉ khi nhập trùng / nhập sai / test. Khách thật không chốt thì đổi <b>Lost</b>.</p>' +
         '<button class="btn danger" id="btnDel">Xoá job này</button></div>';
-      shell('', head + '<div id="sameSlot"></div><div id="bcSlot"></div>' + quick + full + hist + del, 'leads'); bindRows(); bindQuickDates(app);
+      shell('', head + '<div id="sameSlot"></div><div id="jobsSlot"></div><div id="mediaSlot"></div><div id="bcSlot"></div>' + quick + full + hist + del, 'leads'); bindRows(); bindQuickDates(app);
       bcMount(l);
       sameMount(l);
+      jobsMount(l);    // CR-32 T0 — các job khác CÙNG SỐ LIÊN HỆ
+      mediaMount(l);   // CR-32 T3 — ảnh/album của ĐÚNG job này
       $('#btnDel').onclick = function () { confirmDelete('lead', l); };
       $('#f_status').onchange = function () { $('#moneyBox').style.display = ['Quoted', 'Hold', 'Deposit Paid', 'Confirmed', 'Completed'].indexOf(this.value) >= 0 ? '' : 'none'; };
 
@@ -432,6 +434,87 @@
   }
 
   // "Job khác của khách này" trên trang chi tiết. Cùng ngày + cùng dịch vụ → cảnh báo có thể nhập trùng.
+  /* ═══ CR-20260913-32 · T0 — LỊCH SỬ THEO SỐ LIÊN HỆ ═══════════════════════════
+     Đây là TRA CỨU, không phải hồ sơ khách hàng. Khối này hiển thị các job dùng cùng một
+     số liên hệ đã chuẩn hoá. Nó KHÔNG khẳng định cùng người và KHÔNG tạo liên kết nào.
+     Câu cảnh báo do server trả về và BẮT BUỘC in ra — không được nuốt đi cho gọn giao diện.
+     Nhiều tên khác nhau trên cùng một số là chuyện thường trong ngành này (mẹ đặt hộ,
+     planner đặt cho nhiều cô dâu), nên khi gặp thì cảnh báo mạnh hơn. */
+  function jobsMount(l) {
+    var slot = $('#jobsSlot'); if (!slot) return;
+    api('/history?lead=' + encodeURIComponent(l.id)).then(function (d) {
+      if (!d.count) return;                       // không có job nào khác thì không chiếm chỗ
+      var rows = d.jobs.map(function (x) {
+        var m = 0; try { m = (JSON.parse(x.media_json || '[]') || []).length; } catch (e) { m = 0; }
+        return '<div class="row" data-go="#/lead/' + esc(x.id) + '"><div class="main">' +
+          '<div class="t">' + esc(x.customer_name) + ' ' + pill(x.status) +
+            (m ? ' <span class="pill rep">' + m + ' ảnh</span>' : '') + '</div>' +
+          '<div class="s">' + esc([x.id, x.service,
+              x.event_date ? 'sự kiện ' + dmy(x.event_date) : 'chưa có ngày'].filter(Boolean).join(' · ')) + '</div></div>' +
+          '<div class="right">' + (x.expected_revenue != null ? '<div class="money">' + esc(money(x.expected_revenue)) + '</div>' : '') + '</div></div>';
+      }).join('');
+      slot.innerHTML = '<div class="card"><h2>Khách này đã làm gì trước đây</h2>' +
+        '<div class="warn" style="margin-top:0">' + esc(d.warning) + '</div>' +
+        (d.mixed_names ? '<div class="warn"><b>' + d.distinct_names + ' tên khác nhau</b> trên cùng số này. ' +
+           'Rất có thể là người đặt hộ (mẹ, planner) chứ không phải một khách quay lại. Kiểm trước khi nói chuyện với khách.</div>' : '') +
+        rows +
+        '<p class="muted">Gom theo số liên hệ, không phải theo người. Chưa dùng số này làm KPI khách quay lại.</p></div>';
+      bindRows();
+    }).catch(function () { /* tra hỏng thì im, không chặn trang chi tiết */ });
+  }
+
+  /* ═══ CR-20260913-32 · T3 — ẢNH / ALBUM CỦA ĐÚNG JOB NÀY ══════════════════════
+     Ảnh gắn với JOB chứ không gắn với khách: nó sinh ra ở một buổi cụ thể, mất thông tin
+     "của lần nào" là mất phần đáng giá nhất khi Kay mở lại trước buổi sau.
+     File nằm trên Drive; ở đây chỉ giữ link + nhãn + quyền.
+     `marketing_ok` mặc định TẮT và phải bật riêng từng mục — quyền xem nội bộ khác quyền
+     đưa lên website/Instagram. */
+  function mediaMount(l) {
+    var slot = $('#mediaSlot'); if (!slot) return;
+    function draw(list) {
+      var items = list.length ? list.map(function (m) {
+        return '<div class="row" style="cursor:default"><div class="main">' +
+          '<div class="t"><a href="' + esc(m.url) + '" target="_blank" rel="noopener">' +
+            esc(m.label || (m.kind === 'image' ? 'Ảnh' : 'Album Drive')) + '</a>' +
+            (m.marketing_ok ? ' <span class="pill rep">được dùng marketing</span>' : ' <span class="pill">chỉ xem nội bộ</span>') + '</div>' +
+          '<div class="s">' + esc(String(m.added_at || '').replace('T', ' ').slice(0, 16) + ' · ' + (m.added_by || '')) + '</div>' +
+          '<div class="acts"><button type="button" class="btn sec sm" data-rm="' + esc(m.url) + '">Gỡ</button></div>' +
+        '</div></div>';
+      }).join('') : '<div class="empty">Chưa có ảnh của buổi này</div>';
+
+      slot.innerHTML = '<div class="card"><h2>Ảnh buổi này</h2>' + items +
+        '<label>Link album Drive hoặc ảnh</label><input id="m_url" placeholder="https://drive.google.com/drive/folders/...">' +
+        '<label>Ghi nhớ ngắn (tuỳ chọn)</label><input id="m_label" placeholder="Ví dụ: Lễ gia tiên sáng 14/11">' +
+        '<label style="display:flex;gap:8px;align-items:center;margin-top:10px">' +
+          '<input type="checkbox" id="m_mk" style="width:auto;margin:0"> Được phép dùng cho marketing</label>' +
+        '<p class="muted" style="margin:4px 0 10px">Mặc định chỉ xem nội bộ. Chỉ tick khi khách đã đồng ý cho dùng ảnh. ' +
+          'Đừng để folder Drive ở chế độ ai có link cũng xem được.</p>' +
+        '<button class="btn sec" id="m_add">Thêm vào job này</button>' +
+        '<p class="muted">Gắn với job ' + esc(l.id) + ', không gắn với khách — để sau này còn biết ảnh của buổi nào.</p></div>';
+
+      slot.querySelectorAll('[data-rm]').forEach(function (b) {
+        b.onclick = function () {
+          b.disabled = true;
+          api('/leads/' + encodeURIComponent(l.id) + '/media', { method: 'DELETE', body: { url: b.getAttribute('data-rm') } })
+            .then(function (r) { toast('Đã gỡ khỏi job (file trên Drive vẫn còn)'); draw(r.media); })
+            .catch(function (e) { b.disabled = false; toast(e.message, true); });
+        };
+      });
+      $('#m_add').onclick = function () {
+        var url = $('#m_url').value.trim();
+        if (!url) { toast('Dán link album trước đã', true); $('#m_url').focus(); return; }
+        var btn = this; btn.disabled = true;
+        api('/leads/' + encodeURIComponent(l.id) + '/media', { method: 'POST', body: {
+          url: url, label: $('#m_label').value.trim(), kind: 'album', marketing_ok: $('#m_mk').checked === true
+        } }).then(function (r) { toast('Đã thêm'); draw(r.media); })
+          .catch(function (e) { btn.disabled = false; toast(e.message, true); });
+      };
+    }
+    api('/leads/' + encodeURIComponent(l.id) + '/media')
+      .then(function (d) { draw(d.media || []); })
+      .catch(function () { /* endpoint chưa lên thì ẩn khối, không làm gãy trang */ });
+  }
+
   function sameMount(l) {
     var slot = $('#sameSlot'); if (!slot) return;
     var qs = '?exclude=' + encodeURIComponent(l.id) + '&customer_name=' + encodeURIComponent(l.customer_name || '') + '&contact=' + encodeURIComponent(l.contact || '') +

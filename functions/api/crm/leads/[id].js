@@ -3,7 +3,7 @@
 // DELETE /api/crm/leads/KK-260905-001  {reason} → xoá bản ghi NHẬP SAI / TRÙNG / TEST (Tân yêu cầu 11/09/2026)
 //   Khách thật không chốt vẫn là Status = Lost, không xoá. Xoá chụp nguyên dòng vào lead_events → khôi phục ở /api/crm/trash.
 //   Chặn xoá khi job đã phát hành Booking Confirmation (khách đã cầm bản xác nhận).
-import { json, err, normalize, LEAD_FIELDS, logDiff, nowISO, deleteWithSnapshot } from '../_lib.js';
+import { json, err, normalize, LEAD_FIELDS, logDiff, nowISO, deleteWithSnapshot, contactKey } from '../_lib.js';
 
 export async function onRequestGet({ params, env }) {
   const db = env.CRM_DB;
@@ -27,6 +27,9 @@ export async function onRequestPatch({ params, request, env, data }) {
   if (errors.length) return err('Dữ liệu chưa hợp lệ', 400, errors);
   // Luật tiền thật: sửa actual_revenue thì cờ verified reset về 0 trừ khi gửi kèm actual_verified=true (Tân xác minh).
   if ('actual_revenue' in d && !('actual_verified' in d)) d.actual_verified = 0;
+  /* CR-32 T0: contact đổi thì khoá tra cứu phải đổi theo, nếu không job cũ tra ra sai.
+     Sinh ở server, không nhận từ client — `contact_key` cố ý KHÔNG nằm trong LEAD_FIELDS. */
+  if ('contact' in d) d.contact_key = contactKey(d.contact);
   const keys = Object.keys(d);
   if (!keys.length) return err('Không có gì để cập nhật');
   d.last_updated = nowISO();

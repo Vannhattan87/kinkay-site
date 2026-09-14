@@ -139,6 +139,28 @@ async function insertWithRetry(db, table, prefix, ymd, build) {
         .bind(...cols.map(c => row[c])).run();
       return row;
     } catch (e) {
+      /* 14/09/2026 (CR-32) — THỨ TỰ TRIỂN KHAI. Nếu code lên production TRƯỚC khi chạy
+         migration 004 thì cột `contact_key` chưa tồn tại và MỌI lần ghi lead sẽ đổ.
+         Đúng loại sự cố `no such column: last_touch` ngày 13/09, chỉ khác là lần này nó
+         chặn cả đường ghi lead từ form web — tức là MẤT KHÁCH, không phải chỉ lỗi 500.
+         Nên: thiếu cột thì bỏ cột đó ra và ghi tiếp. Mất khoá tra cứu còn hơn mất khách;
+         chạy migration rồi thì `backfill-contact-key` điền lại được.
+         KHÔNG nuốt lỗi: vẫn log để còn biết mà chạy migration. */
+      const msg = String(e && e.message || '');
+      /* SQLite báo HAI kiểu khác nhau và tôi suýt chỉ bắt một:
+           INSERT  → "table leads has no column named contact_key"
+           SELECT  → "no such column: contact_key"
+         Đoán chuỗi lỗi thay vì chạy thử chính là cách `last_touch` lọt ra production 13/09.
+         Lần này chạy thật rồi mới viết regex. */
+      const miss = msg.match(/has no column named\s+([a-z_]+)/i) || msg.match(/no such column:?\s*([a-z_]+)/i);
+      if (miss && Object.prototype.hasOwnProperty.call(row, miss[1])) {
+        console.log('[KINKAY crm] thieu cot', miss[1], '- ghi tiep khong co cot nay. CHAY MIGRATION 004.');
+        const reduced = Object.assign({}, row); delete reduced[miss[1]];
+        const rc = Object.keys(reduced);
+        await db.prepare(`INSERT INTO ${table} (${rc.join(',')}) VALUES (${rc.map(() => '?').join(',')})`)
+          .bind(...rc.map(c => reduced[c])).run();
+        return reduced;
+      }
       if (!isDup(e)) throw e;
       lastErr = e;
     }
@@ -153,6 +175,8 @@ export async function insertLead(db, actor, input) {
   const row = await insertWithRetry(db, 'leads', 'KK', ymd, id => ({
     id, created_date: ymd,
     customer_name: input.customer_name, contact: input.contact ?? null, contact_channel: input.contact_channel ?? null,
+    // CR-32 T0: khoá tra cứu, sinh ở server. KHÔNG nhận từ client (không nằm trong LEAD_FIELDS).
+    contact_key: contactKey(input.contact),
     service: input.service ?? null, event_date: input.event_date ?? null, source: input.source ?? null,
     segment: input.segment ?? null, status: input.status || 'New',
     expected_revenue: input.expected_revenue ?? null, deposit: input.deposit ?? null,
@@ -275,10 +299,48 @@ export function normContact(v) {
   let s = String(v || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase();
   if (!s || CONTACT_PLACEHOLDER.test(s)) return '';
   const joined = s.replace(/(\d)[\s.()-]+(?=\d)/g, '$1');
-  const phone = joined.match(/(?:\+?84|0)\d{8,10}/);
-  if (phone && !/@[a-z]/.test(s)) { const d = phone[0].replace(/\D/g, ''); return d.startsWith('84') ? '0' + d.slice(2) : d; }
+  /* {8,10} cắt cụt dạng "0084933953179" (0 + 12 chữ số): bắt được đúng 10 số đầu rồi dừng,
+     ra một khoá sai và ngắn. Nới lên {8,12} để ôm trọn dạng có mã quốc gia, phần chuẩn hoá
+     tiền tố ngay bên dưới sẽ cắt về dạng 0xxxxxxxxx. */
+  const phone = joined.match(/(?:\+?84|0)\d{8,12}/);
+  if (phone && !/@[a-z]/.test(s)) {
+    /* 14/09/2026 (CR-32) — LỖI CÓ SẴN, bộ test T0 bắt được, KHÔNG phải lỗi đợt này sinh ra.
+       "+84 (0) 933 953 179" (dạng in trên danh thiếp Việt Nam) bỏ dấu ngăn thành "+840933953179",
+       rồi nhánh `startsWith('84')` cho ra "0" + "0933953179" = "00933953179" — lệch hẳn với
+       "0933953179" của cùng một số viết cách khác. `lead.js` đã vá đúng ca này ngày 12/09 nhưng
+       `_lib.js` thì chưa, nên `findSimilarLeads` bên `/admin/crm/` ĐANG bỏ sót loại trùng này
+       trên production. Nay contact_key dùng chung hàm này nên buộc phải sửa tận gốc. */
+    let d = phone[0].replace(/\D/g, '');
+    d = d.replace(/^0084/, '0');            // dạng quốc tế 0084...
+    if (d.startsWith('84')) d = '0' + d.slice(2);
+    return d.replace(/^0{2,}(?=\d)/, '0'); // gom "00933..." về "0933..."
+  }
+  /* Số nước ngoài (không rơi vào nhánh 84/0 ở trên). Trước đây trả nguyên chuỗi, nên
+     "+1 415 555 0123" và "+14155550123" thành HAI khoá khác nhau — cùng một người mà tra
+     không ra nhau. Đúng tệp khách quốc tế mà P3 đang nhắm, nên phải gom dấu ngăn lại. */
+  if (/^\+?[\d\s.()-]{7,}$/.test(s)) {
+    const d = s.replace(/[\s.()-]/g, '');
+    if (/^\+?\d{7,15}$/.test(d)) return d;
+  }
   s = s.replace(/^https?:\/\/(www\.)?(instagram\.com|facebook\.com|fb\.com|tiktok\.com\/@?)\/?/, '').replace(/^@/, '').replace(/\/+$/, '').trim();
   return s.length >= 3 ? s : '';
+}
+
+/* CR-32 T0 (14/09/2026) — KHOÁ TRA CỨU, KHÔNG PHẢI DANH TÍNH KHÁCH.
+   Dùng lại ĐÚNG `normContact` ở trên: một hàm chuẩn hoá duy nhất cho cả lúc GHI (sinh
+   `contact_key`) lẫn lúc TRA (findSimilarLeads). Hai hàm khác nhau là tra lệch với ghi.
+
+   Trả `null` chứ không trả '' khi contact trống / giữ chỗ / quá ngắn. Lý do là ràng buộc
+   Luna đặt: contact rỗng hoặc không hợp lệ KHÔNG được dồn chung thành một nhóm. SQLite
+   không cho hai NULL bằng nhau và index bỏ qua NULL, nên chúng không bao giờ khớp nhau.
+   Nếu để '' thì mọi khách thiếu liên hệ sẽ thành "cùng một người" — đúng cái phải tránh.
+
+   Cột này KHÔNG chứng minh hai job là của cùng một người (mẹ đặt hộ, planner đặt cho
+   nhiều cô dâu, số đổi chủ), KHÔNG được dùng để tự gộp, và KHÔNG đủ để tính KPI khách
+   quay lại chính thức. Việc đó thuộc T1, đang HOLD. */
+export function contactKey(v) {
+  const k = normContact(v);
+  return k ? k : null;
 }
 
 // Tìm bản ghi giống input. Trả mảng { lead, level, reasons } sắp theo độ chắc:
@@ -316,6 +378,40 @@ export async function findSimilarLeads(db, input, excludeId) {
   }
   out.sort((x, y) => rank[x.level] - rank[y.level] || String(y.lead.created_date).localeCompare(String(x.lead.created_date)));
   return out.slice(0, 20);
+}
+
+/* CR-32 T3 (14/09/2026) — ẢNH / ALBUM GẮN VỚI JOB.
+   D1 giữ metadata + link + quyền; file nằm ở Google Drive, không nằm trong database.
+   Gắn theo JOB chứ không theo khách: ảnh sinh ra tại một buổi cụ thể, mất thông tin
+   "của lần nào" là mất phần có giá trị nhất. Trang khách chỉ TỔNG HỢP từ các job.
+
+   `marketing_ok` mặc định false và phải bật riêng từng mục. Quyền xem nội bộ khác quyền
+   dùng cho marketing: khách để Kay xem lại lần sau KHÔNG có nghĩa là đồng ý lên website. */
+const MEDIA_KINDS = ['album', 'image'];
+export function parseMedia(row) {
+  try { const a = JSON.parse(row && row.media_json || '[]'); return Array.isArray(a) ? a : []; }
+  catch (e) { return []; }   // dữ liệu hỏng thì coi như chưa có, không làm gãy trang chi tiết
+}
+// Chỉ nhận http(s). Chặn javascript:, data:, file: — link này sẽ được render thành thẻ <a>.
+export function cleanMediaUrl(v) {
+  const s = String(v == null ? '' : v).trim();
+  if (!/^https:\/\//i.test(s) && !/^http:\/\//i.test(s)) return '';
+  return s.length <= 2000 ? s : '';
+}
+export function buildMediaItem(input, actor) {
+  const url = cleanMediaUrl(input && input.url);
+  if (!url) return { error: 'Link phải bắt đầu bằng http:// hoặc https://' };
+  const kind = MEDIA_KINDS.indexOf(input.kind) >= 0 ? input.kind : 'album';
+  return {
+    item: {
+      url,
+      label: String(input.label == null ? '' : input.label).trim().slice(0, 120),
+      kind,
+      marketing_ok: input.marketing_ok === true,   // mặc định false, phải gửi đúng true
+      added_at: nowISO(),
+      added_by: actor || 'unknown'
+    }
+  };
 }
 
 // Xoá có chụp bản gốc. entity: 'lead' | 'partner'. Trả { ok, error?, status? }.
