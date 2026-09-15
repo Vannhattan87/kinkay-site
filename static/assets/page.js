@@ -264,9 +264,9 @@
      khách (lỗi bản 12/09 trên trang chủ). */
   var LF_T = {
     label: { vi: 'Kay liên hệ lại bạn bằng', en: 'How can Kay reach you?' },
-    ph:    { vi: 'Số Zalo, email hoặc @instagram', en: 'Phone, email or @instagram' },
+    ph:    { vi: 'Số Zalo, email hoặc @instagram', en: 'Phone with country code, email or @instagram' },
     hint:  { vi: 'Số điện thoại, email hay Instagram đều được. Kay chỉ dùng để trả lời bạn về lịch.',
-             en: 'Phone, email or Instagram, whichever you prefer. Only used to reply to you about your date.' },
+             en: 'A number (WhatsApp or Zalo), an email, or Instagram \u2014 whichever suits you. Only used to reply to you about your date.' },
     bad:   { vi: 'Kay chưa đọc được liên hệ này. Bạn thử số điện thoại (0901234567), email, hoặc @instagram nhé.',
              en: 'Kay could not read that. Try a phone number with country code (+14155550123), an email, or @instagram.' }
   };

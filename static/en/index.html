@@ -323,8 +323,12 @@
     <div class="section-head reveal">
       <div class="eyebrow">Booking</div>
       <h2>Is your date still open?</h2>
-      <p>Fill this in and Kay will check the calendar and reply the same day. Submitting opens
-         Zalo with your message already written — you just paste and send.</p>
+      <!-- 15/09/2026: ban cu hua "Submitting opens Zalo ... paste and send". Khach chinh cua
+           Kay la khach nuoc ngoai sang VN, phan lon khong co Zalo, nen cau do doc ra thanh
+           "phai co Zalo moi dung duoc form" va ho bo di TRUOC khi dien. Code that ra chi mo
+           Zalo khi lien he khach nhap chinh la so Zalo; con lai di nhanh cam on thuong. -->
+      <p>Fill this in and Kay will check the calendar and reply the same day, on whichever
+         channel you leave below.</p>
     </div>
     <form class="lead-form reveal" id="leadForm" novalidate>
       <!-- 12/09/2026 — BAY BOT (honeypot). O nay an, nguoi that khong bao gio thay va
@@ -364,12 +368,15 @@
         </div>
         <div class="fld full">
           <label for="lfBudget">Budget range</label>
+          <!-- 15/09/2026: them quy doi USD. Khach nuoc ngoai khong co cam giac ve "3.5M VND",
+               ho doan bua roi chon dai thap hon thuc te (xem lead KK-260914-005). Ty gia lam tron
+               ~26.000 VND/USD, co dau ~ va khong dung lam gia niem yet. Gia VND KHONG doi. -->
           <select id="lfBudget" name="budget">
             <option value="">— Not sure, please advise —</option>
-            <option>Under 2M VND</option>
-            <option>2 – 3.5M VND</option>
-            <option>3.5 – 5M VND</option>
-            <option>Over 5M VND</option>
+            <option>Under 2M VND (under ~US$75)</option>
+            <option>2 – 3.5M VND (~US$75 – 135)</option>
+            <option>3.5 – 5M VND (~US$135 – 190)</option>
+            <option>Over 5M VND (over ~US$190)</option>
           </select>
         </div>
         <div class="fld full">
@@ -393,8 +400,8 @@
       </div>
       <div class="form-actions">
         <button class="btn" type="submit">Check my date</button>
-        <p class="form-note">Or message directly — Zalo <b>+84 933 953 179</b>,
-          Instagram <b>@kinkay.official</b>, or kinkay20t@gmail.com</p>
+        <p class="form-note">Or message directly — Instagram <b>@kinkay.official</b>,
+          email <b>kinkay20t@gmail.com</b>, or Zalo <b>+84 933 953 179</b></p>
       </div>
       <div class="form-msg" id="leadMsg" role="status" aria-live="polite"></div>
     </form>
