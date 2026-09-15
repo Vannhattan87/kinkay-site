@@ -78,6 +78,51 @@ Kay mở lead (Quoted / Hold / Deposit Paid / Confirmed) → nút **Tạo Bookin
 - Không đưa lên ảnh: Source, Segment, Owner, Next Action, Follow-up, ghi chú nội bộ, điều khoản đối tác.
 - **Ngôn ngữ bản xác nhận (07/09 chiều):** chọn `Tiếng Việt` / `English` ở đầu sheet mỗi lần tạo. Không tự đoán từ tên/quốc tịch/nguồn. Ưu tiên: `preferred_language` trên lead (lưu trong `booking_json`) → ngôn ngữ bản gần nhất → `vi`. Chọn 1 lần là nhớ; đổi ngôn ngữ + tạo lại = version mới, bản cũ giữ nguyên. Snapshot có `language`, `service_display` (tên dịch vụ chuẩn theo bảng cố định; dịch vụ lạ giữ nguyên). Chỉ dịch nhãn hệ thống + footer; địa điểm/gồm/ghi chú Kay nhập giữ nguyên. Định dạng: VI `Thứ Bảy, 14/11/2026 · 15:00 · 1.500.000 ₫`; EN `Sat, 14 Nov 2026 · 3:00 PM · VND 1,500,000`. Tiêu đề VI `XÁC NHẬN ĐẶT LỊCH`, EN `BOOKING CONFIRMATION`.
 
+## Bảng giá theo dòng + vòng đời bản phát hành (CR-20260915-33) · thêm 15/09/2026
+
+Chạy `schema/crm-migration-005-line-items-lifecycle.sql` (schema_version 1.4). **CR-31 Đ8 từ nay dùng 006 / 1.5.**
+
+**Vì sao đổi.** BC-KK-260914-005-V1 in ra `NUMBER OF PEOPLE: 2` trong khi Total Fee 1.800.000đ (giá 1 người).
+Nguyên nhân gốc: `pax` và `total_fee` là hai field rời, không có phép tính nào nối chúng lại, và
+`buildSnapshot` còn fallback `booking.total_fee ?? lead.expected_revenue` — tức tổng tiền trên tài liệu
+gửi khách có thể đến từ ước tính pipeline. Card ghi "details agreed at the time of issue" nên số sai
+in ra là không đòi lại được.
+
+**Tiền.** Tổng tiền của một Booking Confirmation CHỈ đến từ `booking_json.line_items`:
+
+| trường | ý nghĩa |
+|---|---|
+| `type` | `service` (qty = pax, ảnh hưởng giá) · `fee` (phụ phí) · `discount` (giảm giá) |
+| `label` | tên dòng khách nhìn thấy |
+| `qty` | `service`: số khách. `fee`/`discount`: mặc định 1, renderer không in pax |
+| `unit_price` | **luôn nhập dương**. Dấu do `type` quyết định, Kay không bao giờ gõ dấu trừ |
+| `amount` | `sign(type) × qty × unit_price`. **Server luôn tự tính lại**, giá trị client gửi chỉ để đối chiếu (lệch → 422) |
+
+- `Grand Total = Σ amount`. Không ngoại lệ, không ô Total nhập tay. Giảm giá và phụ phí là line item, không phải trường hợp riêng.
+- `pax` hiển thị = Σ `qty` của các dòng `service`. Không còn là field rời → không còn đường để pax lệch khỏi tổng tiền.
+- `expected_revenue` KHÔNG còn fallback vào BC. Ước tính pipeline ≠ số đã thoả thuận với khách.
+- Cọc là **payment**, không phải dòng hàng: `amount_paid + balance_due = grand_total` là một identity riêng.
+- `auditSnapshot()` trong `_lib.js` là cổng chặn cuối: server chạy nó **trước khi INSERT**, không đạt thì không phát hành.
+
+**Vòng đời bản phát hành.** Cột mới trên `booking_confirmations`:
+`status` (`active` | `superseded` | `voided`), `superseded_at`, `superseded_by_id`, `superseded_reason`, `status_set_by`.
+
+- `active` → gửi / gửi lại được.
+- `superseded` → server tự đặt khi phát hành bản mới, **trỏ thẳng** tới bản thay thế qua `superseded_by_id`.
+  Mặc định không gửi; muốn gửi phải bấm mở khoá hai lần trong preview.
+- `voided` → bản SAI DỮ KIỆN. Tuyệt đối không gửi, dưới mọi đường. Giữ lại để đối chiếu.
+  Đặt tay qua `POST /api/crm/confirmations/:id` với `{status:'voided', reason:'...'}` (bắt buộc có lý do).
+
+**KHÔNG suy ra trạng thái từ "version cao nhất"** — có thể tồn tại V4 nháp hoặc V4 voided trong khi V3 vẫn có hiệu lực.
+
+**Snapshot đã phát hành là bất biến.** Migration không sửa nội dung bản cũ, chỉ thêm khả năng cho bản mới.
+Bản không có `snapshot_version` (V1/V2) vẽ bằng nhánh cũ, **giữ nguyên cả nhãn cũ** — đổi nhãn là đổi hình ảnh
+của một tài liệu đã gửi đi. Không back-derive: `pax=2 / total=1.8tr` không đủ thông tin để suy ra đơn giá thật,
+chia ra 900k chỉ tạo một sự thật giả.
+
+**Test.** `node tests/bc_line_items.mjs` — 30 assertion, gồm fuzz 4.000 snapshot canh đúng một luật:
+không tồn tại đường nào tạo được BC V3 mà Grand Total không truy ngược 100% về line items.
+
 ## Xoá bản ghi + chống trùng khách · thêm 11/09/2026 (Tân yêu cầu)
 
 Vấn đề: Kay gõ tay tên khách mỗi lần thêm job → cùng 1 người thành nhiều bản ghi rời, có thể nhập trùng 1 job 2 lần, và không có cách gỡ bản ghi sai (luật cũ "không xoá lead"). Luật cũ đổi thành:

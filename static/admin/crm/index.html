@@ -728,7 +728,9 @@
   // Snapshot là bản lịch sử: vẽ lại từ snapshot_json, không từ lead hiện tại.
   var BC = { W: 1080, H: 1350, dark: '#1A0F08', cream: '#FAF0E4', gold: '#C4A882', gold2: '#8F7340', ink: '#2A2622', mute: '#7B736A', line: '#E4D8C8' };
   var BC_ELIGIBLE = ['Quoted', 'Hold', 'Deposit Paid', 'Confirmed'];
-  var BC_LABEL = { customer_name: 'Tên khách', service: 'Dịch vụ', event_date: 'Ngày sự kiện', ready_time: 'Giờ hẹn', venue: 'Địa điểm', total_fee: 'Tổng phí', deposit_mode: 'Cọc', deposit_amount: 'Số tiền cọc' };
+  var BC_LABEL = { customer_name: 'Tên khách', service: 'Dịch vụ', event_date: 'Ngày sự kiện', ready_time: 'Giờ hẹn', venue: 'Địa điểm', line_items: 'Bảng giá (dòng dịch vụ)', total_fee: 'Tổng phí', deposit_mode: 'Cọc', deposit_amount: 'Số tiền cọc' };
+  // CR-33: nhan trang thai phat hanh. 'active' moi gui duoc.
+  var BC_ST = { active: '', superseded: 'Đã thay thế', voided: 'BẢN SAI — không gửi' };
 
   function bcMount(lead) {
     var slot = $('#bcSlot'); if (!slot) return;
@@ -738,10 +740,19 @@
       var h = '<div class="card"><h2>Booking Confirmation<b>' + d.versions.length + '</b></h2>' +
         '<button class="btn bc' + (strong ? '' : ' soft') + '" id="bcGo">' + (d.versions.length ? 'Tạo bản mới (V' + (d.versions.length + 1) + ')' : 'Tạo Booking Confirmation') + '</button>' +
         (d.missing.length ? '<div class="muted" style="margin-top:6px">Còn thiếu: ' + d.missing.map(function (k) { return BC_LABEL[k] || k; }).join(', ') + ' → sẽ hỏi khi bấm.</div>' : '<div class="muted" style="margin-top:6px">Đủ thông tin, bấm là ra bản xem trước.</div>') +
-        (d.versions.length ? '<div class="hist" style="margin-top:8px">' + d.versions.map(function (v) { return '<div style="display:flex;justify-content:space-between;align-items:center;gap:6px"><span>' + esc(v.id) + ' · ' + esc(dmy(v.generated_at)) + ' · ' + esc(v.generated_by || '') + (v.language ? ' · ' + (v.language === 'en' ? 'EN' : 'VI') : '') + '</span><button class="btn sec sm" data-bcv="' + esc(v.id) + '">Xem / gửi lại</button></div>'; }).join('') + '</div>' : '') + '</div>';
+        (d.versions.length ? '<div class="hist" style="margin-top:8px">' + d.versions.map(function (v) {
+          // Trang thai doc tu cot DB, KHONG suy ra tu "version cao nhat".
+          var st = v.status || 'active', sendable = (st === 'active');
+          var tag = st === 'voided'
+            ? '<b style="color:#B3261E"> · ' + BC_ST.voided + '</b>'
+            : (st === 'superseded' ? '<span class="muted"> · ' + BC_ST.superseded + (v.superseded_by_id ? ' bởi ' + esc(String(v.superseded_by_id).split('-').pop()) : '') + '</span>' : '');
+          return '<div style="display:flex;justify-content:space-between;align-items:center;gap:6px;' + (sendable ? '' : 'opacity:.72') + '">'
+            + '<span>' + esc(v.id) + ' · ' + esc(dmy(v.generated_at)) + ' · ' + esc(v.generated_by || '') + (v.language ? ' · ' + (v.language === 'en' ? 'EN' : 'VI') : '') + tag + '</span>'
+            + '<button class="btn sec sm" data-bcv="' + esc(v.id) + '" data-bcst="' + esc(st) + '">' + (sendable ? 'Xem / gửi lại' : 'Xem') + '</button></div>';
+        }).join('') + '</div>' : '') + '</div>';
       slot.innerHTML = h;
       $('#bcGo').onclick = function () { bcForm(lead, d.booking, d.missing, false, d.language); };
-      slot.querySelectorAll('[data-bcv]').forEach(function (b) { b.onclick = function () { api('/confirmations/' + encodeURIComponent(b.getAttribute('data-bcv'))).then(function (r) { bcPreview(lead, r.confirmation.snapshot, true); }).catch(function (e) { toast(e.message, true); }); }; });
+      slot.querySelectorAll('[data-bcv]').forEach(function (b) { b.onclick = function () { api('/confirmations/' + encodeURIComponent(b.getAttribute('data-bcv'))).then(function (r) { bcPreview(lead, r.confirmation.snapshot, true, r.confirmation.status || b.getAttribute('data-bcst') || 'active'); }).catch(function (e) { toast(e.message, true); }); }; });
     }).catch(function (e) { slot.innerHTML = '<div class="warn">' + esc(e.message) + '</div>'; });
   }
 
@@ -755,8 +766,19 @@
     if (need('event_date')) f += '<label>Ngày sự kiện *</label><input id="b_event" type="date" value="' + esc(lead.event_date || '') + '">';
     if (need('ready_time')) f += '<label>Giờ hẹn (giờ cần xong makeup) *</label><input id="b_time" type="time" value="' + esc(booking.ready_time || '') + '">';
     if (need('venue')) f += '<label>Địa điểm *</label><input id="b_venue" value="' + esc(booking.venue || '') + '" placeholder="Tên khách sạn / địa chỉ">';
-    var total = booking.total_fee != null ? booking.total_fee : lead.expected_revenue;
-    if (need('total_fee')) f += '<label>Tổng phí (đ) *</label><input id="b_total" inputmode="numeric" value="' + (total == null ? '' : total) + '">';
+    // CR-33: KHONG con o "Tong phi" nhap tay. Tong tien chi den tu bang line items ben duoi.
+    // Hat giong: KHONG chia nguoc total cu ra don gia (pax=2 / 1.8tr chia ra 900k la mot su that gia).
+    //   - chua co line items, pax trong hoac = 1  -> 1 dong service, qty 1, don gia = total cu (dung ve toan hoc)
+    //   - chua co line items, pax > 1             -> 1 dong service, qty = pax, don gia DE TRONG, Kay tu dien
+    var seedTotal = booking.total_fee != null ? booking.total_fee : lead.expected_revenue;
+    var LI = (Array.isArray(booking.line_items) && booking.line_items.length) ? booking.line_items.map(function (it) {
+      return { type: it.type, label: it.label, qty: it.qty, unit_price: it.unit_price };
+    }) : [{
+      type: 'service',
+      label: (lead.service || 'Dịch vụ'),
+      qty: (booking.pax && booking.pax > 1) ? booking.pax : 1,
+      unit_price: (booking.pax && booking.pax > 1) ? '' : (seedTotal == null ? '' : seedTotal)
+    }];
     if (need('deposit_mode') || need('deposit_amount')) {
       var dm = booking.deposit_mode || '';
       f += '<label>Cọc *</label><div class="seg" id="b_dm">' +
@@ -766,7 +788,8 @@
         '<div id="b_depwrap" style="' + (dm === 'amount' ? '' : 'display:none') + '"><label>Số tiền cọc (đ) *</label><input id="b_dep" inputmode="numeric" value="' + (booking.deposit_amount == null ? '' : booking.deposit_amount) + '"></div>';
     }
     var more = '<details' + (editAll ? ' open' : '') + '><summary>Thêm chi tiết cho khách (tuỳ chọn)</summary>' +
-      '<label>Số người</label><input id="b_pax" inputmode="numeric" value="' + (booking.pax == null ? '' : booking.pax) + '" placeholder="Ví dụ: 3">' +
+      // "Số người" da bi go han: so khach nam trong cot Pax cua tung dong dich vu, khong con la field roi.
+      
       '<label>Gồm những gì</label><textarea id="b_inc" placeholder="Makeup + làm tóc cô dâu, touch-up 1 lần, đến tận nơi">' + esc(booking.includes || '') + '</textarea>' +
       '<label>Không gồm</label><input id="b_exc" value="' + esc(booking.excludes || '') + '" placeholder="Phụ kiện, lông mi giả cao cấp…">' +
       '<label>Thanh toán</label><input id="b_pay" value="' + esc(booking.payment_terms || '') + '" placeholder="Còn lại thanh toán tiền mặt / chuyển khoản sau khi xong">' +
@@ -778,9 +801,77 @@
       '<button type="button" data-v="en" class="' + (lang === 'en' ? 'on' : '') + '">English</button></div>';
     sheet.innerHTML = '<div class="sheet"><div class="grab"></div><h3>' + (editAll ? 'Sửa chi tiết booking' : (f ? 'Điền phần còn thiếu' : 'Xác nhận thông tin')) + '</h3>' +
       '<div class="muted">' + esc(lead.customer_name) + ' · ' + esc(lead.service || '') + (lead.event_date ? ' · ' + dmy(lead.event_date) : '') + '</div>' + langSel +
-      (f && !editAll ? '<div class="miss" style="margin-top:6px">Chưa đủ để gửi khách. Không tự điền giá trị đoán.</div>' : '') + f + more +
+      (f && !editAll ? '<div class="miss" style="margin-top:6px">Chưa đủ để gửi khách. Không tự điền giá trị đoán.</div>' : '') + f +
+      '<label style="margin-top:10px">Bảng giá *</label><div id="b_li"></div>' + more +
       '<div class="bcbtns"><button class="btn sec" id="b_cancel">Huỷ</button><button class="btn bc" id="b_ok">Tạo bản xem trước</button></div></div>';
     document.body.appendChild(sheet);
+    // ======== Bang line items (CR-20260915-33) ========
+    // 1 dong = 1 dich vu + 1 don gia + 1 so luong. Tong tien la o CHI DOC, luon = tong cac dong.
+    // Don gia luon nhap DUONG; dau do loai dong quyet dinh. Kay khong bao gio go dau tru.
+    var LI_T = { service: 'Dịch vụ', fee: 'Phụ phí', discount: 'Giảm giá' };
+    function liSign(t) { return t === 'discount' ? -1 : 1; }
+    function liAmt(r) {
+      var q = parseInt(String(r.qty || '').replace(/\D/g, ''), 10);
+      var u = parseInt(String(r.unit_price || '').replace(/\D/g, ''), 10);
+      if (!isFinite(q) || q < 1) q = (r.type === 'service') ? NaN : 1;
+      if (!isFinite(q) || !isFinite(u)) return null;
+      return liSign(r.type) * q * u;
+    }
+    function liTotal() {
+      var t = 0, ok = true;
+      LI.forEach(function (r) { var a = liAmt(r); if (a == null) ok = false; else t += a; });
+      return ok && LI.length ? t : null;
+    }
+    function money(n) { return n == null ? '—' : (n < 0 ? '-' : '') + Math.abs(n).toLocaleString('vi-VN') + ' đ'; }
+    function liDraw() {
+      var box = $('#b_li', sheet); if (!box) return;
+      var h = '';
+      LI.forEach(function (r, i) {
+        var isSv = r.type === 'service';
+        h += '<div style="border:1px solid #E6DED2;border-radius:10px;padding:8px;margin-bottom:8px">' +
+          '<div style="display:flex;gap:6px;align-items:center;margin-bottom:6px">' +
+            '<select data-li="type" data-i="' + i + '" style="flex:0 0 96px">' +
+              ['service', 'fee', 'discount'].map(function (t) { return '<option value="' + t + '"' + (r.type === t ? ' selected' : '') + '>' + LI_T[t] + '</option>'; }).join('') +
+            '</select>' +
+            '<input data-li="label" data-i="' + i + '" value="' + esc(r.label || '') + '" placeholder="Tên dòng hiện trên card" style="flex:1 1 auto">' +
+            (LI.length > 1 ? '<button type="button" class="btn sec sm" data-lidel="' + i + '" title="Xoá dòng">✕</button>' : '') +
+          '</div>' +
+          '<div style="display:flex;gap:6px;align-items:center">' +
+            (isSv
+              ? '<input data-li="qty" data-i="' + i + '" inputmode="numeric" value="' + esc(String(r.qty == null ? '' : r.qty)) + '" placeholder="Pax" style="flex:0 0 72px">' +
+                '<span class="muted" style="flex:0 0 auto">khách ×</span>'
+              : '<input type="hidden" data-li="qty" data-i="' + i + '" value="1">') +
+            '<input data-li="unit_price" data-i="' + i + '" inputmode="numeric" value="' + esc(String(r.unit_price == null ? '' : r.unit_price)) + '" placeholder="Đơn giá (số dương)" style="flex:1 1 auto">' +
+            '<span style="flex:0 0 auto;font-weight:600;min-width:104px;text-align:right">' + money(liAmt(r)) + '</span>' +
+          '</div>' +
+        '</div>';
+      });
+      var gt = liTotal();
+      h += '<div style="display:flex;gap:8px;align-items:center;margin-top:4px">' +
+             '<button type="button" class="btn sec sm" id="b_liadd">+ Thêm dòng</button>' +
+             '<div style="margin-left:auto;text-align:right">' +
+               '<div class="muted" style="font-size:12px">TỔNG (tự cộng, không sửa tay)</div>' +
+               '<div style="font-weight:700;font-size:18px" id="b_gt">' + money(gt) + '</div>' +
+             '</div></div>' +
+           (gt == null ? '<div class="miss" style="margin-top:6px">Còn dòng thiếu số. Chưa ra được tổng thì chưa phát hành được.</div>' : '');
+      box.innerHTML = h;
+      box.querySelectorAll('[data-li]').forEach(function (el) {
+        var i = +el.getAttribute('data-i'), key = el.getAttribute('data-li');
+        var ev = (el.tagName === 'SELECT') ? 'change' : 'input';
+        el.addEventListener(ev, function () {
+          LI[i][key] = el.value;
+          if (key === 'type' || key === 'qty' || key === 'unit_price') liDraw();
+          else { var g = liTotal(); var t = $('#b_gt', sheet); if (t) t.textContent = money(g); }
+        });
+      });
+      var add = $('#b_liadd', sheet);
+      if (add) add.onclick = function () { LI.push({ type: 'service', label: '', qty: 1, unit_price: '' }); liDraw(); };
+      box.querySelectorAll('[data-lidel]').forEach(function (b) {
+        b.onclick = function () { LI.splice(+b.getAttribute('data-lidel'), 1); liDraw(); };
+      });
+    }
+    liDraw();
+
     var dmv = booking.deposit_mode || '';
     sheet.querySelectorAll('#b_lang button').forEach(function (b) { b.onclick = function () { lang = b.getAttribute('data-v'); sheet.querySelectorAll('#b_lang button').forEach(function (x) { x.className = x === b ? 'on' : ''; }); }; });
     sheet.querySelectorAll('#b_dm button').forEach(function (b) { b.onclick = function () { dmv = b.getAttribute('data-v'); sheet.querySelectorAll('#b_dm button').forEach(function (x) { x.className = x === b ? 'on' : ''; }); $('#b_depwrap', sheet).style.display = dmv === 'amount' ? '' : 'none'; }; });
@@ -788,10 +879,16 @@
     sheet.addEventListener('click', function (e) { if (e.target === sheet) sheet.remove(); });
     $('#b_ok', sheet).onclick = function () {
       var g = function (id) { var el = $(id, sheet); return el ? el.value.trim() : undefined; };
-      var b = { pax: g('#b_pax'), includes: g('#b_inc'), excludes: g('#b_exc'), payment_terms: g('#b_pay'), customer_note: g('#b_note'), special_instructions: g('#b_spec') };
+      var b = { includes: g('#b_inc'), excludes: g('#b_exc'), payment_terms: g('#b_pay'), customer_note: g('#b_note'), special_instructions: g('#b_spec') };
+      // line_items la nguon su that duy nhat cua tong tien. Khong gui pax roi, khong gui total_fee.
+      b.line_items = LI.map(function (r) {
+        return { type: r.type, label: String(r.label || '').trim(), qty: r.qty, unit_price: String(r.unit_price || '').replace(/\D/g, '') };
+      });
       if ($('#b_time', sheet)) b.ready_time = g('#b_time');
       if ($('#b_venue', sheet)) b.venue = g('#b_venue');
-      if ($('#b_total', sheet)) b.total_fee = g('#b_total').replace(/\D/g, '');
+      // grand_total chi de SERVER doi chieu, khong phai de ghi. Lech thi server tra 422.
+      var gtCheck = liTotal();
+      if (gtCheck == null) { bcShowErr($('.sheet', sheet), 'Bảng giá còn dòng thiếu số — chưa cộng được tổng.'); return; }
       if ($('#b_dm', sheet)) { b.deposit_mode = dmv; if (dmv === 'amount') b.deposit_amount = (g('#b_dep') || '').replace(/\D/g, ''); }
       Object.keys(b).forEach(function (k) { if (b[k] === '' || b[k] === undefined) delete b[k]; });
       var leadPatch = {};
@@ -801,7 +898,7 @@
       if ($('#b_dm', sheet) && !dmv) { bcShowErr(sheetEl, 'Chọn một lựa chọn Cọc trước khi tạo.'); return; }
       self.disabled = true; self.textContent = 'Đang tạo…'; var eb = $('#bcErr', sheet); if (eb) eb.hidden = true;
       var pre = Object.keys(leadPatch).length ? api('/leads/' + encodeURIComponent(lead.id), { method: 'PATCH', body: leadPatch }) : Promise.resolve();
-      pre.then(function () { return api('/leads/' + encodeURIComponent(lead.id) + '/confirmations', { method: 'POST', body: { booking: b, language: lang } }); })
+      pre.then(function () { return api('/leads/' + encodeURIComponent(lead.id) + '/confirmations', { method: 'POST', body: { booking: b, language: lang, grand_total: gtCheck } }); })
         .then(function (r) { sheet.remove(); toast('Đã tạo ' + r.confirmation.id); bcPreview(lead, r.confirmation.snapshot, false); })
         .catch(function (e) { self.disabled = false; self.textContent = 'Tạo bản xem trước'; bcShowErr(sheetEl, 'Không tạo được: ' + e.message, e); });
     };
@@ -834,14 +931,19 @@
   }
   // Nhãn hệ thống theo ngôn ngữ bản xác nhận. Chỉ dịch nhãn; dữ liệu Kay nhập (địa điểm, gồm, ghi chú) giữ nguyên.
   var BC_T = {
-    vi: { title: 'XÁC NHẬN ĐẶT LỊCH', id: 'Mã booking', issued: 'Phát hành', client: 'Khách hàng', service: 'Dịch vụ', date: 'Ngày', time: 'Thời gian', venue: 'Địa điểm', pax: 'Số người', includes: 'Bao gồm', excludes: 'Không bao gồm', total: 'Tổng phí', deposit: 'Tiền cọc', remaining: 'Số tiền còn lại', payment: 'Thanh toán', notes: 'Ghi chú', depNone: 'Không cần cọc', depNA: 'Không áp dụng',
+    vi: { title: 'XÁC NHẬN ĐẶT LỊCH', id: 'Mã booking', issued: 'Phát hành', client: 'Khách hàng', service: 'Dịch vụ', date: 'Ngày', time: 'Thời gian', venue: 'Địa điểm', pax: 'Số khách', paxLegacy: 'Số người', grand: 'TỔNG CỘNG', guests: 'khách', includes: 'Bao gồm', excludes: 'Không bao gồm', total: 'Tổng phí', deposit: 'Tiền cọc', remaining: 'Số tiền còn lại', payment: 'Thanh toán', notes: 'Ghi chú', depNone: 'Không cần cọc', depNA: 'Không áp dụng',
       days: ['Chủ nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'] },
-    en: { title: 'BOOKING CONFIRMATION', id: 'Booking ID', issued: 'Issued', client: 'Client', service: 'Service', date: 'Date', time: 'Time', venue: 'Location', pax: 'Number of People', includes: 'Includes', excludes: 'Excludes', total: 'Total Fee', deposit: 'Deposit', remaining: 'Remaining Balance', payment: 'Payment', notes: 'Notes', depNone: 'No deposit required', depNA: 'Not applicable',
+    en: { title: 'BOOKING CONFIRMATION', id: 'Booking ID', issued: 'Issued', client: 'Client', service: 'Service', date: 'Date', time: 'Time', venue: 'Location', pax: 'Pax', paxLegacy: 'Number of People', grand: 'GRAND TOTAL', guests: 'pax', includes: 'Includes', excludes: 'Excludes', total: 'Total Fee', deposit: 'Deposit', remaining: 'Remaining Balance', payment: 'Payment', notes: 'Notes', depNone: 'No deposit required', depNA: 'Not applicable',
       days: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'], months: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] }
   };
   function bcLang(snap) { return snap && snap.language === 'en' ? 'en' : 'vi'; }
   // Tiền: VI "1.500.000 ₫" · EN "VND 1,500,000"
-  function vnd(v, lang) { if (v == null) return '—'; return lang === 'en' ? 'VND ' + Number(v).toLocaleString('en-US') : Number(v).toLocaleString('vi-VN') + ' ₫'; }
+  function vnd(v, lang) {
+    if (v == null) return '—';
+    var n = Number(v), sign = n < 0 ? '−' : '';   // U+2212 minus, de doc hon dau gach ngang
+    n = Math.abs(n);
+    return sign + (lang === 'en' ? 'VND ' + n.toLocaleString('en-US') : n.toLocaleString('vi-VN') + ' ₫');
+  }
   // Ngày: VI "Thứ Bảy, 10/10/2026" · EN "Sat, 10 Oct 2026" (không dùng số/số để tránh nhầm ngày-tháng)
   function longDate(iso, lang) {
     if (!iso) return ''; var d = new Date(iso + 'T00:00:00'); var T = BC_T[lang || 'vi'];
@@ -883,7 +985,11 @@
     if (snap.payment_terms) { ctx.font = '400 ' + fs(24) + 'px "Be Vietnam Pro", sans-serif'; payLines = wrapLines(ctx, T.payment + ': ' + snap.payment_terms, CW - 64).slice(0, 3); }
     var noteTxt = [snap.customer_note, snap.special_instructions].filter(Boolean).join(' · ');
     if (noteTxt) { ctx.font = 'italic 400 ' + fs(24) + 'px "Playfair Display", Georgia, serif'; noteLines = wrapLines(ctx, T.notes + ': ' + noteTxt, CW - 64).slice(0, 3); }
-    var feeH = fs(30 + 54 + 46 + 46 + 26) + (payLines.length ? fs(10) + payLines.length * fs(31) : 0) + (noteLines.length ? fs(10) + noteLines.length * fs(31) : 0);
+    // CR-33: snapshot V3 co bang line items nam TRONG khoi tien. V1/V2 cu khong co -> ve nhu truoc.
+    var LIs = (snap.snapshot_version >= 3 && Array.isArray(snap.line_items) && snap.line_items.length) ? snap.line_items : null;
+    var liH = 0;
+    if (LIs) { LIs.forEach(function (it) { liH += fs(it.type === 'service' ? 60 : 40); }); liH += fs(22); }
+    var feeH = fs(30 + 54 + 46 + 46 + 26) + liH + (payLines.length ? fs(10) + payLines.length * fs(31) : 0) + (noteLines.length ? fs(10) + noteLines.length * fs(31) : 0);
     var feeYMax = FOOT_TOP - 26 - feeH;          // khối tiền không được đè footer
     var limitY = feeYMax - 16;                    // các dòng thông tin phải dừng trước đây
 
@@ -908,7 +1014,8 @@
     }
     row2(T.date, longDate(snap.event_date, L), T.time, fmtTime(snap.ready_time, L));
     row(T.venue, snap.venue);
-    if (snap.pax) row(T.pax, String(snap.pax));
+    // V3: pax nam trong tung dong dich vu cua bang gia, khong in dong roi nua.
+    if (!LIs && snap.pax) row(T.paxLegacy, String(snap.pax));
     if (snap.includes) row(T.includes, snap.includes);
     if (snap.excludes) row(T.excludes, snap.excludes);
 
@@ -921,7 +1028,30 @@
       ctx.textAlign = 'left'; ctx.fillStyle = strong ? BC.ink : BC.mute; ctx.font = (strong ? '500 ' + fs(28) + 'px' : '400 ' + fs(25) + 'px') + ' "Be Vietnam Pro", sans-serif'; ctx.fillText(lbl, col, fy);
       ctx.textAlign = 'right'; ctx.fillStyle = BC.ink; ctx.font = (strong ? '600 ' + fs(34) + 'px' : '500 ' + fs(27) + 'px') + ' "Be Vietnam Pro", sans-serif'; ctx.fillText(val, colR, fy); ctx.textAlign = 'left';
     }
-    moneyRow(T.total, vnd(snap.total_fee, L), true); fy += fs(50);
+    if (LIs) {
+      // Moi dong: ten trai - thanh tien phai. Dong dich vu co them dong nho "N khach x don gia".
+      // fee/discount KHONG in pax. Dau da nam san trong amount.
+      LIs.forEach(function (it) {
+        ctx.textAlign = 'left'; ctx.fillStyle = BC.ink; ctx.font = '500 ' + fs(26) + 'px "Be Vietnam Pro", sans-serif';
+        var maxLbl = (colR - col) - fs(230);
+        var lbl = wrapLines(ctx, it.label, maxLbl)[0] || it.label;
+        ctx.fillText(lbl, col, fy);
+        ctx.textAlign = 'right'; ctx.fillStyle = BC.ink; ctx.font = '500 ' + fs(27) + 'px "Be Vietnam Pro", sans-serif';
+        ctx.fillText(vnd(it.amount, L), colR, fy); ctx.textAlign = 'left';
+        if (it.type === 'service') {
+          fy += fs(28);
+          ctx.fillStyle = BC.mute; ctx.font = '400 ' + fs(22) + 'px "Be Vietnam Pro", sans-serif';
+          ctx.fillText(it.qty + ' ' + T.guests + ' × ' + vnd(it.unit_price, L), col, fy);
+          fy += fs(32);
+        } else { fy += fs(40); }
+      });
+      fy += fs(6);
+      ctx.strokeStyle = BC.line; ctx.beginPath(); ctx.moveTo(col, fy); ctx.lineTo(colR, fy); ctx.stroke();
+      fy += fs(38);
+      moneyRow(T.grand, vnd(snap.grand_total != null ? snap.grand_total : snap.total_fee, L), true); fy += fs(50);
+    } else {
+      moneyRow(T.total, vnd(snap.total_fee, L), true); fy += fs(50);
+    }
     moneyRow(T.deposit, snap.deposit_mode === 'amount' ? vnd(snap.deposit_amount, L) : (snap.deposit_mode === 'none' ? T.depNone : T.depNA), false); fy += fs(46);
     moneyRow(T.remaining, vnd(snap.remaining_balance, L), false); fy += fs(10);
     if (payLines.length) { fy += fs(24); ctx.fillStyle = BC.ink; ctx.font = '400 ' + fs(24) + 'px "Be Vietnam Pro", sans-serif'; payLines.forEach(function (ln) { ctx.fillText(ln, col, fy); fy += fs(31); }); }
@@ -963,16 +1093,41 @@
     });
   }
 
-  function bcPreview(lead, snap, isHistory) {
+  // st: 'active' gui duoc · 'superseded' mac dinh khong gui, phai mo khoa · 'voided' tuyet doi khong gui.
+  function bcPreview(lead, snap, isHistory, st) {
+    st = st || 'active';
+    var SENDABLE = (st === 'active'), unlocked = false;
     var wrap = document.createElement('div'); wrap.className = 'sheet-bg';
-    wrap.innerHTML = '<div class="sheet"><div class="grab"></div><h3>' + esc(snap.confirmation_id) + '</h3><div class="muted">' + (isHistory ? 'Bản đã phát hành ' + esc(dmy(snap.issued_at)) + ' (lịch sử, không đổi)' : 'Bản mới. Kiểm tra rồi chia sẻ.') + '</div>' +
-      '<div class="bcbtns" style="margin-top:8px"><button class="btn bc" id="bcShare" disabled>Đang tạo ảnh…</button><button class="btn sec" id="bcSave" disabled>Lưu ảnh</button>' +
+    var stBanner = st === 'voided'
+      ? '<div class="miss" style="margin-top:6px;border-color:#B3261E;color:#B3261E"><b>BẢN SAI — đã đánh dấu không dùng.</b> Không gửi bản này cho khách. Giữ lại chỉ để đối chiếu.' + (snap && snap.confirmation_id ? '' : '') + '</div>'
+      : (st === 'superseded' ? '<div class="miss" style="margin-top:6px">Bản này đã bị bản mới hơn thay thế. Mặc định không gửi.</div>' : '');
+    wrap.innerHTML = '<div class="sheet"><div class="grab"></div><h3>' + esc(snap.confirmation_id) + '</h3><div class="muted">' + (isHistory ? 'Bản đã phát hành ' + esc(dmy(snap.issued_at)) + ' (lịch sử, không đổi)' : 'Bản mới. Kiểm tra rồi chia sẻ.') + '</div>' + stBanner +
+      (st === 'superseded' ? '<div class="bcbtns" style="margin-top:8px"><button class="btn sec" id="bcUnlock">Vẫn muốn gửi bản đã thay thế</button></div>' : '') +
+      '<div class="bcbtns" style="margin-top:8px"' + (SENDABLE ? '' : ' hidden id="bcSendRow"') + '><button class="btn bc" id="bcShare" disabled>Đang tạo ảnh…</button><button class="btn sec" id="bcSave" disabled>Lưu ảnh</button>' +
       (isHistory ? '' : '<button class="btn sec" id="bcEdit">Sửa thông tin</button>') + '<button class="btn sec" id="bcClose">Đóng</button></div>' +
       '<div class="bcprev" id="bcCanvasWrap" style="margin-top:10px"><div class="empty" id="bcSpin">⏳ Đang tạo ảnh 1080×1350…</div></div></div>';
     document.body.appendChild(wrap);
     var sheetEl = $('.sheet', wrap), blob = null, canvas = null, fname = snap.confirmation_id + '.png';
 
-    function ready() { $('#bcShare', wrap).disabled = false; $('#bcShare', wrap).textContent = 'Chia sẻ ảnh'; $('#bcSave', wrap).disabled = false; }
+    var imgReady = false;
+    function ready() {
+      imgReady = true;
+      if (!SENDABLE && !unlocked) return;   // 'voided' khong bao gio toi day
+      $('#bcShare', wrap).disabled = false; $('#bcShare', wrap).textContent = 'Chia sẻ ảnh'; $('#bcSave', wrap).disabled = false;
+    }
+    // Mo khoa ban 'superseded': phai bam hai lan, khong bam nham mot phat la gui.
+    var ub = null;
+    setTimeout(function () {
+      ub = $('#bcUnlock', wrap);
+      if (!ub) return;
+      var armed = false;
+      ub.onclick = function () {
+        if (!armed) { armed = true; ub.textContent = 'Bấm lần nữa để xác nhận gửi bản CŨ'; ub.style.color = '#B3261E'; return; }
+        unlocked = true; ub.remove();
+        var row = $('#bcSendRow', wrap); if (row) row.hidden = false;
+        if (imgReady) ready();
+      };
+    }, 0);
     function fail(e) {
       bcShowErr(sheetEl, 'Không tạo được ảnh. Vui lòng thử lại.', e);
       $('#bcCanvasWrap', wrap).innerHTML = '<button class="btn sec" id="bcRetry" style="margin:0">Thử lại</button>';

@@ -208,7 +208,7 @@ export async function insertPartner(db, actor, d) {
 
 // ===================== Booking Confirmation (CR-20260907-29) =====================
 // Trường booking chỉ dành cho khách thấy, lưu trong leads.booking_json. KHÔNG có trường nội bộ ở đây.
-export const BOOKING_FIELDS = ['ready_time', 'venue', 'pax', 'includes', 'excludes', 'deposit_mode', 'deposit_amount', 'payment_terms', 'customer_note', 'special_instructions', 'total_fee', 'preferred_language'];
+export const BOOKING_FIELDS = ['ready_time', 'venue', 'pax', 'includes', 'excludes', 'deposit_mode', 'deposit_amount', 'payment_terms', 'customer_note', 'special_instructions', 'total_fee', 'preferred_language', 'line_items'];
 export const BC_LANGS = ['vi', 'en']; // ngôn ngữ bản xác nhận khách thấy; KHÔNG tự đoán từ tên/quốc tịch/nguồn
 // Tên dịch vụ chuẩn KINKAY hiển thị theo ngôn ngữ. Dịch vụ lạ/tuỳ chỉnh → giữ nguyên, không tự dịch.
 export const SERVICE_DISPLAY = {
@@ -222,6 +222,77 @@ export const BC_FOOTER = {
 export const DEPOSIT_MODES = ['amount', 'none', 'na']; // số tiền cọc / không cần cọc (đã thống nhất) / không áp dụng
 export const BC_ELIGIBLE_STATUSES = ['Quoted', 'Hold', 'Deposit Paid', 'Confirmed'];
 
+// ===================== Line items (CR-20260915-33) =====================
+// LUAT: 1 dong = 1 dich vu + 1 don gia + 1 so luong. KHONG phai 1 booking = 1 dong.
+//   service  -> qty = pax (so khach DUOC LAM dich vu). Anh huong gia.
+//   fee      -> phu phi (di lai, ngoai gio...). qty mac dinh 1. Renderer KHONG in pax.
+//   discount -> giam gia. amount LUON am. qty mac dinh 1. Renderer KHONG in pax.
+// Kay nhap don gia duong cho moi loai; dau do `type` quyet dinh, khong ai go dau tru.
+// Grand Total = tong amount (co dau), khong ngoai le, khong o Total nhap tay.
+// Server LUON tu tinh lai amount. Gia tri client gui len chi de doi chieu.
+export const LINE_ITEM_TYPES = ['service', 'fee', 'discount'];
+export const MAX_LINE_ITEMS = 40;
+export const SNAPSHOT_VERSION_LINE_ITEMS = 3;
+
+export function lineItemSign(type) { return type === 'discount' ? -1 : 1; }
+
+export function normalizeLineItems(v) {
+  const errors = [];
+  if (v == null || v === '') return { items: null, errors };
+  let raw = v;
+  if (typeof raw === 'string') {
+    try { raw = JSON.parse(raw); } catch (e) { return { items: null, errors: ['line_items khong phai JSON hop le'] }; }
+  }
+  if (!Array.isArray(raw)) return { items: null, errors: ['line_items phai la danh sach'] };
+  if (raw.length === 0) return { items: [], errors };
+  if (raw.length > MAX_LINE_ITEMS) return { items: null, errors: ['line_items toi da ' + MAX_LINE_ITEMS + ' dong'] };
+
+  const items = [];
+  for (let i = 0; i < raw.length; i++) {
+    const it = raw[i], n = i + 1;
+    if (!it || typeof it !== 'object') { errors.push('Dong ' + n + ': khong hop le'); continue; }
+    const type = cleanStr(it.type, 12);
+    if (!LINE_ITEM_TYPES.includes(type)) { errors.push('Dong ' + n + ': type phai la service / fee / discount'); continue; }
+    const label = cleanStr(it.label, 120);
+    if (!label) { errors.push('Dong ' + n + ': thieu ten dong'); continue; }
+
+    let qty = parseInt(String(it.qty == null ? '' : it.qty).replace(/[^\d]/g, ''), 10);
+    if (!Number.isFinite(qty) || qty < 1) {
+      if (type === 'service') { errors.push('Dong ' + n + ': dong dich vu phai co so khach (pax >= 1)'); continue; }
+      qty = 1;
+    }
+    const unit = cleanMoney(it.unit_price);
+    if (unit == null) { errors.push('Dong ' + n + ': thieu don gia (nhap so duong)'); continue; }
+    if (unit === 0 && type !== 'fee') { errors.push('Dong ' + n + ': don gia phai lon hon 0'); continue; }
+
+    const amount = lineItemSign(type) * qty * unit;
+    items.push({ type, label, qty, unit_price: unit, amount });
+  }
+  if (errors.length) return { items: null, errors };
+  return { items, errors };
+}
+
+// Grand Total = tong amount. Ham DUY NHAT duoc phep sinh ra tong tien cua mot Booking Confirmation.
+export function lineItemsTotal(items) {
+  if (!Array.isArray(items) || !items.length) return null;
+  let t = 0;
+  for (const it of items) t += Number(it.amount) || 0;
+  return t;
+}
+
+// pax hien thi = tong qty cua cac dong service. fee/discount khong cong vao.
+export function lineItemsPax(items) {
+  if (!Array.isArray(items) || !items.length) return null;
+  let p = 0;
+  for (const it of items) if (it.type === 'service') p += Number(it.qty) || 0;
+  return p > 0 ? p : null;
+}
+
+export function hasValidLineItems(booking) {
+  return Array.isArray(booking && booking.line_items) && booking.line_items.length > 0;
+}
+
+
 export function parseBooking(lead) {
   try { return lead && lead.booking_json ? JSON.parse(lead.booking_json) : {}; } catch (e) { return {}; }
 }
@@ -231,7 +302,8 @@ export function normalizeBooking(b) {
   for (const k of BOOKING_FIELDS) {
     if (!(k in b)) continue;
     const v = b[k];
-    if (k === 'deposit_amount' || k === 'total_fee') out[k] = cleanMoney(v);
+    if (k === 'line_items') { const r = normalizeLineItems(v); if (r.errors.length) errors.push(...r.errors); else out[k] = r.items; }
+    else if (k === 'deposit_amount' || k === 'total_fee') out[k] = cleanMoney(v);
     else if (k === 'pax') { const n = parseInt(String(v).replace(/\D/g, ''), 10); out[k] = Number.isFinite(n) && n > 0 ? n : null; }
     else if (k === 'deposit_mode') { const m = cleanStr(v, 10); if (m && !DEPOSIT_MODES.includes(m)) errors.push('deposit_mode phải là amount / none / na'); out[k] = m; }
     else if (k === 'ready_time') { const t = cleanStr(v, 40); if (t && !/^\d{1,2}:\d{2}/.test(t)) errors.push('ready_time cần dạng HH:MM'); out[k] = t; }
@@ -249,8 +321,9 @@ export function bookingMissing(lead, booking) {
   if (!lead.event_date) miss.push('event_date');
   if (!booking.ready_time) miss.push('ready_time');
   if (!booking.venue) miss.push('venue');
-  const total = booking.total_fee != null ? booking.total_fee : lead.expected_revenue;
-  if (total == null) miss.push('total_fee');
+  // CR-33: tien cua ban xac nhan CHI den tu line items.
+  // `expected_revenue` la uoc tinh pipeline, KHONG phai so da thoa thuan voi khach - khong fallback vao day nua.
+  if (!hasValidLineItems(booking)) miss.push('line_items');
   if (!booking.deposit_mode) miss.push('deposit_mode');
   else if (booking.deposit_mode === 'amount' && booking.deposit_amount == null) miss.push('deposit_amount');
   return miss;
@@ -259,21 +332,61 @@ export function bookingMissing(lead, booking) {
 // Snapshot: chỉ dữ liệu khách thấy + thương hiệu. Không source/segment/owner/next action/notes nội bộ/partner.
 export function buildSnapshot(lead, booking, id, version, issuedAtISO, language) {
   const lang = BC_LANGS.includes(language) ? language : 'vi';
-  const total = booking.total_fee != null ? booking.total_fee : lead.expected_revenue;
-  const depAmt = booking.deposit_mode === 'amount' ? booking.deposit_amount : 0;
   const map = SERVICE_DISPLAY[lang] || {};
+
+  // Pricing identity: Grand Total = tong line items. Khong co duong nao khac sinh ra con so nay.
+  const items = Array.isArray(booking.line_items) ? booking.line_items : [];
+  const total = lineItemsTotal(items);
+
+  // Payment identity: amount_paid + balance_due = grand_total. Coc la mot lan thanh toan, khong phai dong hang.
+  const depAmt = booking.deposit_mode === 'amount' ? (booking.deposit_amount || 0) : 0;
+  const paid = Math.min(depAmt, total == null ? 0 : total);
+  const balance = total == null ? null : total - paid;
+
   return {
-    confirmation_id: id, version, booking_id: lead.id, issued_at: issuedAtISO, language: lang,
+    confirmation_id: id, version, snapshot_version: SNAPSHOT_VERSION_LINE_ITEMS,
+    booking_id: lead.id, issued_at: issuedAtISO, language: lang,
     customer_name: lead.customer_name, service: lead.service, service_display: map[lead.service] || lead.service,
     event_date: lead.event_date,
-    ready_time: booking.ready_time, venue: booking.venue, pax: booking.pax ?? null,
+    ready_time: booking.ready_time, venue: booking.venue,
+    // pax suy ra TU line items, khong phai field roi. Khong co duong nao de pax lech khoi tong tien.
+    pax: lineItemsPax(items),
+    line_items: items.map(function (it) { return { type: it.type, label: it.label, qty: it.qty, unit_price: it.unit_price, amount: it.amount }; }),
+    grand_total: total,
+    total_fee: total,
     includes: booking.includes ?? null, excludes: booking.excludes ?? null,
-    total_fee: total, deposit_mode: booking.deposit_mode, deposit_amount: booking.deposit_mode === 'amount' ? booking.deposit_amount : null,
-    remaining_balance: total != null ? Math.max(0, total - (depAmt || 0)) : null,
+    deposit_mode: booking.deposit_mode, deposit_amount: booking.deposit_mode === 'amount' ? booking.deposit_amount : null,
+    amount_paid: paid, balance_due: balance,
+    remaining_balance: balance,
     payment_terms: booking.payment_terms ?? null, customer_note: booking.customer_note ?? null,
     special_instructions: booking.special_instructions ?? null,
     brand: { name: 'KINKAY', tagline: 'MAKEUP ARTIST', site: 'kinkay.vn', phone: '0933 953 179', instagram: '@kinkay.official', footer: BC_FOOTER[lang] }
   };
+}
+
+// Bat bien cua moi snapshot V3. Dung o server truoc khi INSERT va trong test hoi quy.
+export function auditSnapshot(snap) {
+  const bad = [];
+  if (!snap || snap.snapshot_version !== SNAPSHOT_VERSION_LINE_ITEMS) return ['khong phai snapshot V3'];
+  const items = snap.line_items;
+  if (!Array.isArray(items) || !items.length) bad.push('khong co line_items');
+  else {
+    items.forEach(function (it, i) {
+      const n = i + 1;
+      if (!LINE_ITEM_TYPES.includes(it.type)) bad.push('dong ' + n + ': type la');
+      if (it.amount !== lineItemSign(it.type) * it.qty * it.unit_price) bad.push('dong ' + n + ': amount khong bang qty x don gia');
+      if (it.type === 'discount' && !(it.amount < 0)) bad.push('dong ' + n + ': discount phai am');
+      if (it.type === 'service' && !(it.qty >= 1)) bad.push('dong ' + n + ': service phai co pax >= 1');
+    });
+    const sum = lineItemsTotal(items);
+    if (snap.grand_total !== sum) bad.push('grand_total khong truy nguoc duoc ve line items');
+    if (snap.total_fee !== sum) bad.push('total_fee lech grand_total');
+    const declaredPax = lineItemsPax(items);
+    if ((snap.pax ?? null) !== (declaredPax ?? null)) bad.push('pax khong khop tong qty cua dong service');
+  }
+  const paid = snap.amount_paid || 0, due = snap.balance_due;
+  if (snap.grand_total != null && due != null && paid + due !== snap.grand_total) bad.push('amount_paid + balance_due khac grand_total');
+  return bad;
 }
 
 // ===================== Chống trùng khách + Xoá có khôi phục (11/09/2026, Tân yêu cầu) =====================
