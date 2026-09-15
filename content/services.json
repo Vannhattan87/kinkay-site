@@ -4,9 +4,9 @@
   "location_note": "Studio tại Phường Tân Hưng, TP.HCM (by appointment) · Nhận lịch toàn quốc, phụ phí di chuyển báo trước khi xác nhận.",
   "bridal_from": "3.000.000đ",
   "bridal_to": "5.000.000đ",
-  "trial_price": "2.000.000đ",
+  "trial_price": "1.800.000₫",
   "offpeak_on": true,
-  "offpeak_note": "Ưu đãi ngày thường: đặt lịch Thứ 2 – Thứ 5 (trừ mùa cưới cao điểm và ngày lễ) được giảm 15% cho dịch vụ makeup và Full Glam Combo. Bridal không áp dụng.",
+  "offpeak_note": "",
   "items": [
     {
       "name": "Full Glam Combo",
@@ -26,6 +26,13 @@
       "name": "Pre-wedding",
       "desc": "Makeup và tóc cho buổi chụp ảnh cưới. Kay làm xong rồi về, hoặc đi theo cả buổi.",
       "price": "2.000.000 – 3.500.000đ",
+      "link": "/photoshoot-editorial/",
+      "price_en": "2,000,000 – 3,500,000 VND"
+    },
+    {
+      "name": "Pre-wedding",
+      "desc": "Makeup và tóc cho buổi chụp ảnh cưới. Kay làm xong rồi về, hoặc đi theo cả buổi.",
+      "price": "4.500.000₫",
       "link": "/photoshoot-editorial/",
       "price_en": "2,000,000 – 3,500,000 VND"
     },
