@@ -137,10 +137,7 @@ window.CONTENT = {
     },
     cta: { vi: "Đặt lịch với Kay", en: "Book with Kay" },
     scroll: { vi: "Xem portfolio", en: "View portfolio" },
-    masterclass: { vi: "Masterclass 1:1 · Đang mở lớp", en: "1:1 Masterclass · Now enrolling" },
-    // 15/09/2026: duong nhan thang Zalo o hero. Truoc day link Zalo dau tien cua trang chu
-    // nam o 88% chieu dai trang render — khach muon nhan phai cuon gan het trang.
-    direct: { vi: "Hoặc nhắn thẳng Zalo cho Kay · 0933 953 179", en: "Or message Kay directly on Zalo · +84 933 953 179" }
+    masterclass: { vi: "Masterclass 1:1 · Đang mở lớp", en: "1:1 Masterclass · Now enrolling" }
   },
   credits: {
     heading: { vi: "Selected Credits", en: "Selected Credits" },

@@ -728,10 +728,6 @@ border:1px solid rgba(44,24,16,.18);background:var(--paper);padding:28px 30px;ma
  ]
 }
 </script>
-<style>/* 15/09/2026 — duong nhan thang Zalo truoc day nam o 88% chieu dai trang. */
-.hero-direct{margin:18px 0 0;font-size:13.5px}
-.hero-direct a{color:rgba(255,255,255,.88);border-bottom:1px solid rgba(255,255,255,.45);padding-bottom:2px;transition:.3s}
-.hero-direct a:hover{color:#fff;border-color:#fff}</style>
 </head>
 <body>
 
@@ -795,7 +791,6 @@ border:1px solid rgba(44,24,16,.18);background:var(--paper);padding:28px 30px;ma
     <h1 class="sub" data-t="hero.sub">Makeup cô dâu &amp; trang điểm dự tiệc tại TP.HCM — sắc nét, sang, và vẫn là chính bạn.</h1>
     <a class="btn" id="heroCta" href="#services" data-t="hero.cta">Đặt lịch với Kay</a>
     <a class="btn btn-ghost" href="#portfolio" data-t="hero.scroll">Xem portfolio</a>
-    <p class="hero-direct"><a id="heroZalo" href="https://zalo.me/0933953179" target="_blank" rel="noopener" data-t="hero.direct">Hoặc nhắn thẳng Zalo cho Kay · 0933 953 179</a></p>
     <span class="hero-badge-row"><a class="hero-badge" id="heroMasterclass" href="masterclass/" data-t="hero.masterclass">Masterclass 1:1 · Đang mở lớp</a></span>
   </div>
 </header>
@@ -1588,10 +1583,6 @@ function appLink(e, scheme, web){
   setTimeout(()=>{ if(Date.now()-t < 1600 && !document.hidden) location.href = web; }, 1200);
 }
 const ZALO_WEB = 'https://zalo.me/0933953179';
-// 15/09/2026 — gan tracking cho link Zalo moi o hero.
-(function(){var z=document.getElementById('heroZalo');
- if(z) z.addEventListener('click',function(){ if(typeof gtag==='function')
-   gtag('event','booking_click',{method:'zalo',click_source:'hero'}); });})();
 function track(name, params){ if(typeof gtag==='function') gtag('event', name, params||{}); }
 
 /* 13/09/2026 — leadOnce ĐÃ GỠ HẲN. Nó từng bắn `generate_lead` mỗi khi khách bấm một
