@@ -246,10 +246,69 @@ for (const f of fs.readdirSync('content/blog')) {
     slug: f.replace(/\.md$/, ''),
     title: meta.title, date: meta.date, date_display: monthVN(meta.date),
     cover: meta.cover ? meta.cover.replace(/^\//, '') : 'assets/img/og_cover.jpg',
-    excerpt: meta.excerpt || '', html: marked.parse(body)
+    // 15/09/2026 — LOI 2 H1: template da render <h1> tu meta.title, nhung bai Kay viet
+    // qua CMS con co dong '# TIEU DE' mo dau body -> marked sinh them mot <h1> nua.
+    // Cat dong heading dau tien cua body neu co. Sua o day, khong sua tung file .md,
+    // vi CMS se ghi lai dong do moi lan Kay dang bai moi.
+    excerpt: meta.excerpt || '', html: marked.parse(body.replace(/^\s*#{1,2}\s+[^\n]*\r?\n+/, ''))
   });
 }
 posts.sort((a, b) => b.date.localeCompare(a.date));
+
+// 15/09/2026 — LINK NOI BO: moi bai blog truoc day chi co 3-4 link (bar + footer), khong
+// tro sang bai nao khac. 12 bai blog nam roi rac, khong truyen tin hieu cho nhau va khong
+// truyen cho trang tien. Khoi "Xem them" duoi day cho MOI bai dung 3 bai ke tiep theo thu
+// tu ngay (xoay vong), nen moi bai nhan dung 3 link vao — phan bo deu, khong don het ve
+// 3 bai moi nhat. Kem mot hang link sang trang dich vu va trang gia.
+// 15/09/2026 — /blog/ la trang duy nhat trong nhom quan trong khong co structured data.
+function blogIndexSchema(list) {
+  return '<script type="application/ld+json">' + JSON.stringify({
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Blog",
+        "@id": "https://kinkay.vn/blog/#blog",
+        "name": "KINKAY Journal",
+        "description": "Bí quyết makeup, hậu trường show và pageant, guide cho cô dâu từ Kay.",
+        "url": "https://kinkay.vn/blog/",
+        "inLanguage": "vi-VN",
+        "publisher": { "@id": "https://kinkay.vn/#business" },
+        "blogPost": list.slice(0, 12).map(x => ({
+          "@type": "BlogPosting",
+          "headline": x.title,
+          "url": "https://kinkay.vn/blog/" + encodeURI(x.slug),
+          "datePublished": x.date
+        }))
+      },
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "KINKAY", "item": "https://kinkay.vn/" },
+          { "@type": "ListItem", "position": 2, "name": "Blog", "item": "https://kinkay.vn/blog/" }
+        ]
+      }
+    ]
+  }) + '<\/script>';
+}
+
+function relatedBlock(p) {
+  const i = posts.indexOf(p);
+  const n = posts.length;
+  const rel = [];
+  for (let k = 1; k <= 3 && k < n; k++) rel.push(posts[(i + k) % n]);
+  const items = rel.map(r => `<li><a href="${encodeURI(r.slug)}">${esc(r.title)}</a></li>`).join('');
+  const svc = [
+    ['/makeup-co-dau/', 'Makeup cô dâu tại TP.HCM'],
+    ['/blog/gia-makeup-co-dau-tphcm', 'Giá makeup cô dâu ở TP.HCM'],
+    ['/faq/', 'Câu hỏi thường gặp']
+  ].filter(x => !p.slug || !x[0].endsWith(p.slug))
+   .map(x => `<a href="${x[0]}">${x[1]}</a>`).join(' · ');
+  return `<nav class="more" aria-label="Bài liên quan">
+  <div class="eyebrow">Xem thêm</div>
+  <ul>${items}</ul>
+  <p class="more-svc">${svc}</p>
+</nav>`;
+}
 
 const blogDir = path.join(SITE, 'blog');
 fs.rmSync(blogDir, { recursive: true, force: true });
@@ -268,6 +327,7 @@ ${bar('./', '← Blog')}
   <h1>${esc(p.title)}</h1>
   <img class="cover" src="../${p.cover}" alt="${esc(p.title)}">
   ${p.html}
+  ${relatedBlock(p)}
   <div class="cta-box">
     <p>Bạn muốn một look như vậy cho dịp của mình? Kể Kay nghe — Kay tư vấn trước khi book.</p>
     <a class="btn" href="https://zalo.me/0933953179" id="bookCta" target="_blank" rel="noopener">Nhắn Zalo cho Kay</a>
@@ -300,7 +360,7 @@ const index = `<!DOCTYPE html>
 <html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Blog | KINKAY — a beauty atelier</title>
 <meta name="description" content="Blog KINKAY — bí quyết makeup, hậu trường show và pageant, guide cho cô dâu từ Kay.">
-${og('Blog | KINKAY', 'Bí quyết makeup, hậu trường show và guide cô dâu từ Kay.', 'https://kinkay.vn/blog/', 'https://kinkay.vn/assets/img/og_cover.jpg', 'website')}${ICONS}${FONTS}${GA}<style>${CSS}</style></head><body>
+${og('Blog | KINKAY', 'Bí quyết makeup, hậu trường show và guide cô dâu từ Kay.', 'https://kinkay.vn/blog/', 'https://kinkay.vn/assets/img/og_cover.jpg', 'website')}${blogIndexSchema(posts)}${ICONS}${FONTS}${GA}<style>${CSS}</style></head><body>
 ${bar('../', '← kinkay.vn')}
 <div class="blog-head"><div class="eyebrow">KINKAY Journal</div><h1>Blog</h1></div>
 <div class="cards">${cards}</div>
