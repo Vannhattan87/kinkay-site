@@ -144,3 +144,116 @@ Chống trùng:
 API mới: `DELETE /api/crm/leads/:id` và `DELETE /api/crm/partners/:id` (body `{reason}`), `GET /api/crm/duplicates?customer_name=&contact=&event_date=&service=&exclude=`, `GET /api/crm/trash?entity=lead|partner`, `POST /api/crm/trash {entity,id}`. Tất cả đi qua cổng xác thực + `CRM_CUTOVER` như cũ.
 
 Test 11/09 (sandbox, harness Node + SQLite 3.51 thay wrangler vì npm chặn gói wrangler): API 15/15 ca đúng (409 trùng job, force, 201 khách quen khác ngày, 409 chặn xoá có BC, 409 chặn xoá đối tác còn lead, xoá không body → lý do "Khác", 404 sau xoá, KPI giảm đúng, trash liệt kê, khôi phục nguyên dòng, khôi phục lần 2 → 409, xoá + khôi phục đối tác). Giao diện Playwright 390×844: nhãn Trùng?/N job, khung trùng trong chi tiết, sheet xoá (nút Xoá khoá tới khi chọn lý do), Hoàn tác, chặn BC hiện lỗi trong sheet, gợi ý khi gõ "chị diễm", Dùng thông tin, 409 sheet → Vẫn thêm, Đã xoá → Khôi phục. 0 lỗi JS.
+
+---
+
+## CR-20260916-34 · Chi tiết buổi làm + ảnh chụp tại chỗ + nhật ký gọn (16/09/2026)
+
+Tân 16/09, ba câu, đúng ba lỗ hổng:
+
+1. *"nhìn vô vẫn chưa biết job này chi tiết như thế nào"*
+2. *"vẫn chưa có nút chụp hình khách"*
+3. *"thể hiện log thông tin quá nhiều không biết để làm gì"*
+
+### 1. Chi tiết buổi làm — khối mới ở đầu trang job
+
+Dữ liệu vốn **đã có** trong `booking_json`. Vấn đề là trước nay chỉ luồng Booking Confirmation
+đọc tới nó, nên mở job ra chỉ thấy đúng một dòng `Expected 1.800.000 ₫` — mà con số đó là
+**ước tính pipeline**, không phải số đã chốt với khách.
+
+Khối mới in: ngày + giờ có mặt · địa điểm · dịch vụ + số người · gồm gì · không gồm ·
+dặn khách · bảng giá từng dòng · **Tổng chốt với khách** · cọc · còn lại.
+
+Hai con số cố ý in tách hẳn, không bao giờ trộn:
+
+| | Nguồn | Nghĩa |
+|---|---|---|
+| **Tổng chốt** | tổng `line_items` | số khách thấy trên bản xác nhận |
+| **Expected** | `leads.expected_revenue` | ước tính nội bộ, chỉ để nhìn pipeline |
+
+Chưa có bảng giá thì khối nói thẳng *"chưa có số nào đã chốt với khách"* thay vì mượn tạm
+Expected. Đây là luật CR-33 áp cho màn hình.
+
+### 2. Đường ghi MỚI: `PATCH /api/crm/leads/<id>/booking`
+
+**Vì sao phải có, không dùng lại `/confirmations`:** trước đây cách DUY NHẤT để nhập giờ,
+địa điểm, bảng giá là bấm *Tạo Booking Confirmation*. Hai hệ quả, cả hai đều sai:
+
+- Job ở trạng thái `New` / `Contacted` / `Qualified` **không nhập được gì** (BC chặn theo
+  trạng thái), trong khi Kay biết địa điểm và giờ từ lúc khách mới nhắn.
+- Sửa một chữ trong địa điểm là **đẻ ra một bản xác nhận mới gửi khách**.
+
+Nên tách hẳn:
+
+- **Chi tiết buổi làm** = dữ liệu vận hành (Kay cần để đi làm) → `/booking`
+- **Booking Confirmation** = tài liệu đối ngoại (khách cầm) → `/confirmations`
+
+Nút **Sửa** trong khối mới dùng lại đúng sheet của BC nhưng ở chế độ `saveOnly`:
+nút thành *"Lưu chi tiết"*, lưu xong không phát hành gì. Bảng giá được phép để trống khi chỉ
+lưu (biết chỗ trước, chốt giá sau), nhưng **một dòng đã gõ mà thiếu số thì bị chặn** — nửa vời
+sẽ đẻ ra tổng sai ở mọi chỗ đọc `line_items` về sau. `PATCH /booking` **không bao giờ** đụng
+`expected_revenue` và không đụng snapshot đã phát hành.
+
+### 3. Nút chụp ảnh → Cloudflare R2
+
+**PHẢI LÀM TAY TRƯỚC KHI DÙNG ĐƯỢC** (Cloudflare dashboard, cùng account với D1
+`kinkay-crm`, account id `d7c6360602e49fd4be27ef2942942d67`):
+
+1. **R2 → Create bucket** → tên `kinkay-crm-media`, location Automatic.
+   **KHÔNG bật Public access. KHÔNG tạo custom domain cho bucket này.**
+2. **Pages → kinkay-site → Settings → Bindings → Add → R2 bucket**
+   - Variable name: `CRM_MEDIA`
+   - Bucket: `kinkay-crm-media`
+   - Đặt cho **Production** (và Preview nếu muốn test trên nhánh)
+3. **Retry deployment** để binding vào hiệu lực.
+
+Chưa làm 3 bước này thì nút Chụp ảnh trả 503 kèm đúng câu hướng dẫn, không phải lỗi trắng.
+
+Giá: R2 free tier 10GB lưu trữ + 1 triệu lượt ghi / tháng. Ảnh đã nén ~300KB → 10GB ≈ 33.000
+ảnh. Không phát sinh phí egress vì ảnh đi qua Worker của chính mình.
+
+**Luồng:** điện thoại mở camera (`capture="environment"`) → nén ở máy về 1600px / JPEG 0.75
+(~250–400KB; ảnh gốc 4–8MB gửi qua 4G ở khách sạn là rớt) → `POST /leads/<id>/photo` body là
+bytes thô → R2 key `jobs/<lead_id>/<ts>-<rand>.jpg` → metadata vào `media_json`.
+
+**Ảnh KHÔNG public.** `/api/crm/media/*` đi qua `_middleware.js` như mọi đường CRM khác.
+Vì trình duyệt không gắn header `Authorization` vào `<img src>`, giao diện phải tải bằng
+`fetch` rồi dựng blob URL. Cố tình làm vậy: ảnh khách trong phòng thay đồ không được hở ra
+chỉ vì ai đó đoán trúng đường dẫn.
+
+`marketing_ok` **mặc định TẮT** cho ảnh chụp, y như link Drive. Chụp được không có nghĩa
+được đăng.
+
+**Xoá ảnh chụp = xoá luôn file trong R2** (có hỏi lại trước). Khác link Drive — link chỉ gỡ
+liên kết. Lý do: file đó chỉ tồn tại vì dòng metadata này; gỡ dòng mà để file lại là sinh ra
+ảnh khách nằm trong kho mà không ai còn biết của ai.
+
+### 4. Nhật ký gọn
+
+Mặc định **gấp lại**. Mở ra chỉ hiện các trường có trong `HIST_LABEL` (trạng thái, tiền,
+ngày/giờ/địa điểm, bảng giá, phát hành BC, ảnh, xoá) và viết bằng tiếng người. Log kỹ thuật
+(`booking_confirmation` hash, `contact_key`, cờ nội bộ) bị ẩn và đếm số dòng đã ẩn.
+
+**Không xoá gì dưới database.** `lead_events` vẫn ghi đủ và vẫn xuất CSV để truy ngược.
+
+`PATCH /booking` ghi nhật ký dạng tóm tắt — `booking.line_items: 3 dòng · 1.800.000` —
+chứ không nhét nguyên mảng JSON vào cột, vì `lead_events` xuất được ra CSV.
+
+### 5. `api()` không còn ném "Unexpected token '<'"
+
+Khi Pages Function lỗi, Cloudflare trả **trang HTML**. Bản cũ gọi thẳng `r.json()` nên Kay
+nhận đúng câu `Unexpected token '<', "<!DOCTYPE "... is not valid JSON` — giấu mất nguyên
+nhân thật. Giờ đọc text trước, parse sau, hỏng thì báo *"Máy chủ lỗi 500 — thường là thiếu
+migration hoặc thiếu binding trên Cloudflare"*.
+
+### File đụng tới
+
+Mới: `functions/api/crm/leads/[id]/booking.js`, `functions/api/crm/leads/[id]/photo.js`,
+`functions/api/crm/media/[[path]].js`, `tests/crm_job_detail.mjs`.
+Sửa: `functions/api/crm/leads/[id].js` (GET trả kèm `booking` / `booking_missing` /
+`booking_total` / `booking_pax`), `functions/api/crm/leads/[id]/media.js` (DELETE nhận key R2),
+`static/admin/crm/index.html`.
+
+**Không có migration.** Không đổi schema — `media_json` và `booking_json` đã có từ 004 / 002.
+
+Test: `node tests/crm_job_detail.mjs` 12/12 · `node tests/bc_line_items.mjs` 30/30.

@@ -64,15 +64,34 @@ export async function onRequestDelete({ params, request, env, data }) {
 
   let body = {};
   try { body = await request.json(); } catch (e) { body = {}; }
-  const url = cleanMediaUrl(body.url);
-  if (!url) return err('Cần { url } của mục muốn gỡ');
+  /* CR-20260916-34: giờ có HAI loại mục trong một job.
+       kind 'album' → link Drive https, file của người khác giữ, gỡ ở đây không đụng tới file.
+       kind 'photo' → ảnh chụp tại chỗ nằm trong R2, url là đường nội bộ /api/crm/media/<key>
+                      nên KHÔNG đi qua cleanMediaUrl() được (hàm đó chỉ nhận https://).
+     Vì vậy: khớp theo chuỗi url y nguyên trong danh sách, chứ không chuẩn hoá lại. Chuỗi này
+     chỉ dùng để SO SÁNH, không bao giờ được dựng thành thẻ <a> ở đây. */
+  const want = String(body.url == null ? '' : body.url).replace(/[\u0000-\u001f\u007f]/g, '').trim().slice(0, 2000);
+  if (!want) return err('Cần { url } của mục muốn gỡ');
 
   const list = parseMedia(lead);
-  const next = list.filter(m => m.url !== url);
-  if (next.length === list.length) return err('Job này không có link đó', 404);
+  const hit = list.find(m => m && m.url === want);
+  if (!hit) return err('Job này không có mục đó', 404);
+  const next = list.filter(m => m !== hit);
+
+  /* Ảnh chụp tại chỗ: XOÁ LUÔN FILE TRONG R2. Khác hẳn album Drive.
+     Lý do: file này chỉ tồn tại vì dòng metadata này. Gỡ dòng mà để file lại là sinh ra ảnh
+     khách nằm trong kho mà không ai còn biết của ai — đúng thứ không được để xảy ra với ảnh
+     người thật. Xoá file TRƯỚC khi ghi D1: nếu R2 lỗi thì dừng, dòng metadata còn nguyên và
+     bấm lại được. Ngược lại sẽ mất dấu file. */
+  if (hit.kind === 'photo' && hit.key) {
+    if (!env.CRM_MEDIA) return err('Chưa gắn kho ảnh CRM_MEDIA nên chưa xoá được ảnh này', 503, 'r2_missing');
+    await env.CRM_MEDIA.delete(hit.key);
+  }
 
   await save(db, lead.id, next, data.user);
-  // Gỡ khỏi CRM không xoá file trên Drive — file vẫn nguyên, chỉ mất liên kết ở đây.
-  await logDiff(db, 'lead', lead.id, data.user, {}, { media_removed: '1 mục' });
-  return json({ ok: true, media: next, note: 'Đã gỡ khỏi job. File trên Drive không bị xoá.' });
+  await logDiff(db, 'lead', lead.id, data.user, {}, { media_removed: hit.kind === 'photo' ? 'ảnh chụp (đã xoá file)' : '1 link' });
+  return json({
+    ok: true, media: next,
+    note: hit.kind === 'photo' ? 'Đã xoá ảnh khỏi job và khỏi kho.' : 'Đã gỡ khỏi job. File trên Drive không bị xoá.'
+  });
 }

@@ -83,6 +83,29 @@
   .sheet h3{margin:4px 0 2px;font:600 17px "Playfair Display",Georgia,serif}
   .sheet .grab{width:38px;height:4px;border-radius:2px;background:#d9cfc2;margin:0 auto 8px}
   .miss{color:var(--red);font-size:12px}
+  /* CR-20260916-34 · chi tiết buổi làm + ảnh chụp tại chỗ */
+  .jobd .jh{display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .jobd .jh h2{margin:0}
+  .jobd .when{font-size:17px;font-weight:600;margin:8px 0}
+  .facts{width:100%;border-collapse:collapse;font-size:14px}
+  .facts td{padding:5px 0;vertical-align:top;border-top:1px dashed var(--line)}
+  .facts td:first-child{color:var(--mute);width:92px;white-space:nowrap;padding-right:10px}
+  .pricebox{margin-top:12px}
+  table.li{width:100%;border-collapse:collapse;font-size:14px}
+  table.li td{padding:5px 0;border-top:1px dashed var(--line);vertical-align:top}
+  table.li td.r{text-align:right;white-space:nowrap;padding-left:10px}
+  table.li .s{font-size:12px;color:var(--mute)}
+  .tot{display:flex;justify-content:space-between;align-items:baseline;gap:8px;border-top:1px solid var(--line);margin-top:6px;padding-top:8px;font-size:14px}
+  .tot b{font-size:18px}
+  .camrow{display:flex;gap:8px;margin:12px 0 4px}
+  .camrow .btn{flex:1;margin:0}
+  .thumbs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:4px 0 8px}
+  .thumbs figure{margin:0;position:relative}
+  .thumbs img{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:8px;background:#efe9e2;display:block}
+  .thumbs .x{position:absolute;top:4px;right:4px;border:0;border-radius:50%;width:24px;height:24px;line-height:24px;padding:0;background:rgba(0,0,0,.55);color:#fff;font-size:15px;cursor:pointer}
+  .thumbs figcaption{font-size:11px;color:var(--mute);margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  details.histbox{padding:12px 14px}
+  details.histbox summary{margin:0}
   .bcprev{background:#e9e2d8;border-radius:14px;padding:10px;display:flex;justify-content:center}
   .bcprev canvas{width:100%;max-width:360px;height:auto;border-radius:8px;box-shadow:0 6px 24px rgba(0,0,0,.18);display:block}
   .bcbtns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
@@ -222,7 +245,19 @@
     return fetch(API + path, { method: opt.method || 'GET', headers: h, body: opt.body ? JSON.stringify(opt.body) : undefined })
       .then(function (r) {
         if (r.status === 401) { logout(false); throw new Error('Phiên đăng nhập hết hạn, đăng nhập lại.'); }
-        return r.json().then(function (j) { if (!r.ok || j.ok === false) { var er = new Error((j && j.error) ? j.error + (j.detail ? ' · ' + (Array.isArray(j.detail) ? j.detail.join('; ') : j.detail) : '') : 'Lỗi ' + r.status); er.status = r.status; er.data = j; throw er; } return j; });
+        /* CR-20260916-34: trước đây gọi thẳng r.json(). Khi Pages Function ném lỗi, Cloudflare trả về
+           TRANG HTML chứ không phải JSON, nên người dùng nhận đúng câu "Unexpected token '<'" — không
+           nói được gì cho ai và giấu mất nguyên nhân thật (thiếu migration / thiếu binding).
+           Đọc text trước, parse sau, hỏng thì nói rõ là máy chủ lỗi chứ không phải dữ liệu sai. */
+        return r.text().then(function (t) {
+          var j = null; try { j = t ? JSON.parse(t) : null; } catch (x) { j = null; }
+          if (j === null) {
+            var eh = new Error('Máy chủ lỗi ' + r.status + ' — trả về trang HTML, không phải dữ liệu. Thường là thiếu migration hoặc thiếu binding trên Cloudflare.');
+            eh.status = r.status; eh.raw = String(t).slice(0, 300); throw eh;
+          }
+          if (!r.ok || j.ok === false) { var er = new Error((j && j.error) ? j.error + (j.detail ? ' · ' + (Array.isArray(j.detail) ? j.detail.join('; ') : j.detail) : '') : 'Lỗi ' + r.status); er.status = r.status; er.data = j; throw er; }
+          return j;
+        });
       });
   }
 
@@ -355,6 +390,151 @@
     root.querySelectorAll('.quick button[data-for]').forEach(function (b) { b.onclick = function () { var f = $('#' + b.getAttribute('data-for'), root); f.value = b.getAttribute('data-d'); }; });
   }
 
+  /* ═══ CR-20260916-34 · CHI TIẾT BUỔI LÀM ═════════════════════════════════
+     Tân 16/09: "nhìn vô vẫn chưa biết job này chi tiết như thế nào."
+     Mọi thứ cần để đi làm — mấy giờ có mặt, ở đâu, làm cho mấy người, gồm gì, chốt bao nhiêu —
+     nằm trong `booking_json` và trước nay CHỈ hiện ra khi bấm tạo Booking Confirmation. Mở job
+     ra chỉ thấy một dòng "Expected 1.800.000 ₫", mà số đó là ƯỚC TÍNH PIPELINE.
+
+     Hai con số không được trộn, nên ở đây in tách hẳn:
+       Tổng chốt = tổng line items = số khách thấy trên bản xác nhận.
+       Expected  = ước tính nội bộ = chỉ để nhìn pipeline.
+     Đây là trống để đọc, không phải tài liệu gửi khách. Nút Sửa đi đường /booking chứ không
+     phải /confirmations — sửa ghi chú nội bộ không được đẻ ra bản xác nhận mới gửi khách. */
+  var BK_LABEL = { customer_name: 'tên khách', service: 'dịch vụ', event_date: 'ngày sự kiện', ready_time: 'giờ có mặt', venue: 'địa điểm', line_items: 'bảng giá', deposit_mode: 'cọc', deposit_amount: 'số tiền cọc' };
+  var LI_TYPE = { service: 'Dịch vụ', fee: 'Phụ phí', discount: 'Giảm giá' };
+
+  function jobCard(l, d) {
+    var b = d.booking || {}, miss = d.booking_missing || [];
+    var items = Array.isArray(b.line_items) ? b.line_items : [];
+    var total = d.booking_total, pax = d.booking_pax;
+    var dep = (b.deposit_mode === 'amount' && b.deposit_amount != null) ? Number(b.deposit_amount) : 0;
+    var rest = (total != null) ? total - dep : null;
+
+    var when = (l.event_date ? dmy(l.event_date) : 'chưa có ngày sự kiện') + (b.ready_time ? '   ·   có mặt ' + b.ready_time : '');
+    var facts = [
+      ['Địa điểm', b.venue || null],
+      ['Dịch vụ', [l.service || '', pax ? pax + ' người' : ''].filter(Boolean).join(' · ') || null],
+      ['Gồm', b.includes || null],
+      ['Không gồm', b.excludes || null],
+      ['Dặn khách', b.customer_note || null],
+      ['Lưu ý', b.special_instructions || null],
+      ['Thanh toán', b.payment_terms || null],
+      ['Bản xác nhận', b.preferred_language === 'en' ? 'Tiếng Anh' : null]
+    ].filter(function (x) { return x[1]; });
+
+    var price;
+    if (items.length) {
+      price = '<table class="li">' + items.map(function (it) {
+        var q = Number(it.qty) || 1, u = Number(it.unit_price) || 0;
+        var sub = (it.type === 'service' && q > 1) ? q + ' × ' + money(u) : (it.type !== 'service' ? LI_TYPE[it.type] : '');
+        return '<tr><td>' + esc(it.label || LI_TYPE[it.type] || '') + (sub ? '<div class="s">' + esc(sub) + '</div>' : '') +
+          '</td><td class="r">' + esc(money(it.amount)) + '</td></tr>';
+      }).join('') + '</table>' +
+        '<div class="tot"><span>Tổng chốt với khách</span><b>' + esc(money(total)) + '</b></div>' +
+        '<div class="muted" style="margin-top:4px">' + (b.deposit_mode === 'amount'
+          ? 'Cọc ' + esc(money(dep)) + '   ·   còn lại ' + esc(money(rest))
+          : (b.deposit_mode === 'none' ? 'Đã thống nhất không cần cọc'
+            : (b.deposit_mode === 'na' ? 'Không áp dụng cọc' : 'Chưa chốt cọc'))) + '</div>';
+    } else {
+      price = '<div class="miss">Chưa có bảng giá — nghĩa là chưa có số nào đã chốt với khách.' +
+        (l.expected_revenue != null ? ' Số Expected ' + esc(money(l.expected_revenue)) + ' ở trên chỉ là ước tính nội bộ.' : '') + '</div>';
+    }
+
+    return '<div class="card jobd"><div class="jh"><h2>Chi tiết buổi làm</h2>' +
+      '<button class="btn sec sm" id="bkEdit">Sửa</button></div>' +
+      '<div class="when">' + esc(when) + '</div>' +
+      (facts.length ? '<table class="facts">' + facts.map(function (x) {
+        return '<tr><td>' + esc(x[0]) + '</td><td>' + esc(x[1]) + '</td></tr>';
+      }).join('') + '</table>' : '') +
+      '<div class="pricebox">' + price + '</div>' +
+      (miss.length ? '<div class="miss" style="margin-top:8px">Chưa đủ để gửi xác nhận cho khách. Còn thiếu: ' +
+        esc(miss.map(function (k) { return BK_LABEL[k] || k; }).join(', ')) + '</div>' : '') +
+      '</div>';
+  }
+
+  /* ═══ CR-20260916-34 · NHẬT KÝ GỌN ══════════════════════════════════════
+     Tân 16/09: "thể hiện log thông tin quá nhiều không biết để làm gì."
+     Bản cũ đổ ra MỌI cột từng đổi, kể cả mã bản xác nhận và cờ nội bộ, mỗi dòng một tên cột
+     tiếng Anh. Với người mở job ra để đi làm thì đó là nhiễu.
+     Luật: chỉ hiện thứ trả lời được "ai đổi cái gì mà tôi cần biết".
+     KHÔNG xoá gì dưới database — `lead_events` vẫn ghi đủ và vẫn xuất CSV để truy ngược. */
+  var HIST_LABEL = {
+    create: 'Tạo job', 'delete': 'Xoá bản ghi',
+    status: 'Trạng thái', customer_name: 'Tên khách', contact: 'Liên hệ', service: 'Dịch vụ',
+    event_date: 'Ngày sự kiện', owner: 'Người phụ trách', partner_id: 'Đối tác',
+    expected_revenue: 'Expected (ước tính)', actual_revenue: 'Tiền đã nhận',
+    actual_verified: 'Xác minh tiền', deposit: 'Cọc',
+    next_action: 'Việc tiếp', next_followup: 'Hẹn làm tiếp',
+    'booking.ready_time': 'Giờ có mặt', 'booking.venue': 'Địa điểm',
+    'booking.line_items': 'Bảng giá', 'booking.deposit_mode': 'Kiểu cọc',
+    'booking.deposit_amount': 'Số tiền cọc', 'booking.includes': 'Gồm những gì',
+    booking_confirmation: 'Phát hành bản xác nhận',
+    photo_added: 'Chụp thêm ảnh', media_added: 'Thêm link ảnh', media_removed: 'Gỡ ảnh'
+  };
+  var HIST_MONEY = { expected_revenue: 1, actual_revenue: 1, 'booking.deposit_amount': 1 };
+  var HIST_DATE = { event_date: 1, next_followup: 1, created_date: 1 };
+  function histWhen(e) { var t = String(e.ts || ''); return t.slice(8, 10) + '/' + t.slice(5, 7) + ' ' + t.slice(11, 16); }
+  function histFmt(field, v) {
+    if (v == null || v === '') return '—';
+    if (HIST_MONEY[field]) return money(v);
+    if (HIST_DATE[field]) return dmy(v);
+    if (field === 'actual_verified') return (String(v) === '1' || v === true) ? 'đã xác minh' : 'chưa';
+    var t = String(v);
+    return t.length > 70 ? t.slice(0, 68) + '…' : t;
+  }
+
+  /* Nén ảnh ở máy trước khi gửi: ảnh gốc điện thoại 4–8MB, gửi nguyên qua 4G ở khách sạn là hỏng.
+     1600px cạnh dài + JPEG 0.75 ra ~250–400KB — đủ nét để xem lại look và để chọn ảnh marketing. */
+  function shrinkImage(file, maxPx, quality) {
+    function draw(src, w, h) {
+      var s = Math.min(1, maxPx / Math.max(w, h));
+      var c = document.createElement('canvas');
+      c.width = Math.max(1, Math.round(w * s)); c.height = Math.max(1, Math.round(h * s));
+      c.getContext('2d').drawImage(src, 0, 0, c.width, c.height);
+      return new Promise(function (res, rej) {
+        c.toBlob(function (b) { b ? res(b) : rej(new Error('Không nén được ảnh')); }, 'image/jpeg', quality);
+      });
+    }
+    // imageOrientation: ảnh dọc chụp bằng điện thoại mang cờ EXIF; thiếu dòng này ảnh nằm ngang.
+    if (window.createImageBitmap) {
+      return createImageBitmap(file, { imageOrientation: 'from-image' })
+        .then(function (bm) { return draw(bm, bm.width, bm.height); });
+    }
+    return new Promise(function (res, rej) {
+      var img = new Image(), u = URL.createObjectURL(file);
+      img.onload = function () { draw(img, img.naturalWidth, img.naturalHeight).then(res, rej); URL.revokeObjectURL(u); };
+      img.onerror = function () { URL.revokeObjectURL(u); rej(new Error('Không đọc được file ảnh')); };
+      img.src = u;
+    });
+  }
+  function uploadPhoto(leadId, blob, label) {
+    var h = { 'Content-Type': 'image/jpeg' };
+    if (state.token) h.Authorization = 'Bearer ' + state.token;
+    return fetch(API + '/leads/' + encodeURIComponent(leadId) + '/photo?label=' + encodeURIComponent(label || ''),
+      { method: 'POST', headers: h, body: blob }
+    ).then(function (r) {
+      return r.text().then(function (t) {
+        var j = null; try { j = t ? JSON.parse(t) : null; } catch (x) { j = null; }
+        if (!j) throw new Error('Máy chủ lỗi ' + r.status + ' — kiểm tra binding R2 CRM_MEDIA trên Cloudflare Pages.');
+        if (!r.ok || j.ok === false) throw new Error(j.error || ('Lỗi ' + r.status));
+        return j;
+      });
+    });
+  }
+  /* Ảnh trong R2 KHÔNG public: đường /api/crm/media/* đi qua cổng xác thực như mọi đường CRM.
+     Trình duyệt không gắn header Authorization vào <img src> được, nên phải tải bằng fetch rồi dựng
+     blob URL. Cố tình làm vậy: ảnh khách trong phòng thay đồ không được hở ra vì ai đó đoán trúng link. */
+  var PH_CACHE = {};
+  function photoBlob(path) {
+    if (PH_CACHE[path]) return Promise.resolve(PH_CACHE[path]);
+    var h = {}; if (state.token) h.Authorization = 'Bearer ' + state.token;
+    return fetch(path, { headers: h }).then(function (r) {
+      if (!r.ok) throw new Error('Lỗi ' + r.status);
+      return r.blob();
+    }).then(function (b) { var u = URL.createObjectURL(b); PH_CACHE[path] = u; return u; });
+  }
+
   function viewLead(id) {
     loading('leads');
     api('/leads/' + encodeURIComponent(id)).then(function (d) {
@@ -390,13 +570,29 @@
         '<label>Ghi chú đầy đủ</label><textarea id="e_notes" style="min-height:140px">' + esc(l.notes || '') + '</textarea>' +
         '<button class="btn sec" id="btnSaveFull">Lưu hồ sơ đầy đủ</button></div></details>';
 
-      var hist = '<div class="card"><h2>Lịch sử thay đổi</h2><div class="hist">' + (d.events.length ? d.events.map(function (e) {
-        return '<div>' + esc(e.ts.replace('T', ' ').slice(0, 16)) + ' · ' + esc(e.actor || '') + ' · <b>' + esc(e.field) + '</b>' + (e.field === 'create' ? '' : ': ' + esc(e.old_value == null ? '∅' : histVal(e.old_value)) + ' → ' + esc(e.new_value == null ? '∅' : e.new_value)) + '</div>';
-      }).join('') : '<div class="empty">Chưa có</div>') + '</div><p class="muted">Cập nhật gần nhất: ' + esc((l.last_updated || '').replace('T', ' ').slice(0, 16)) + ' · ' + esc(l.updated_by || '') + '</p></div>';
+      var evShown = d.events.filter(function (e) { return HIST_LABEL[e.field]; });
+      var evHidden = d.events.length - evShown.length;
+      var histRows = evShown.length ? evShown.map(function (e) {
+        var w = esc(histWhen(e)) + ' · ' + esc(e.actor || '') + ' · ';
+        if (e.field === 'create') return '<div>' + w + 'tạo job</div>';
+        if (e.field === 'booking_confirmation') return '<div>' + w + 'phát hành <b>' + esc(String(e.new_value || 'bản mới').split('-').slice(-1)[0]) + '</b></div>';
+        if (e.field === 'photo_added' || e.field === 'media_added' || e.field === 'media_removed')
+          return '<div>' + w + esc(HIST_LABEL[e.field].toLowerCase()) + (e.new_value ? ' · ' + esc(histFmt(e.field, e.new_value)) : '') + '</div>';
+        return '<div>' + w + '<b>' + esc(HIST_LABEL[e.field]) + '</b> ' + esc(histFmt(e.field, e.old_value)) + ' → ' + esc(histFmt(e.field, e.new_value)) + '</div>';
+      }).join('') : '<div class="empty">Chưa có thay đổi đáng kể</div>';
+      var hist = '<details class="card histbox"><summary>Lịch sử thay đổi (' + evShown.length + ')</summary>' +
+        '<div class="hist" style="margin-top:8px">' + histRows + '</div>' +
+        (evHidden > 0 ? '<p class="muted">Ẩn ' + evHidden + ' dòng nhật ký kỹ thuật (mã bản xác nhận, cờ nội bộ). Database vẫn giữ đủ, xuất CSV truy được.</p>' : '') +
+        '<p class="muted">Cập nhật gần nhất: ' + esc((l.last_updated || '').replace('T', ' ').slice(0, 16)) + ' · ' + esc(l.updated_by || '') + '</p></details>';
 
       var del = '<div class="card"><h2>Xoá bản ghi</h2><p class="muted" style="margin:0">Chỉ khi nhập trùng / nhập sai / test. Khách thật không chốt thì đổi <b>Lost</b>.</p>' +
         '<button class="btn danger" id="btnDel">Xoá job này</button></div>';
-      shell('', head + '<div id="sameSlot"></div><div id="jobsSlot"></div><div id="mediaSlot"></div><div id="bcSlot"></div>' + quick + full + hist + del, 'leads'); bindRows(); bindQuickDates(app);
+      shell('', head + jobCard(l, d) + '<div id="sameSlot"></div><div id="jobsSlot"></div><div id="mediaSlot"></div><div id="bcSlot"></div>' + quick + full + hist + del, 'leads'); bindRows(); bindQuickDates(app);
+      // Dùng lại đúng sheet của BC nhưng ở chế độ CHỈ LƯU: PATCH /booking, không phát hành bản nào.
+      var bkBtn = $('#bkEdit');
+      if (bkBtn) bkBtn.onclick = function () {
+        bcForm(l, d.booking || {}, d.booking_missing || [], true, (d.booking && d.booking.preferred_language) || 'vi', true);
+      };
       bcMount(l);
       sameMount(l);
       jobsMount(l);    // CR-32 T0 — các job khác CÙNG SỐ LIÊN HỆ
@@ -481,7 +677,17 @@
       return /^https:\/\//i.test(s) && !/[\s<>"'`\\]/.test(s) ? s : null;
     }
     function draw(list) {
-      var items = list.length ? list.map(function (m) {
+      var photos = list.filter(function (m) { return m && m.kind === 'photo'; });
+      var links = list.filter(function (m) { return !m || m.kind !== 'photo'; });
+
+      var grid = photos.length ? '<div class="thumbs">' + photos.map(function (m) {
+        var cap = m.label || (String(m.added_at || '').slice(5, 10).split('-').reverse().join('/'));
+        return '<figure><img data-ph="' + esc(m.url) + '" alt="' + esc(m.label || 'Ảnh buổi này') + '">' +
+          '<button type="button" class="x" data-rm="' + esc(m.url) + '" title="Xoá ảnh">×</button>' +
+          '<figcaption>' + esc(cap) + (m.marketing_ok ? ' · dùng được' : '') + '</figcaption></figure>';
+      }).join('') + '</div>' : '';
+
+      var items = links.length ? links.map(function (m) {
         var href = safeUrl(m.url);
         var text = esc(m.label || (m.kind === 'image' ? 'Ảnh' : 'Album Drive'));
         var link = href
@@ -493,23 +699,66 @@
           '<div class="s">' + esc(String(m.added_at || '').replace('T', ' ').slice(0, 16) + ' · ' + (m.added_by || '')) + '</div>' +
           '<div class="acts"><button type="button" class="btn sec sm" data-rm="' + esc(m.url) + '">Gỡ</button></div>' +
         '</div></div>';
-      }).join('') : '<div class="empty">Chưa có ảnh của buổi này</div>';
+      }).join('') : '';
+      var blank = (!photos.length && !links.length) ? '<div class="empty">Chưa có ảnh của buổi này</div>' : '';
 
-      slot.innerHTML = '<div class="card"><h2>Ảnh buổi này</h2>' + items +
+      slot.innerHTML = '<div class="card"><h2>Ảnh buổi này</h2>' + grid + items + blank +
+        '<div class="camrow"><button class="btn bc" id="m_cam">Chụp ảnh</button>' +
+        '<button class="btn sec" id="m_pick">Chọn từ máy</button></div>' +
+        '<input type="file" id="m_camf" accept="image/*" capture="environment" style="display:none">' +
+        '<input type="file" id="m_pickf" accept="image/*" multiple style="display:none">' +
+        '<p class="muted" id="m_st">Ảnh lưu trong kho riêng của KINKAY, phải đăng nhập mới xem được. Không public, không ai đoán link ra được.</p>' +
+        '<details><summary>Hoặc dán link album Drive</summary>' +
         '<label>Link album Drive hoặc ảnh</label><input id="m_url" placeholder="https://drive.google.com/drive/folders/...">' +
         '<label>Ghi nhớ ngắn (tuỳ chọn)</label><input id="m_label" placeholder="Ví dụ: Lễ gia tiên sáng 14/11">' +
         '<label style="display:flex;gap:8px;align-items:center;margin-top:10px">' +
           '<input type="checkbox" id="m_mk" style="width:auto;margin:0"> Được phép dùng cho marketing</label>' +
         '<p class="muted" style="margin:4px 0 10px">Mặc định chỉ xem nội bộ. Chỉ tick khi khách đã đồng ý cho dùng ảnh. ' +
           'Đừng để folder Drive ở chế độ ai có link cũng xem được.</p>' +
-        '<button class="btn sec" id="m_add">Thêm vào job này</button>' +
+        '<button class="btn sec" id="m_add">Thêm link vào job này</button></details>' +
         '<p class="muted">Gắn với job ' + esc(l.id) + ', không gắn với khách — để sau này còn biết ảnh của buổi nào.</p></div>';
+
+      slot.querySelectorAll('img[data-ph]').forEach(function (im) {
+        photoBlob(im.getAttribute('data-ph')).then(function (u) { im.src = u; })
+          .catch(function () { im.removeAttribute('data-ph'); im.alt = 'Không tải được ảnh'; });
+      });
+
+      var stEl = $('#m_st');
+      function runFiles(files) {
+        var arr = Array.prototype.slice.call(files || []).filter(function (f) {
+          return /^image\//.test(f.type) || /\.(jpe?g|png|webp|heic|heif)$/i.test(f.name);
+        });
+        if (!arr.length) return;
+        var done = 0, last = null, fail = null;
+        stEl.textContent = 'Đang tải ' + arr.length + ' ảnh…';
+        // Tải từng cái một, không song song: 4G ở khách sạn bắn 5 request cùng lúc là rớt hết.
+        arr.reduce(function (p, f) {
+          return p.then(function () {
+            if (fail) return;
+            return shrinkImage(f, 1600, 0.75)
+              .then(function (blob) { return uploadPhoto(l.id, blob, ''); })
+              .then(function (r) { done++; last = r.media; stEl.textContent = 'Đã tải ' + done + '/' + arr.length; })
+              .catch(function (e) { fail = e; });
+          });
+        }, Promise.resolve()).then(function () {
+          if (fail) toast(fail.message, true); else toast('Đã thêm ' + done + ' ảnh vào job');
+          if (last) draw(last);
+        });
+      }
+      $('#m_cam').onclick = function () { $('#m_camf').click(); };
+      $('#m_pick').onclick = function () { $('#m_pickf').click(); };
+      $('#m_camf').onchange = function () { runFiles(this.files); this.value = ''; };
+      $('#m_pickf').onchange = function () { runFiles(this.files); this.value = ''; };
 
       slot.querySelectorAll('[data-rm]').forEach(function (b) {
         b.onclick = function () {
+          var u = b.getAttribute('data-rm');
+          // Ảnh chụp tại chỗ: xoá là mất file thật. Link Drive thì chỉ gỡ liên kết. Hỏi trước khi mất.
+          if (u.indexOf('/api/crm/media/') === 0 &&
+              !window.confirm('Xoá ảnh này? File bị xoá hẳn khỏi kho, không khôi phục được.')) return;
           b.disabled = true;
-          api('/leads/' + encodeURIComponent(l.id) + '/media', { method: 'DELETE', body: { url: b.getAttribute('data-rm') } })
-            .then(function (r) { toast('Đã gỡ khỏi job (file trên Drive vẫn còn)'); draw(r.media); })
+          api('/leads/' + encodeURIComponent(l.id) + '/media', { method: 'DELETE', body: { url: u } })
+            .then(function (r) { toast(r.note || 'Đã gỡ khỏi job'); draw(r.media); })
             .catch(function (e) { b.disabled = false; toast(e.message, true); });
         };
       });
@@ -757,7 +1006,8 @@
   }
 
   // Sheet điền thông tin: chỉ trường THIẾU bắt buộc, cộng phần "Thêm chi tiết" tuỳ chọn. Không điền sẵn giá trị đoán.
-  function bcForm(lead, booking, missing, editAll, langDefault) {
+  // saveOnly = true → chỉ LƯU chi tiết buổi làm (PATCH /booking). KHÔNG tạo Booking Confirmation.
+  function bcForm(lead, booking, missing, editAll, langDefault, saveOnly) {
     booking = booking || {};
     var lang = (booking.preferred_language === 'en' || booking.preferred_language === 'vi') ? booking.preferred_language : (langDefault === 'en' ? 'en' : 'vi');
     var need = function (k) { return editAll || missing.indexOf(k) >= 0; };
@@ -799,11 +1049,12 @@
     var langSel = '<label>Ngôn ngữ bản xác nhận</label><div class="seg" id="b_lang">' +
       '<button type="button" data-v="vi" class="' + (lang === 'vi' ? 'on' : '') + '">Tiếng Việt</button>' +
       '<button type="button" data-v="en" class="' + (lang === 'en' ? 'on' : '') + '">English</button></div>';
-    sheet.innerHTML = '<div class="sheet"><div class="grab"></div><h3>' + (editAll ? 'Sửa chi tiết booking' : (f ? 'Điền phần còn thiếu' : 'Xác nhận thông tin')) + '</h3>' +
+    sheet.innerHTML = '<div class="sheet"><div class="grab"></div><h3>' + (saveOnly ? 'Sửa chi tiết buổi làm' : (editAll ? 'Sửa chi tiết booking' : (f ? 'Điền phần còn thiếu' : 'Xác nhận thông tin'))) + '</h3>' +
       '<div class="muted">' + esc(lead.customer_name) + ' · ' + esc(lead.service || '') + (lead.event_date ? ' · ' + dmy(lead.event_date) : '') + '</div>' + langSel +
-      (f && !editAll ? '<div class="miss" style="margin-top:6px">Chưa đủ để gửi khách. Không tự điền giá trị đoán.</div>' : '') + f +
+      (saveOnly ? '<div class="muted" style="margin-top:6px">Lưu ở đây chỉ cập nhật thông tin đi làm. KHÔNG gửi gì cho khách, KHÔNG tạo bản xác nhận mới.</div>'
+        : (f && !editAll ? '<div class="miss" style="margin-top:6px">Chưa đủ để gửi khách. Không tự điền giá trị đoán.</div>' : '')) + f +
       '<label style="margin-top:10px">Bảng giá *</label><div id="b_li"></div>' + more +
-      '<div class="bcbtns"><button class="btn sec" id="b_cancel">Huỷ</button><button class="btn bc" id="b_ok">Tạo bản xem trước</button></div></div>';
+      '<div class="bcbtns"><button class="btn sec" id="b_cancel">Huỷ</button><button class="btn bc" id="b_ok">' + (saveOnly ? 'Lưu chi tiết' : 'Tạo bản xem trước') + '</button></div></div>';
     document.body.appendChild(sheet);
     // ======== Bang line items (CR-20260915-33) ========
     // 1 dong = 1 dich vu + 1 don gia + 1 so luong. Tong tien la o CHI DOC, luon = tong cac dong.
@@ -888,16 +1139,28 @@
       if ($('#b_venue', sheet)) b.venue = g('#b_venue');
       // grand_total chi de SERVER doi chieu, khong phai de ghi. Lech thi server tra 422.
       var gtCheck = liTotal();
-      if (gtCheck == null) { bcShowErr($('.sheet', sheet), 'Bảng giá còn dòng thiếu số — chưa cộng được tổng.'); return; }
+      /* Khi chỉ LƯU chi tiết đi làm, bảng giá được phép chưa có: Kay biết địa điểm và giờ từ lúc khách
+         mới nhắn, trước khi chốt giá. Nhưng nửa vời thì không — một dòng đã gõ mà thiếu số sẽ đẻ ra tổng
+         sai ở mọi chỗ đọc line_items về sau. */
+      var liTouched = LI.some(function (r) { return String(r.label || '').trim() || String(r.unit_price || '').trim(); });
+      if (saveOnly && !liTouched) { delete b.line_items; }
+      else if (gtCheck == null) { bcShowErr($('.sheet', sheet), 'Bảng giá còn dòng thiếu số — chưa cộng được tổng. Điền đủ hoặc xoá dòng đó.'); return; }
       if ($('#b_dm', sheet)) { b.deposit_mode = dmv; if (dmv === 'amount') b.deposit_amount = (g('#b_dep') || '').replace(/\D/g, ''); }
       Object.keys(b).forEach(function (k) { if (b[k] === '' || b[k] === undefined) delete b[k]; });
       var leadPatch = {};
       if ($('#b_service', sheet)) leadPatch.service = g('#b_service');
       if ($('#b_event', sheet)) leadPatch.event_date = g('#b_event');
       var self = this, sheetEl = $('.sheet', sheet);
-      if ($('#b_dm', sheet) && !dmv) { bcShowErr(sheetEl, 'Chọn một lựa chọn Cọc trước khi tạo.'); return; }
-      self.disabled = true; self.textContent = 'Đang tạo…'; var eb = $('#bcErr', sheet); if (eb) eb.hidden = true;
+      if (!saveOnly && $('#b_dm', sheet) && !dmv) { bcShowErr(sheetEl, 'Chọn một lựa chọn Cọc trước khi tạo.'); return; }
+      self.disabled = true; self.textContent = saveOnly ? 'Đang lưu…' : 'Đang tạo…'; var eb = $('#bcErr', sheet); if (eb) eb.hidden = true;
       var pre = Object.keys(leadPatch).length ? api('/leads/' + encodeURIComponent(lead.id), { method: 'PATCH', body: leadPatch }) : Promise.resolve();
+      if (saveOnly) {
+        b.preferred_language = lang;
+        pre.then(function () { return api('/leads/' + encodeURIComponent(lead.id) + '/booking', { method: 'PATCH', body: { booking: b } }); })
+          .then(function () { sheet.remove(); toast('Đã lưu chi tiết buổi làm'); viewLead(lead.id); })
+          .catch(function (e) { self.disabled = false; self.textContent = 'Lưu chi tiết'; bcShowErr(sheetEl, 'Không lưu được: ' + e.message, e); });
+        return;
+      }
       pre.then(function () { return api('/leads/' + encodeURIComponent(lead.id) + '/confirmations', { method: 'POST', body: { booking: b, language: lang, grand_total: gtCheck } }); })
         .then(function (r) { sheet.remove(); toast('Đã tạo ' + r.confirmation.id); bcPreview(lead, r.confirmation.snapshot, false); })
         .catch(function (e) { self.disabled = false; self.textContent = 'Tạo bản xem trước'; bcShowErr(sheetEl, 'Không tạo được: ' + e.message, e); });

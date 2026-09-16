@@ -3,7 +3,7 @@
 // DELETE /api/crm/leads/KK-260905-001  {reason} → xoá bản ghi NHẬP SAI / TRÙNG / TEST (Tân yêu cầu 11/09/2026)
 //   Khách thật không chốt vẫn là Status = Lost, không xoá. Xoá chụp nguyên dòng vào lead_events → khôi phục ở /api/crm/trash.
 //   Chặn xoá khi job đã phát hành Booking Confirmation (khách đã cầm bản xác nhận).
-import { json, err, normalize, LEAD_FIELDS, logDiff, nowISO, deleteWithSnapshot, contactKey } from '../_lib.js';
+import { json, err, normalize, LEAD_FIELDS, logDiff, nowISO, deleteWithSnapshot, contactKey, parseBooking, bookingMissing, lineItemsTotal, lineItemsPax } from '../_lib.js';
 
 export async function onRequestGet({ params, env }) {
   const db = env.CRM_DB;
@@ -13,7 +13,19 @@ export async function onRequestGet({ params, env }) {
     .bind('lead', params.id).all()).results || [];
   let partner = null;
   if (lead.partner_id) partner = await db.prepare('SELECT id, name, type, status, commercial_terms, referral_rate FROM partners WHERE id = ?').bind(lead.partner_id).first();
-  return json({ ok: true, lead, partner, events });
+  /* CR-20260916-34 · 16/09/2026 — Tan: "nhin vo van chua biet job nay chi tiet nhu the nao".
+     Booking von DA nam trong `booking_json`, nhung truoc day chi luong Booking Confirmation doc toi.
+     Nen mo job ra khong thay gio co mat, dia diem, so nguoi hay bang gia — nguoi doc phai suy tu nhat ky.
+     Tra kem o day. KHONG sinh them du lieu, chi mo cai da co ra. */
+  const booking = parseBooking(lead);
+  const items = Array.isArray(booking.line_items) ? booking.line_items : [];
+  return json({
+    ok: true, lead, partner, events, booking,
+    booking_missing: bookingMissing(lead, booking),
+    // Tong CHOT voi khach. Khac `expected_revenue` (uoc tinh pipeline) — khong bao gio tron hai so nay.
+    booking_total: lineItemsTotal(items),
+    booking_pax: lineItemsPax(items)
+  });
 }
 
 export async function onRequestPatch({ params, request, env, data }) {
