@@ -71,7 +71,7 @@ async function _impl({ params, env }) {
   const booking = parseBooking(lead);
   const lang = booking.preferred_language === 'en' ? 'en' : 'vi';
   const t = T[lang];
-  const pub = publicLook(look);                      // ← cửa ra duy nhất
+  const pub = publicLook(look, lang);                // ← cửa ra duy nhất
   const svc = (SERVICE_DISPLAY[lang] || {})[lead.service] || lead.service || '';
   const when = dmy(lead.event_date, lang);
 

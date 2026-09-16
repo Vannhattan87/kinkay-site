@@ -576,7 +576,12 @@ export async function deleteWithSnapshot(db, entity, id, actor, reason) {
 // `liked` và `care` là chỗ Kay ghi thật: khách chê môi nhạt, da dầu 3 tiếng là trôi, mẹ chồng
 // khó tính. Ghi thật chỉ xảy ra khi người ghi CHẮC CHẮN khách không bao giờ đọc được. Rò một
 // lần là từ đó không ai ghi thật nữa, và cả trường dữ liệu này thành vô dụng.
-export const LOOK_TEXT_FIELDS = ['tone', 'liked', 'care'];
+/* CR-20260916-36 · `tone_en` là BẢN TIẾNG ANH của `tone`, không phải field mới về nội dung.
+   Khách của KINKAY gần như 100% người nước ngoài còn Kay không mạnh tiếng Anh, nên câu mô tả
+   look phải tồn tại ở hai bản: bản Kay gõ để chính Kay đọc lại buổi sau, và bản khách đọc.
+   Dịch tại LÚC GHI chứ không dịch lúc hiển thị: trang khách không được gọi ra internet, và một
+   câu đã duyệt bằng mắt thì lần sau mở ra vẫn y như vậy. */
+export const LOOK_TEXT_FIELDS = ['tone', 'tone_en', 'liked', 'care'];
 export const MAX_SHARE_PHOTOS = 24;
 
 export function parseLook(lead) {
@@ -599,6 +604,7 @@ export function normalizeLook(input) {
       const sh = {};
       if ('enabled' in s) sh.enabled = s.enabled === true;
       if ('note' in s) sh.note = cleanStr(s.note, 800);
+      if ('note_en' in s) sh.note_en = cleanStr(s.note_en, 800);
       if ('photos' in s) {
         if (!Array.isArray(s.photos)) errors.push('share.photos phải là mảng');
         else if (s.photos.length > MAX_SHARE_PHOTOS) errors.push(`share.photos tối đa ${MAX_SHARE_PHOTOS} ảnh`);
@@ -624,12 +630,18 @@ export function mergeLook(before, patch) {
 /* CỬA RA DUY NHẤT cho trang khách xem. Trả về đúng những gì khách được thấy, không hơn.
    Danh sách trắng, không phải danh sách đen: thêm field nội bộ mới vào look_json thì nó
    KHÔNG tự lọt ra đây. Hàm này thuần, không chạm DB, nên test được thẳng. */
-export function publicLook(look) {
+export function publicLook(look, lang) {
   const l = look && typeof look === 'object' ? look : {};
   const s = l.share && typeof l.share === 'object' ? l.share : {};
+  const en = lang === 'en';
+  const toneVi = cleanStr(l.tone, 1500), toneEn = cleanStr(l.tone_en, 1500);
+  const noteVi = cleanStr(s.note, 800),  noteEn = cleanStr(s.note_en, 800);
+  /* Thiếu bản đúng ngôn ngữ thì rơi về bản còn lại, KHÔNG để trống. Khách nước ngoài đọc một
+     câu tiếng Việt vẫn hơn mở ra thấy ô rỗng — ô rỗng trông như hàng chưa làm xong. Danh sách
+     trắng vẫn giữ nguyên: chỉ hai field này ra, `liked` và `care` không bao giờ. */
   return {
-    tone: cleanStr(l.tone, 1500) || null,
-    note: cleanStr(s.note, 800) || null,
+    tone: (en ? (toneEn || toneVi) : (toneVi || toneEn)) || null,
+    note: (en ? (noteEn || noteVi) : (noteVi || noteEn)) || null,
     photos: Array.isArray(s.photos) ? s.photos.slice(0, MAX_SHARE_PHOTOS) : []
   };
 }

@@ -13,10 +13,10 @@
 //
 // Đường này KHÔNG đụng booking_json và KHÔNG phát hành gì cho khách. Muốn khách xem được
 // phải tạo link riêng ở /share, và ngay cả khi có link thì `liked` + `care` vẫn không ra.
-import { json, err, parseLook, normalizeLook, mergeLook, publicLook, shareIsLive, parseMedia, logDiff, nowISO } from '../../_lib.js';
+import { json, err, parseLook, parseBooking, normalizeLook, mergeLook, publicLook, shareIsLive, parseMedia, logDiff, nowISO } from '../../_lib.js';
 
 async function load(db, id) {
-  return db.prepare('SELECT id, customer_name, service, event_date, look_json, media_json, share_token FROM leads WHERE id = ?').bind(id).first();
+  return db.prepare('SELECT id, customer_name, service, event_date, look_json, media_json, booking_json, share_token FROM leads WHERE id = ?').bind(id).first();
 }
 
 function shape(lead, look) {
@@ -25,7 +25,11 @@ function shape(lead, look) {
     share_live: shareIsLive(lead, look),
     share_url: shareIsLive(lead, look) ? '/xem/' + lead.share_token : null,
     // Cho giao diện thấy ĐÚNG những gì khách sẽ đọc, không bắt Kay tin lời hứa.
-    preview_khach_thay: publicLook(look)
+    // Hai bản vì trang khách chọn ngôn ngữ theo `booking.preferred_language`, và Kay phải
+    // thấy được bản khách nước ngoài sẽ đọc chứ không chỉ bản tiếng Việt của chính mình.
+    preview_khach_thay: publicLook(look, 'vi'),
+    preview_khach_en: publicLook(look, 'en'),
+    language: (parseBooking(lead).preferred_language === 'en' ? 'en' : 'vi')
   };
 }
 
@@ -66,7 +70,7 @@ export async function onRequestPatch({ params, request, env, data }) {
   /* Nhật ký ghi CÓ ĐỔI HAY KHÔNG, không ghi nội dung. `liked` và `care` là nhận xét về một
      người thật; `lead_events` thì xuất được ra CSV và đi xa hơn màn hình này nhiều. */
   const diff = {}; const flat = {};
-  for (const k of ['tone', 'liked', 'care']) {
+  for (const k of ['tone', 'tone_en', 'liked', 'care']) {
     if (!(k in patch)) continue;
     if (String(before[k] ?? '') === String(look[k] ?? '')) continue;
     flat['look.' + k] = before[k] ? 'đã có' : null;

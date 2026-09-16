@@ -125,6 +125,18 @@
   .thumbs.pick figure.on img{opacity:1;outline:3px solid var(--gold2);outline-offset:-3px}
   .thumbs.pick .tick{position:absolute;top:4px;left:4px;width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.9);color:#3d342b;font-size:13px;line-height:22px;text-align:center}
   .thumbs.pick figure.on .tick{background:var(--gold2);color:#fff}
+  /* CR-36 bộ chọn look: chip đủ to để bấm bằng ngón cái trong lúc còn đang dọn đồ nghề. */
+  .pkbox{border:1px solid var(--line);border-radius:10px;padding:2px 12px 12px;margin:4px 0 12px;background:#fdfbf8}
+  .pkgrp{font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--mute);margin:12px 0 5px}
+  .chips{display:flex;flex-wrap:wrap;gap:6px}
+  .chip{border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 13px;font-size:13px;color:var(--ink);cursor:pointer;line-height:1.25}
+  .chip.on{background:var(--gold2);border-color:var(--gold2);color:#fff}
+  .pkout{font-size:13px;line-height:1.5;background:#fff;border:1px dashed var(--line);border-radius:8px;padding:8px 10px;margin-top:10px}
+  .pkout b{display:block;font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--mute);font-weight:600;margin-bottom:2px}
+  .pkout .em{color:var(--mute);font-style:italic}
+  .lcstrip{display:flex;gap:6px;overflow-x:auto;padding:2px 0 6px}
+  .lcstrip img{width:56px;height:70px;object-fit:cover;border-radius:6px;background:#efe9e2;opacity:.45;cursor:pointer;flex:0 0 auto}
+  .lcstrip img.on{opacity:1;outline:3px solid var(--gold2);outline-offset:-3px}
   .card.tl.me{border-color:var(--gold2)}
   details.histbox{padding:12px 14px}
   details.histbox summary{margin:0}
@@ -160,7 +172,7 @@
   var AUTH_BASE = 'https://kinkay-site.pages.dev';   // trùng base_url trong static/admin/config.yml
   var TOKEN_KEY = 'kk_crm_token';
   var app = document.getElementById('app');
-  var state = { token: null, lists: null, user: null, dev: false, cutover: false, route: '#/today', filter: '', q: '', pfilter: '', lastDeleted: null };
+  var state = { token: null, lists: null, user: null, dev: false, cutover: false, ai: false, route: '#/today', filter: '', q: '', pfilter: '', lastDeleted: null };
 
   // ---------- helpers ----------
   function $(sel, root) { return (root || document).querySelector(sel); }
@@ -338,6 +350,7 @@
       if (!location.hash) location.hash = '#/today';
       render();
       healthCheck();
+      aiProbe();
     }).catch(function (e) {
       state.token = null;
       renderLogin(/hết hạn|401|Chưa đăng nhập/.test(e.message) ? '' : e.message);
@@ -864,11 +877,16 @@
     slot.innerHTML = '<div class="card"><div class="jh"><h2>Hồ sơ buổi làm</h2>' +
       '<button class="btn sec sm" id="lkEdit">Sửa</button></div>' +
       row('Tông + kiểu đã làm', k.tone, false) +
+      (d.language === 'en' || k.tone_en ? row('Bản tiếng Anh (khách nước ngoài đọc bản này)', k.tone_en, false) : '') +
       row('Khách thích gì / chê gì', k.liked, true) +
       row('Lưu ý da / tóc', k.care, true) +
+      (nAnh ? '<div style="margin-top:12px"><button class="btn bc" id="lkCard">Tạo card ảnh gửi khách (' + nAnh + ')</button>' +
+              '<p class="muted" style="margin:6px 0 0">Ảnh PNG gửi thẳng vào WhatsApp / IG. Khách đăng lên trang cá nhân được — link thì không.</p></div>'
+            : '<div style="margin-top:12px"><p class="muted">Tick ảnh trong mục Sửa để tạo được card ảnh gửi khách.</p></div>') +
       share + '</div>';
 
     $('#lkEdit').onclick = function () { lookSheet(l, d); };
+    var cardBtn = $('#lkCard'); if (cardBtn) cardBtn.onclick = function () { lookCardSheet(l, d); };
     var on = $('#shOn'), nw = $('#shNew'), off = $('#shOff'), cp = $('#shCopy');
     function mkLink(btn, doiLink) {
       btn.disabled = true;
@@ -905,8 +923,13 @@
       var bg = document.createElement('div'); bg.className = 'sheet-bg';
       bg.innerHTML = '<div class="sheet"><div class="grab"></div><h3>Hồ sơ buổi làm</h3>' +
         '<div class="muted">' + esc(l.customer_name) + (l.event_date ? ' · ' + dmy(l.event_date) : '') + '</div>' +
+        '<div class="pkgrp" style="margin-top:14px">Bộ chọn look — bấm chọn, câu tiếng Việt và tiếng Anh ghép ra luôn</div>' +
+        '<div class="pkbox" id="lk_pick"></div>' +
         '<label>Tông + kiểu đã làm <span class="pill rep">khách xem được</span></label>' +
         '<textarea id="lk_tone" placeholder="Tông ấm, mắt nâu khói, môi cam đất. Tóc búi thấp cài hoa baby">' + esc(k.tone || '') + '</textarea>' +
+        '<label>Bản tiếng Anh <span class="pill rep">khách nước ngoài đọc bản này</span></label>' +
+        '<textarea id="lk_tone_en" placeholder="Warm tones, smoky brown eyes, terracotta lips. Hair: a low chignon with baby\'s breath">' + esc(k.tone_en || '') + '</textarea>' +
+        (state.ai ? '<div class="bcbtns" style="margin:0 0 10px"><button class="btn sec sm" id="lk_tr_tone">Dịch ô trên sang tiếng Anh</button></div>' : '') +
         '<label>Khách thích gì / chê gì <span class="pill int">chỉ nội bộ</span></label>' +
         '<textarea id="lk_liked" placeholder="Thích phần mắt. Chê môi nhạt hơn ảnh mẫu">' + esc(k.liked || '') + '</textarea>' +
         '<label>Lưu ý da / tóc <span class="pill int">chỉ nội bộ</span></label>' +
@@ -914,6 +937,9 @@
         '<p class="muted" style="margin:2px 0 12px">Hai mục có nhãn <b>chỉ nội bộ</b> không bao giờ ra trang khách xem. Ghí thật để lần sau còn dùng được.</p>' +
         '<label>Lời nhắn gửi khách <span class="pill rep">khách xem được</span></label>' +
         '<textarea id="lk_note" placeholder="Cảm ơn chị đã tin tưởng KINKAY. Hẹn gặp lại chị dịp tới.">' + esc(sh.note || '') + '</textarea>' +
+        '<label>Lời nhắn bản tiếng Anh <span class="pill rep">khách nước ngoài đọc bản này</span></label>' +
+        '<textarea id="lk_note_en" placeholder="Thank you so much, Geia. It was lovely working with you.">' + esc(sh.note_en || '') + '</textarea>' +
+        (state.ai ? '<div class="bcbtns" style="margin:0 0 10px"><button class="btn sec sm" id="lk_tr_note">Dịch ô trên sang tiếng Anh</button></div>' : '') +
         '<label>Ảnh gửi cho khách xem' + (photos.length ? ' (bấm để chọn)' : '') + '</label>' +
         (photos.length ? '<div class="thumbs pick" id="lk_ph"></div>'
                        : '<p class="muted">Job này chưa có ảnh chụp nào. Chụp ảnh ở khối trên rồi quay lại đây.</p>') +
@@ -938,15 +964,76 @@
           };
         });
       }
+      /* Bộ chọn KHÔNG tự ghi đè ô chữ. Kay bấm "Điền vào hai ô" mới ghi — vì có buổi Kay đã
+         gõ tay một câu riêng, và mất câu đó vì lỡ chạm một chip là mất luôn niềm tin vào ô. */
+      var sel = {};
+      var pick = $('#lk_pick', bg);
+      pick.innerHTML = LOOK_BANK.map(function (g) {
+        return '<div class="pkgrp">' + esc(g.vi) + '</div><div class="chips" data-g="' + esc(g.k) + '">' +
+          g.items.map(function (it, i) { return '<button type="button" class="chip" data-i="' + i + '">' + esc(it.vi) + '</button>'; }).join('') +
+          '</div>';
+      }).join('') +
+      '<div class="pkout" id="lk_out"><b>Câu sẽ ghép ra</b><span class="em">Chưa chọn mục nào.</span></div>' +
+      '<div class="bcbtns" style="margin:10px 0 0"><button type="button" class="btn sec sm" id="lk_fill">Điền vào hai ô</button>' +
+      '<button type="button" class="btn sec sm" id="lk_clear">Bỏ chọn hết</button></div>';
+
+      function redraw() {
+        var r = composeLook(sel);
+        $('#lk_out', bg).innerHTML = '<b>Câu sẽ ghép ra</b>' +
+          (r.en || r.vi
+            ? '<div>' + esc(r.en || '—') + '</div><div class="em" style="margin-top:4px">' + esc(r.vi || '—') + '</div>'
+            : '<span class="em">Chưa chọn mục nào.</span>');
+      }
+      pick.querySelectorAll('.chips').forEach(function (row) {
+        var gk = row.getAttribute('data-g');
+        row.querySelectorAll('.chip').forEach(function (b) {
+          b.onclick = function () {
+            var i = +b.getAttribute('data-i');
+            sel[gk] = sel[gk] || [];
+            var at = sel[gk].indexOf(i);
+            if (at >= 0) { sel[gk].splice(at, 1); b.classList.remove('on'); }
+            else { sel[gk].push(i); b.classList.add('on'); }
+            redraw();
+          };
+        });
+      });
+      $('#lk_fill', bg).onclick = function () {
+        var r = composeLook(sel);
+        if (!r.vi && !r.en) { toast('Chưa chọn mục nào', true); return; }
+        $('#lk_tone', bg).value = r.vi; $('#lk_tone_en', bg).value = r.en;
+        toast('Đã điền. Sửa thêm rồi bấm Lưu hồ sơ.');
+      };
+      $('#lk_clear', bg).onclick = function () {
+        sel = {}; pick.querySelectorAll('.chip.on').forEach(function (b) { b.classList.remove('on'); }); redraw();
+      };
+
+      /* Máy dịch đổ chữ vào ô cho Kay đọc, KHÔNG tự lưu. Giữa model và khách phải có một con mắt. */
+      function bindTr(btnId, srcId, dstId, kind) {
+        var b = $(btnId, bg); if (!b) return;
+        b.onclick = function () {
+          var src = $(srcId, bg).value.trim();
+          if (!src) { toast('Ô tiếng Việt đang trống', true); return; }
+          b.disabled = true; var old = b.textContent; b.textContent = 'Đang dịch…';
+          api('/translate', { method: 'POST', body: { text: src, kind: kind } })
+            .then(function (r) { $(dstId, bg).value = r.text || ''; toast('Đã dịch. Đọc lại rồi bấm Lưu.'); })
+            .catch(function (e) { toast(e.message, true); })
+            .then(function () { b.disabled = false; b.textContent = old; });
+        };
+      }
+      bindTr('#lk_tr_tone', '#lk_tone', '#lk_tone_en', 'tone');
+      bindTr('#lk_tr_note', '#lk_note', '#lk_note_en', 'note');
+
       bg.addEventListener('click', function (e) { if (e.target === bg) bg.remove(); });
       $('#lk_cancel', bg).onclick = function () { bg.remove(); };
       $('#lk_ok', bg).onclick = function () {
         var btn = this; btn.disabled = true; btn.textContent = 'Đang lưu…';
         var body = { look: {
           tone: $('#lk_tone', bg).value.trim(),
+          tone_en: $('#lk_tone_en', bg).value.trim(),
           liked: $('#lk_liked', bg).value.trim(),
           care: $('#lk_care', bg).value.trim(),
           share: { note: $('#lk_note', bg).value.trim(),
+                   note_en: $('#lk_note_en', bg).value.trim(),
                    photos: Object.keys(chosen).filter(function (x) { return chosen[x]; }) }
         } };
         api('/leads/' + encodeURIComponent(l.id) + '/look', { method: 'PATCH', body: body })
@@ -954,6 +1041,284 @@
           .catch(function (e) { btn.disabled = false; btn.textContent = 'Lưu hồ sơ'; toast(e.message, true); });
       };
     }).catch(function (e) { toast(e.message, true); });
+  }
+
+  /* ═══ CR-20260916-36 · BỘ CHỌN LOOK + CARD ẢNH GỬI KHÁCH ═════════════════
+     Tân 16/09: "Kay không giỏi tiếng Anh lắm, khách thì 100% người nước ngoài" và
+     "tại sao không gửi hình như cái confirmation card mà lại gửi link? gửi hình khách còn
+     post social được."
+
+     HAI VẤN ĐỀ, MỘT GỐC. Hồ sơ buổi làm trước đó ra đời dưới dạng LINK vì nó có nhiều ảnh,
+     mà nhiều ảnh thì gallery là hình dạng dễ code nhất. Nhưng chân trang của link ghi đúng
+     câu "keep the link private" — tức là tự tay chặn thứ duy nhất sinh ra khách mới: khách
+     khoe. Không ai repost một cái URL. Thứ khách đăng lên Instagram sau một buổi gala là
+     TẤM ẢNH. Nên từ CR-36 card ảnh là đường gửi chính, link ở lại làm đường phụ cho ca nhiều
+     ảnh và cho nút Message KINKAY.
+
+     Câu mô tả look in trên card phải là tiếng Anh. Dịch máy tiếng Việt ngành makeup ra tiếng
+     Anh thường ra chữ dở, nên lớp chính KHÔNG phải máy dịch mà là bộ chọn: look lặp lại, Kay
+     bấm chọn, câu tiếng Anh ghép ra luôn đúng giọng thương hiệu và không tốn một đồng nào.
+     Máy dịch chỉ đỡ phần Kay gõ tay ngoài bộ chọn, và chỉ bật khi Cloudflare có binding AI. */
+
+  // Bộ từ vựng. Mỗi mục là một cặp vi/en đã viết sẵn cho đúng — không dịch lúc chạy.
+  // Thêm mục mới cứ thêm vào đây; không có phần nào khác cần sửa theo.
+  var LOOK_BANK = [
+    { k: 'base', vi: 'Nền da', items: [
+      { vi: 'căng bóng, tươi',        en: 'dewy, luminous' },
+      { vi: 'mịn lì tự nhiên',        en: 'soft matte' },
+      { vi: 'che phủ cao, bền màu',   en: 'full coverage, long wearing' },
+      { vi: 'mỏng nhẹ, tự nhiên',     en: 'light, natural' },
+      { vi: 'sáng khoẻ kiểu Hàn',     en: 'fresh Korean glow' },
+      { vi: 'tông ấm',                en: 'warm-toned' },
+      { vi: 'tông lạnh',              en: 'cool-toned' }
+    ] },
+    { k: 'eyes', vi: 'Mắt', items: [
+      { vi: 'nâu khói ấm',            en: 'warm smoky brown' },
+      { vi: 'cam đất',                en: 'warm terracotta' },
+      { vi: 'hồng đào',               en: 'soft peach pink' },
+      { vi: 'nâu tây trầm',           en: 'deep chestnut' },
+      { vi: 'tím mận',                en: 'plum' },
+      { vi: 'khói xám',               en: 'cool grey smoke' },
+      { vi: 'trong trẻo, gần như không màu', en: 'clean, barely-there' },
+      { vi: 'kẻ mắt mèo sắc',         en: 'a sharp winged liner' }
+    ] },
+    { k: 'accent', vi: 'Điểm nhấn', items: [
+      { vi: 'nhũ vàng khoé mắt trong',   en: 'gold shimmer on the inner corners' },
+      { vi: 'nhũ champagne giữa mí',     en: 'champagne shimmer on the lid centre' },
+      { vi: 'ánh ngọc trai nhẹ',         en: 'a soft pearl sheen' },
+      { vi: 'ánh kim mí dưới',           en: 'a metallic accent on the lower lash line' },
+      { vi: 'mi giả tự nhiên',           en: 'natural individual lashes' },
+      { vi: 'mi giả dày kiểu dạ tiệc',   en: 'full glam lashes' }
+    ] },
+    { k: 'cheeks', vi: 'Má', items: [
+      { vi: 'hồng đào nhẹ',           en: 'soft peach' },
+      { vi: 'hồng phấn',              en: 'rosy pink' },
+      { vi: 'cam san hô',             en: 'coral' },
+      { vi: 'tạo khối gọn mặt',       en: 'sculpted' },
+      { vi: 'highlight gò má cao',    en: 'high-cheek highlight' }
+    ] },
+    { k: 'lips', vi: 'Môi', items: [
+      { vi: 'cam đất',                en: 'terracotta' },
+      { vi: 'hồng khô',               en: 'muted rose' },
+      { vi: 'đỏ cổ điển',             en: 'classic red' },
+      { vi: 'đỏ berry tươi',          en: 'bright berry' },
+      { vi: 'nude ấm',                en: 'warm nude' },
+      { vi: 'hồng bóng căng mọng',    en: 'glossy pink' }
+    ] },
+    { k: 'hair', vi: 'Tóc', items: [
+      { vi: 'búi thấp gọn',                en: 'a low chignon' },
+      { vi: 'búi thấp cài hoa baby',       en: "a low chignon with baby's breath" },
+      { vi: 'búi cao thanh lịch',          en: 'a sleek high bun' },
+      { vi: 'sóng lơi thả tự nhiên',       en: 'soft loose waves' },
+      { vi: 'tóc thẳng bóng rẽ ngôi giữa', en: 'sleek centre-parted hair' },
+      { vi: 'nửa buộc nửa thả',            en: 'a half-up style' },
+      { vi: 'tết lơi kiểu bohemian',       en: 'a loose bohemian braid' },
+      { vi: 'phồng chân tóc',              en: 'volume at the roots' }
+    ] }
+  ];
+
+  function lkJoin(arr, lang) {
+    if (!arr.length) return '';
+    if (arr.length === 1) return arr[0];
+    return arr.slice(0, -1).join(', ') + (lang === 'en' ? ' and ' : ' và ') + arr[arr.length - 1];
+  }
+  function lkCap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
+
+  /* sel = { base:[idx...], eyes:[...], ... } → { vi, en }.
+     Câu ghép theo khung cố định nên không bao giờ ra chữ ngô nghê, đổi lại là không linh hoạt.
+     Đúng đánh đổi cần: Kay bấm 5 giây ra câu dùng được luôn, ca lạ thì gõ tay. */
+  function composeLook(sel) {
+    function pick(k, lang) {
+      var g = null; LOOK_BANK.forEach(function (x) { if (x.k === k) g = x; });
+      var ids = sel[k] || [];
+      return ids.map(function (i) { return g.items[i][lang]; });
+    }
+    function build(lang) {
+      var en = lang === 'en', seg = [];
+      var base = pick('base', lang), eyes = pick('eyes', lang), acc = pick('accent', lang),
+          ch = pick('cheeks', lang), lip = pick('lips', lang), hair = pick('hair', lang);
+      if (base.length) seg.push((en ? '' : 'nền da ') + lkJoin(base, lang) + (en ? ' base' : ''));
+      if (eyes.length || acc.length) {
+        var e = eyes.length ? (en ? lkJoin(eyes, lang) + ' eyes' : 'mắt ' + lkJoin(eyes, lang)) : '';
+        if (acc.length) e = e ? e + (en ? ' with ' : ', ') + lkJoin(acc, lang) : (en ? lkJoin(acc, lang) : lkJoin(acc, lang));
+        seg.push(e);
+      }
+      if (ch.length)  seg.push((en ? lkJoin(ch, lang) + ' cheeks' : 'má ' + lkJoin(ch, lang)));
+      if (lip.length) seg.push((en ? lkJoin(lip, lang) + ' lips' : 'môi ' + lkJoin(lip, lang)));
+      var out = seg.length ? lkCap(seg.join(', ')) + '.' : '';
+      if (hair.length) out = (out ? out + ' ' : '') + (en ? 'Hair: ' : 'Tóc: ') + lkJoin(hair, lang) + '.';
+      return out;
+    }
+    return { vi: build('vi'), en: build('en') };
+  }
+
+  /* Hỏi server một lần lúc khởi động: Cloudflare đã có binding AI chưa. Chưa có thì nút Dịch
+     KHÔNG hiện. Một nút bấm vào là báo lỗi còn tệ hơn không có nút. */
+  function aiProbe() {
+    api('/translate').then(function (r) { state.ai = !!(r && r.available); })
+      .catch(function () { state.ai = false; });
+  }
+
+  /* ---------- CARD ẢNH 1080×1350 ----------
+     Dùng lại đúng bộ đồ nghề của Booking Confirmation: cùng khổ, cùng font, cùng đường
+     canvas → PNG → Web Share. Khác một chỗ cốt lõi: BC là tài liệu nên nền kem chữ đen;
+     card này là thứ khách sẽ đăng lên trang cá nhân nên ẢNH là nhân vật chính, thương hiệu
+     đứng dưới một dải hẹp. Đổi thứ tự đó là mất luôn lý do tồn tại của nó.
+
+     KHÔNG in lên card: giá, cọc, ghi chú nội bộ, `liked`, `care`. Chỉ ảnh Kay đã tick, tên
+     khách, dịch vụ + ngày, câu look, và thương hiệu. */
+  var LC = { W: 1080, H: 1350, PH: 1010 };
+
+  function lcLoadImg(url) {
+    return photoBlob(url).then(function (u) {
+      return new Promise(function (res, rej) {
+        var im = new Image();
+        im.onload = function () { res(im); };
+        im.onerror = function () { rej(new Error('Không dựng được ảnh')); };
+        im.src = u;
+      });
+    });
+  }
+
+  function lcRender(img, info) {
+    var c = document.createElement('canvas'); c.width = LC.W; c.height = LC.H;
+    var ctx = c.getContext('2d'), W = LC.W, PH = LC.PH;
+    ctx.fillStyle = BC.cream; ctx.fillRect(0, 0, LC.W, LC.H);
+
+    // Ảnh phủ kín khung trên, cắt bớt phần thừa, giữ tâm. Không bao giờ bóp méo mặt người.
+    var sc = Math.max(W / img.width, PH / img.height);
+    var dw = img.width * sc, dh = img.height * sc;
+    ctx.save(); ctx.beginPath(); ctx.rect(0, 0, W, PH); ctx.clip();
+    ctx.drawImage(img, (W - dw) / 2, (PH - dh) / 2, dw, dh);
+    var g = ctx.createLinearGradient(0, PH - 430, 0, PH);
+    g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,0.62)');
+    ctx.fillStyle = g; ctx.fillRect(0, PH - 430, W, 430);
+    ctx.restore();
+
+    ctx.textBaseline = 'alphabetic'; ctx.textAlign = 'left';
+    if (info.name) {
+      ctx.fillStyle = '#fff'; ctx.font = '300 56px "Playfair Display", Georgia, serif';
+      ctx.fillText(info.name, 72, PH - 98);
+    }
+    if (info.meta) {
+      ctx.fillStyle = 'rgba(255,255,255,.84)'; ctx.font = '300 26px "Be Vietnam Pro", system-ui, sans-serif';
+      ctx.fillText(info.meta, 72, PH - 52);
+    }
+
+    // Dải thương hiệu
+    ctx.textAlign = 'center';
+    ctx.fillStyle = BC.gold2; ctx.font = '400 22px "Be Vietnam Pro", system-ui, sans-serif';
+    spaced(ctx, 'KINKAY MAKEUP & HAIR', W / 2, PH + 62, 5, 'center');
+    ctx.strokeStyle = BC.gold; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(W / 2 - 110, PH + 88); ctx.lineTo(W / 2 + 110, PH + 88); ctx.stroke();
+
+    // Câu look: chọn cỡ chữ lớn nhất còn vừa 4 dòng, rồi canh giữa khối 1105..1300.
+    if (info.tone) {
+      var CW = W - 150, fs = 32, lines = [];
+      [32, 29, 26].some(function (n) {
+        ctx.font = 'italic 300 ' + n + 'px "Playfair Display", Georgia, serif';
+        lines = wrapLines(ctx, info.tone, CW); fs = n;
+        return lines.length <= 4;
+      });
+      if (lines.length > 4) { lines = lines.slice(0, 4); lines[3] = lines[3].replace(/\s+\S*$/, '') + '…'; }
+      ctx.font = 'italic 300 ' + fs + 'px "Playfair Display", Georgia, serif';
+      var lh = Math.round(fs * 1.42), top = (PH + 95) + (205 - lines.length * lh) / 2;
+      ctx.fillStyle = BC.ink;
+      lines.forEach(function (ln, i) { ctx.fillText(ln, W / 2, top + fs + i * lh); });
+    }
+
+    ctx.fillStyle = BC.mute; ctx.font = '300 21px "Be Vietnam Pro", system-ui, sans-serif';
+    ctx.fillText('kinkay.vn', W / 2, LC.H - 34);
+    return c;
+  }
+
+  /* Sheet xem trước + chia sẻ. Mỗi ảnh đã tick là một card riêng — khách đăng được từng tấm,
+     không phải một tấm ghép mà Instagram sẽ cắt mất. */
+  function lookCardSheet(lead, d) {
+    var isEn = d.language === 'en';
+    var pub = (isEn ? d.preview_khach_en : d.preview_khach_thay) || {};
+    var keys = pub.photos || [];
+    if (!keys.length) { toast('Chưa tick ảnh nào. Bấm Sửa, chọn ảnh, lưu rồi quay lại.', true); return; }
+
+    api('/leads/' + encodeURIComponent(lead.id) + '/media').then(function (md) {
+      var byKey = {}; (md.media || []).forEach(function (m) { if (m && m.key) byKey[m.key] = m.url; });
+      var list = keys.filter(function (k) { return byKey[k]; });
+      if (!list.length) { toast('Không tải được ảnh đã tick', true); return; }
+
+      var svc = (lead.service || '');
+      var when = lead.event_date ? (isEn ? lcEnDate(lead.event_date) : dmy(lead.event_date)) : '';
+      var info = { name: lead.customer_name || '', meta: [svc, when].filter(Boolean).join(' · '), tone: pub.tone || '' };
+
+      var wrap = document.createElement('div'); wrap.className = 'sheet-bg';
+      wrap.innerHTML = '<div class="sheet"><div class="grab"></div><h3>Card ảnh gửi khách</h3>' +
+        '<div class="muted">' + esc(info.name) + ' · ' + list.length + ' ảnh đã tick · card ' + (isEn ? 'tiếng Anh' : 'tiếng Việt') + '</div>' +
+        (list.length > 1 ? '<div class="lcstrip" id="lcStrip"></div>' : '') +
+        '<div class="bcbtns" style="margin-top:8px"><button class="btn bc" id="lcShare" disabled>Đang tạo ảnh…</button>' +
+        '<button class="btn sec" id="lcSave" disabled>Lưu ảnh</button><button class="btn sec" id="lcClose">Đóng</button></div>' +
+        '<div class="bcprev" id="lcWrap" style="margin-top:10px"><div class="empty">⏳ Đang tạo ảnh 1080×1350…</div></div>' +
+        '<p class="muted">Card in ảnh, tên khách, dịch vụ, ngày, câu look và thương hiệu. ' +
+        '<b>Không in giá, không in ghi chú nội bộ.</b> Khách đăng lên trang cá nhân thì chữ KINKAY đi theo.</p></div>';
+      document.body.appendChild(wrap);
+
+      var sheetEl = $('.sheet', wrap), blob = null, idx = 0;
+
+      var strip = $('#lcStrip', wrap);
+      if (strip) {
+        strip.innerHTML = list.map(function (k, i) {
+          return '<img data-ph="' + esc(byKey[k]) + '" data-i="' + i + '" class="' + (i ? '' : 'on') + '" alt="">';
+        }).join('');
+        strip.querySelectorAll('img[data-ph]').forEach(function (im) {
+          photoBlob(im.getAttribute('data-ph')).then(function (u) { im.src = u; }).catch(function () { });
+          im.onclick = function () {
+            idx = +im.getAttribute('data-i');
+            strip.querySelectorAll('img').forEach(function (x) { x.className = ''; });
+            im.className = 'on'; run();
+          };
+        });
+      }
+
+      function run() {
+        blob = null;
+        $('#lcShare', wrap).disabled = true; $('#lcShare', wrap).textContent = 'Đang tạo ảnh…';
+        $('#lcSave', wrap).disabled = true;
+        $('#lcWrap', wrap).innerHTML = '<div class="empty">⏳ Đang tạo ảnh 1080×1350…</div>';
+        var cur = idx;
+        Promise.all([bcFontsReadyTimeout(), lcLoadImg(byKey[list[cur]])]).then(function (r) {
+          if (cur !== idx) return;                       // Kay bấm ảnh khác giữa chừng
+          var canvas = lcRender(r[1], info);
+          $('#lcWrap', wrap).innerHTML = ''; $('#lcWrap', wrap).appendChild(canvas);
+          return bcToBlob(canvas);
+        }).then(function (b) {
+          if (!b || cur !== idx) return;
+          blob = b;
+          $('#lcShare', wrap).disabled = false; $('#lcShare', wrap).textContent = 'Chia sẻ ảnh';
+          $('#lcSave', wrap).disabled = false;
+          console.log('[KINKAY LOOKCARD] PNG', Math.round(b.size / 1024) + ' KB');
+        }).catch(function (e) { bcShowErr(sheetEl, 'Không tạo được card. Thử lại hoặc chọn ảnh khác.', e); });
+      }
+      run();
+
+      function fname() { return lead.id + '-look-' + (idx + 1) + '.png'; }
+      $('#lcShare', wrap).onclick = function () {
+        if (!blob) { bcShowErr(sheetEl, 'Ảnh chưa sẵn sàng, đợi vài giây.'); return; }
+        var f = null; try { f = new File([blob], fname(), { type: 'image/png' }); } catch (e) { f = null; }
+        if (f && navigator.canShare && navigator.canShare({ files: [f] })) {
+          navigator.share({ files: [f], title: 'KINKAY MAKEUP & HAIR' })
+            .then(function () { toast('Đã mở chia sẻ'); })
+            .catch(function (e) { if (e && e.name === 'AbortError') return; bcSaveBlob(blob, fname(), sheetEl); });
+        } else { bcShowErr(sheetEl, 'Trình duyệt này không chia sẻ file trực tiếp. Đang lưu ảnh, mở Zalo/IG rồi chọn từ máy.'); bcSaveBlob(blob, fname(), sheetEl); }
+      };
+      $('#lcSave', wrap).onclick = function () { if (blob) bcSaveBlob(blob, fname(), sheetEl); };
+      $('#lcClose', wrap).onclick = function () { wrap.remove(); };
+      wrap.addEventListener('click', function (e) { if (e.target === wrap) wrap.remove(); });
+    }).catch(function (e) { toast(e.message, true); });
+  }
+
+  // Ngày kiểu Anh trên card: "16 September 2026" — không dùng số/số để khách không đọc nhầm tháng.
+  function lcEnDate(iso) {
+    var p = String(iso).slice(0, 10).split('-'); if (p.length !== 3) return '';
+    var m = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    return (+p[2]) + ' ' + m[(+p[1]) - 1] + ' ' + p[0];
   }
 
   /* Trang khách: XẾP các hồ sơ buổi làm cạnh nhau theo thời gian. Nó KHÔNG sở hữu dữ liệu
