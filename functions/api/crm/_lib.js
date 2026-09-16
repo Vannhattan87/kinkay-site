@@ -20,7 +20,12 @@ export const PARTNER_STATUSES = ['New', 'Contacted', 'Nurture', 'Warm', 'Active 
 export const LEAD_FIELDS = [
   'created_date', 'customer_name', 'contact', 'contact_channel', 'service', 'event_date', 'source', 'segment',
   'status', 'expected_revenue', 'deposit', 'actual_revenue', 'actual_verified', 'owner', 'next_action',
-  'next_followup', 'notes', 'partner_id'
+  'next_followup', 'notes', 'partner_id',
+  /* MKT-DEC-20260916-01 (Luna §4 mục B) — 3 cột marketing, migration 007.
+     `nationality` CHỈ ghi khi khách TỰ NÓI RA. Không suy từ tên, số điện thoại, giọng,
+     ảnh, khách sạn, ngôn ngữ nhắn tin hay nguồn lead. NULL = chưa biết, không phải khách Việt.
+     KHÔNG thêm foreign_lead / foreign_booking / confirmed_at / completed_at — derived, tính ở query. */
+  'nationality', 'source_detail', 'lost_reason'
 ];
 export const PARTNER_FIELDS = [
   'created_date', 'name', 'type', 'contact_channel', 'contact', 'status', 'last_touch', 'opportunity',
@@ -720,3 +725,72 @@ export function migrationGapError(e) {
 
 // Phiên bản schema mà CODE HIỆN TẠI cần. Tăng cùng lúc với mỗi migration mới.
 export const SCHEMA_VERSION_REQUIRED = '1.5';
+
+// ===================== Số suy ra cho Marketing Control Room (MKT-DEC-20260916-01) =====================
+// Luna §4 mục C: KHÔNG lưu foreign_lead / foreign_booking / confirmed_at / completed_at thành cột.
+// Sửa `nationality` xong mà cờ trong DB vẫn cũ thì báo cáo sai và không ai biết — đúng bệnh `pax` ở CR-33.
+// Mọi số dưới đây tính tại chỗ từ dữ liệu thô. MỘT bản duy nhất, dùng chung cho dashboard, export và report.
+// Viết hàm thứ hai ở nơi khác là lặp lại đúng lỗi normName (11/09) và normContact (12/09).
+
+const VN_NAT = new Set(['vietnam', 'viet nam', 'vietnamese', 'vn', 'kinh']);
+const flatNat = v => String(v || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'd')
+  .toLowerCase().replace(/[^a-z\s]/g, ' ').replace(/\s+/g, ' ').trim();
+
+// true = khách nước ngoài · false = khách Việt · null = CHƯA BIẾT.
+// null KHÔNG BAO GIỜ được quy về false. Đó là toàn bộ lý do hàm này trả ba giá trị chứ không phải hai.
+export function isForeign(nationality) {
+  const s = flatNat(nationality);
+  if (!s) return null;
+  return !VN_NAT.has(s);
+}
+
+// Không trả về một tỉ lệ foreign duy nhất trên tổng. Luna §4 mục D: phải thấy được phần chưa biết,
+// nếu không thì coverage thấp trông y hệt "toàn khách Việt".
+export function nationalityStats(leads) {
+  let known = 0, foreign = 0;
+  for (const l of leads || []) {
+    const f = isForeign(l && l.nationality);
+    if (f === null) continue;
+    known++; if (f) foreign++;
+  }
+  const total = (leads || []).length;
+  return {
+    total, known, unknown: total - known, foreign_among_known: foreign,
+    foreign_pct_of_known: known ? foreign / known : null,   // null = chưa đủ dữ liệu để nói
+    coverage_label: `n=${known}/${total}`
+  };
+}
+
+// confirmed_at = lần ĐẦU vào Confirmed · completed_at = lần CUỐI vào Completed (Luna §4 mục C).
+// Lead đi Confirmed → Hold → Confirmed mà không có luật này thì hai báo cáo ra hai số khác nhau.
+// `events` là các dòng lead_events CỦA MỘT LEAD, thứ tự bất kỳ.
+// PHẢI đọc thẳng bảng lead_events. GET /api/crm/leads/<id> có LIMIT 100 nên lead sửa nhiều lần sẽ rụng event cũ.
+export function statusTimestamps(events) {
+  let confirmed_at = null, completed_at = null;
+  for (const e of events || []) {
+    if (!e || (e.field !== 'status' && e.field !== 'create')) continue;
+    if (e.new_value === 'Confirmed' && (confirmed_at === null || e.ts < confirmed_at)) confirmed_at = e.ts;
+    if (e.new_value === 'Completed' && (completed_at === null || e.ts > completed_at)) completed_at = e.ts;
+  }
+  return { confirmed_at, completed_at };
+}
+
+// 11 lead nhập từ Sheet 06/09 vào bằng file seed, không qua insertLead(), nên không có event nào.
+// Chúng trả null ở đây và PHẢI bị loại khỏi phép tính, không được đếm là 0 ngày.
+export function leadToBookingDays(lead, events) {
+  const { confirmed_at } = statusTimestamps(events);
+  if (!confirmed_at || !lead || !lead.created_at) return null;
+  const d = (Date.parse(confirmed_at) - Date.parse(lead.created_at)) / 86400000;
+  return Number.isFinite(d) && d >= 0 ? d : null;
+}
+
+// Mọi chỉ số dựa trên timestamp phải đi kèm mẫu số (Luna §4 mục C). Trung bình của 6 trên 17
+// mà in trần ra thì người đọc tưởng là của cả 17.
+export function withCoverage(values, total) {
+  const ok = (values || []).filter(v => v != null && Number.isFinite(v));
+  return {
+    n: ok.length, of: total, excluded: total - ok.length,
+    avg: ok.length ? ok.reduce((a, b) => a + b, 0) / ok.length : null,
+    label: `n=${ok.length}/${total}`
+  };
+}

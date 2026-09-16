@@ -599,7 +599,7 @@
       var head = '<button class="back" data-go="#/leads">‹ Khách</button>' +
         '<div class="card"><div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start"><div><div style="font-size:18px;font-weight:600">' + esc(l.customer_name) + '</div>' +
         '<div class="muted">' + esc(l.id) + ' · ' + esc(l.contact_channel || '') + ' ' + esc(l.contact || '') + '</div></div>' + pill(l.status) + '</div>' +
-        '<div class="muted" style="margin-top:6px">' + esc([l.service, l.event_date ? 'Sự kiện ' + dmy(l.event_date) : 'Chưa có ngày sự kiện', l.source, l.segment].filter(Boolean).join(' · ')) + '</div>' +
+        '<div class="muted" style="margin-top:6px">' + esc([l.service, l.event_date ? 'Sự kiện ' + dmy(l.event_date) : 'Chưa có ngày sự kiện', l.source, l.source_detail, l.segment, l.nationality].filter(Boolean).join(' · ')) + '</div>' +
         '<div style="margin-top:6px"><span class="money">Expected ' + esc(money(l.expected_revenue)) + '</span> · Cọc ' + esc(l.deposit || '—') + ' · <span class="money">Actual ' + esc(money(l.actual_revenue)) + (l.actual_revenue != null ? (l.actual_verified ? ' ✓ đã xác minh' : ' (chưa xác minh)') : '') + '</span></div>' +
         (d.partner ? '<div class="warn">Đối tác: <a href="#/partner/' + esc(d.partner.id) + '">' + esc(d.partner.name) + '</a> · ' + esc(d.partner.commercial_terms || 'referral chuẩn 10%') + '</div>' : '') +
         (l.next_action ? '<div style="margin-top:8px"><b>Việc tiếp:</b> ' + esc(l.next_action) + (l.next_followup ? ' <span class="pill ' + dueClass(l.next_followup, today) + '">' + dmy(l.next_followup) + '</span>' : '') + '</div>' : '') +
@@ -608,6 +608,7 @@
 
       var quick = '<div class="card" id="quick"><h2>Cập nhật nhanh (≤ 60 giây)</h2>' +
         '<label>Trạng thái</label><select id="f_status">' + opts(L.lead_statuses, l.status) + '</select>' +
+        '<div id="lostBox" style="' + (l.status === 'Lost' ? '' : 'display:none') + '"><label>Vì sao mất khách</label><input id="f_lost" value="' + esc(l.lost_reason || '') + '" placeholder="Giá cao hơn ngân sách / chốt MUA khác / dời ngày cưới"></div>' +
         '<label>Việc tiếp theo (1 việc, bắt đầu bằng động từ)</label><input id="f_next" value="' + esc(l.next_action || '') + '" placeholder="Ví dụ: Xác nhận giờ makeup và khách sạn">' +
         '<label>Hẹn làm tiếp</label><input id="f_fu" type="date" value="' + esc(l.next_followup || '') + '">' + quickDates('f_fu') +
         '<label>Ghi 1 dòng vừa xảy ra (tự thêm ngày vào ghi chú)</label><input id="f_note" placeholder="Khách hỏi thêm giá bà sui, đã báo 2,5tr">' +
@@ -622,6 +623,8 @@
         '<div class="grid2"><div><label>Contact</label><input id="e_contact" value="' + esc(l.contact || '') + '"></div><div><label>Kênh nhắn</label><select id="e_channel">' + opts(L.channels, l.contact_channel, true) + '</select></div></div>' +
         '<div class="grid2"><div><label>Dịch vụ</label><select id="e_service">' + opts(L.services, l.service, true) + '</select></div><div><label>Ngày sự kiện</label><input id="e_event" type="date" value="' + esc(l.event_date || '') + '"></div></div>' +
         '<div class="grid2"><div><label>Nguồn khách</label><select id="e_source">' + opts(L.sources, l.source, true) + '</select></div><div><label>Phân khúc</label><select id="e_segment">' + opts(L.segments, l.segment, true) + '</select></div></div>' +
+        '<div class="grid2"><div><label>Chi tiết nguồn</label><input id="e_srcdetail" value="' + esc(l.source_detail || '') + '" placeholder="Truy vấn Google / tên đối tác / ai giới thiệu"></div>' +
+        '<div><label>Quốc tịch — chỉ ghi khi khách tự nói</label><input id="e_nat" value="' + esc(l.nationality || '') + '" placeholder="Chưa biết thì để trống. Không đoán theo tên hay khách sạn."></div></div>' +
         '<div class="grid2"><div><label>Owner</label><select id="e_owner">' + opts(L.owners, l.owner) + '</select></div><div><label>Partner ID (nếu giới thiệu)</label><input id="e_partner" value="' + esc(l.partner_id || '') + '" placeholder="PT-260901-001"></div></div>' +
         '<div class="grid2"><div><label>Ngày tạo</label><input id="e_created" type="date" value="' + esc(l.created_date || '') + '"></div></div>' +
         '<label>Ghi chú đầy đủ</label><textarea id="e_notes" style="min-height:140px">' + esc(l.notes || '') + '</textarea>' +
@@ -656,7 +659,10 @@
       mediaMount(l);   // CR-32 T3 — ảnh/album của ĐÚNG job này
       lookMount(l);    // CR-35 — hồ sơ buổi làm + link gửi khách
       $('#btnDel').onclick = function () { confirmDelete('lead', l); };
-      $('#f_status').onchange = function () { $('#moneyBox').style.display = ['Quoted', 'Hold', 'Deposit Paid', 'Confirmed', 'Completed'].indexOf(this.value) >= 0 ? '' : 'none'; };
+      $('#f_status').onchange = function () {
+        $('#moneyBox').style.display = ['Quoted', 'Hold', 'Deposit Paid', 'Confirmed', 'Completed'].indexOf(this.value) >= 0 ? '' : 'none';
+        $('#lostBox').style.display = this.value === 'Lost' ? '' : 'none';
+      };
 
       $('#btnSave').onclick = function () {
         var p = {};
@@ -671,6 +677,8 @@
           var ac = $('#f_act').value.replace(/\D/g, ''); var ver = $('#f_ver').value === '1';
           if (ac !== String(l.actual_revenue == null ? '' : l.actual_revenue) || ver !== !!l.actual_verified) { p.actual_revenue = ac || null; p.actual_verified = ver; }
         }
+        var lr = $('#f_lost') ? $('#f_lost').value.trim() : '';
+        if (lr !== (l.lost_reason || '')) p.lost_reason = lr || null;
         if (!Object.keys(p).length) { toast('Không có gì thay đổi'); return; }
         this.disabled = true;
         api('/leads/' + encodeURIComponent(id), { method: 'PATCH', body: p }).then(function (r) { toast('Đã lưu ' + r.changed + ' thay đổi'); viewLead(id); })
@@ -679,7 +687,8 @@
       $('#btnSaveFull').onclick = function () {
         var p = { customer_name: $('#e_name').value, contact: $('#e_contact').value, contact_channel: $('#e_channel').value, service: $('#e_service').value,
           event_date: $('#e_event').value, source: $('#e_source').value, segment: $('#e_segment').value, owner: $('#e_owner').value,
-          partner_id: $('#e_partner').value, created_date: $('#e_created').value, notes: $('#e_notes').value };
+          partner_id: $('#e_partner').value, created_date: $('#e_created').value, notes: $('#e_notes').value,
+          source_detail: $('#e_srcdetail').value, nationality: $('#e_nat').value.trim() };
         this.disabled = true;
         api('/leads/' + encodeURIComponent(id), { method: 'PATCH', body: p }).then(function (r) { toast('Đã lưu ' + r.changed + ' thay đổi'); viewLead(id); })
           .catch(function (e) { toast(e.message, true); $('#btnSaveFull').disabled = false; });
@@ -1513,6 +1522,7 @@
       '<div id="dupBox"></div>' +
       '<div class="grid2"><div><label>Dịch vụ</label><select id="n_service">' + opts(L.services, 'Bridal Makeup') + '</select></div><div><label>Ngày sự kiện (nếu biết)</label><input id="n_event" type="date"></div></div>' +
       '<div class="grid2"><div><label>Nguồn khách</label><select id="n_source">' + opts(L.sources, 'Instagram Organic') + '</select></div><div><label>Trạng thái</label><select id="n_status">' + opts(L.lead_statuses, 'New') + '</select></div></div>' +
+      '<label>Chi tiết nguồn (tuỳ chọn)</label><input id="n_srcdetail" placeholder="Truy vấn Google / tên đối tác / ai giới thiệu">' +
       '<label>Việc tiếp theo</label><input id="n_next" value="Trả lời và hỏi ngày, địa điểm, số người">' +
       '<label>Hẹn làm tiếp</label><input id="n_fu" type="date" value="' + addDays(todayVN(), 1) + '">' + quickDates('n_fu') +
       '<label>Ghi chú (tuỳ chọn)</label><textarea id="n_notes"></textarea>' +
@@ -1561,7 +1571,7 @@
     function submitNew(force) {
       var p = { customer_name: $('#n_name').value, contact: $('#n_contact').value, contact_channel: $('#n_channel').value, service: $('#n_service').value,
         event_date: $('#n_event').value, source: $('#n_source').value, status: $('#n_status').value, next_action: $('#n_next').value, next_followup: $('#n_fu').value,
-        notes: $('#n_notes').value, owner: 'Kay', segment: $('#n_source').value === 'Partner Referral' ? 'Partner-sourced' : 'B2C' };
+        notes: $('#n_notes').value, source_detail: $('#n_srcdetail').value, owner: 'Kay', segment: $('#n_source').value === 'Partner Referral' ? 'Partner-sourced' : 'B2C' };
       if (!p.customer_name.trim()) { toast('Cần tên khách', true); return; }
       if (force) p.force_duplicate = true;
       $('#btnNew').disabled = true;

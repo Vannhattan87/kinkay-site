@@ -8,7 +8,9 @@ const LEAD_COLS = [
   ['contact_channel', 'Contact Channel'], ['service', 'Service'], ['event_date', 'Event Date'], ['source', 'Source'],
   ['segment', 'Segment'], ['status', 'Status'], ['expected_revenue', 'Expected Revenue'], ['deposit', 'Deposit'],
   ['actual_revenue', 'Actual Revenue'], ['owner', 'Owner'], ['next_action', 'Next Action'], ['next_followup', 'Next Follow-up'],
-  ['notes', 'Notes'], ['last_updated', 'Last Updated'], ['actual_verified', 'Actual Verified'], ['partner_id', 'Partner ID'], ['updated_by', 'Updated By']
+  ['notes', 'Notes'], ['last_updated', 'Last Updated'], ['actual_verified', 'Actual Verified'], ['partner_id', 'Partner ID'], ['updated_by', 'Updated By'],
+  // 007: nối vào CUỐI, không chen giữa — Sheet ARCHIVE dán theo thứ tự cột, chen giữa là lệch hết.
+  ['nationality', 'Nationality'], ['source_detail', 'Source Detail'], ['lost_reason', 'Lost Reason']
 ];
 const PARTNER_COLS = [
   ['id', 'Partner ID'], ['created_date', 'Created Date'], ['name', 'Partner / Studio'], ['type', 'Type'], ['contact_channel', 'Contact Channel'],
