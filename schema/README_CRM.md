@@ -257,3 +257,95 @@ Sửa: `functions/api/crm/leads/[id].js` (GET trả kèm `booking` / `booking_mi
 **Không có migration.** Không đổi schema — `media_json` và `booking_json` đã có từ 004 / 002.
 
 Test: `node tests/crm_job_detail.mjs` 12/12 · `node tests/bc_line_items.mjs` 30/30.
+
+---
+
+## CR-20260916-35 · Hồ sơ buổi làm + trang khách + link gửi khách (16/09/2026)
+
+Tân 16/09: *"không có chỗ để xem hồ sơ lưu của khách kiểu bật lên là 1 hồ sơ báo cáo lần này
+làm gì, hình ảnh ra sao. Để lần sau khách biết muốn làm i như vậy, hay thay đổi chỉnh sửa,
+thử look mới."*
+
+Duyệt: Tân 16/09, ngoại lệ HẸP của DEC-20260906-03 (P5 Freeze), chỉ cho CR-35.
+Tân chọn: cả bản nội bộ **và** bản gửi khách · ghi 3 mục (tông+kiểu, khách thích/chê, lưu ý
+da/tóc) · mở được từ **cả** trong job **và** trang khách.
+**Không** làm mục "lần sau nên làm gì khác" — Tân không chọn.
+
+### Quy tắc trung tâm: HAI LỚP, MỘT CỬA RA
+
+| | Nội dung | Ai đọc được |
+|---|---|---|
+| **Đối ngoại** | `tone`, `share.note`, đúng ảnh trong `share.photos` | khách, qua `/xem/<token>` |
+| **Nội bộ** | `liked` (khách chê gì), `care` (da dầu, tóc mỏng), và mọi cột khác của lead | chỉ trong CRM |
+
+`publicLook()` trong `_lib.js` là **cửa ra duy nhất**. Danh sách trắng, không phải danh sách
+đen: thêm field mới vào `look_json` thì field đó **không** tự lọt ra. Trang công khai không
+được tự lọc field, không được đọc look thô.
+
+Vì sao gắt: `liked` và `care` là chỗ Kay ghi thật lòng về một người thật. Ghi thật chỉ xảy ra
+khi người ghi **chắc chắn** khách không đọc được. Rò một lần là từ đó không ai ghi thật nữa,
+và cả trường dữ liệu này thành vô dụng. Giao diện in nhãn *chỉ nội bộ* / *khách xem được*
+ngay cạnh từng ô lúc Kay **đang gõ**, không bắt đi đọc tài liệu.
+
+### Hồ sơ gắn với BUỔI LÀM, không gắn với khách
+
+Cùng nguyên tắc đã áp cho ảnh ở CR-32. "Lần trước làm tông gì" chỉ có nghĩa khi biết lần
+trước là buổi **nào**: khách cưới tháng 11 và khách đi tiệc tháng 3 là hai look khác hẳn, hai
+lưu ý khác hẳn, dù cùng một người.
+
+Trang khách `#/khach/<lead_id>` chỉ **xếp** các hồ sơ cạnh nhau theo thời gian. Nó không sở
+hữu dữ liệu và không đẻ ra "hồ sơ khách hàng" thứ hai. Gom theo **số liên hệ**, chưa xác nhận
+cùng một người — câu cảnh báo của server vẫn bắt buộc in, y như luật đặt từ CR-32.
+
+### Link gửi khách
+
+`/xem/<token>` nằm **ngoài** cổng xác thực (khách không có tài khoản GitHub). Thứ duy nhất
+đứng giữa ảnh khách và cả internet là token 32 hex từ `crypto.getRandomValues`.
+
+Luật cứng, đừng nới:
+
+- **Token không bao giờ tái sử dụng.** Mỗi `POST /share` sinh token mới. Gửi nhầm người thì
+  POST lại là link cũ chết ngay.
+- **Hai công tắc khác nhau.** `enabled=false` là tắt tạm, giữ danh sách ảnh đã tick.
+  `DELETE /share` là dập cầu dao: `share_token = NULL`, link cũ chết vĩnh viễn.
+- **Tạo link không tự chọn ảnh.** Mặc định 0 ảnh, Kay tick từng tấm. Cái giá của mặc định sai
+  ở đây là ảnh khách lọt ra ngoài.
+- Token sai và link đã thu hồi trả **404 y hệt nhau**. Nói "link này từng tồn tại" là đã cho
+  người dò biết họ đoán gần trúng.
+- Trang và ảnh đều `no-store` + `noindex, nofollow, noarchive, nosnippet` +
+  `Referrer-Policy: no-referrer`. Không font ngoài, không analytics, không gì gọi ra internet
+  từ trang đó — mỗi request bên ngoài là một chỗ token nằm trong Referer đi khỏi tầm tay.
+
+Ảnh công khai đi qua **bốn cửa** ở `functions/xem/[token]/anh/[[path]].js`: token đúng hình
+dạng → link đang bật → key nằm trong `share.photos` → key bắt đầu bằng `jobs/<đúng lead id>/`.
+Cửa 3 và 4 chồng nhau có chủ ý: cửa 3 dựa vào dữ liệu Kay nhập, cửa 4 không dựa vào ai cả.
+
+### Tắt gấp mọi link đã gửi, không cần deploy
+
+```sql
+UPDATE leads SET share_token = NULL;
+```
+
+### Migration 006 · schema_version 1.5
+
+`leads.look_json` (TEXT) · `leads.share_token` (TEXT, UNIQUE index).
+
+**Số 006 lấy cho CR-35, không phải cho CR-31 Đ8.** File 005 từng giữ chỗ 006 cho CR-31 Đ8,
+nhưng việc đó tới giờ vẫn chưa duyệt, chưa build, chưa chạy. Luật chốt ở file 004 là *dãy số
+phải phản ánh thứ tự chạy thật* — giữ chỗ không thắng được thứ tự thật.
+**CR-31 Đ8 từ nay dùng 007 và schema_version 1.6.**
+
+### File
+
+Mới: `functions/api/crm/leads/[id]/look.js`, `functions/api/crm/leads/[id]/share.js`,
+`functions/xem/[token].js`, `functions/xem/[token]/anh/[[path]].js`,
+`schema/crm-migration-006-look-share.sql`, `tests/crm_look_share.mjs`.
+Sửa: `_lib.js` (parseLook / normalizeLook / mergeLook / **publicLook** / shareIsLive /
+newShareToken), `history.js` (trả kèm `look_json` + `booking_json`, thêm `?self=1`),
+`static/admin/crm/index.html`.
+
+Test: `node tests/crm_look_share.mjs` 18/18 · `crm_job_detail.mjs` 12/12 ·
+`bc_line_items.mjs` 30/30.
+
+Bẫy đã gặp: `functions/xem/[token]/anh/[[path]].js` sâu **ba** cấp so với `functions/`, import
+`_lib` phải là `../../../api/crm/_lib.js`. Bản đầu viết hai chấm, test bắt được.

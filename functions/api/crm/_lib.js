@@ -560,3 +560,88 @@ export async function deleteWithSnapshot(db, entity, id, actor, reason) {
   ]);
   return { ok: true, deleted: { id, entity, reason: why } };
 }
+
+// ===================== Hồ sơ buổi làm + link gửi khách (CR-20260916-35) =====================
+// Tân 16/09: "không có chỗ để xem hồ sơ lưu của khách... để lần sau khách biết muốn làm i như
+// vậy, hay thay đổi chỉnh sửa, thử look mới."
+//
+// HAI LỚP, MỘT CỬA RA.
+//   Lớp NỘI BỘ   : tone, liked, care  → chỉ sống trong CRM sau cổng đăng nhập.
+//   Lớp ĐỐI NGOẠI: tone, share.note, đúng các ảnh trong share.photos → khách đọc qua /xem/<token>.
+// `publicLook()` dưới đây là CỬA RA DUY NHẤT. Trang công khai không được chạm vào look thô,
+// không được tự lọc field, không được thêm một khoá nào "cho tiện". Một hàm, một chỗ để kiểm,
+// một chỗ để test. Thêm field mới vào hồ sơ mà quên sửa hàm này thì field đó KHÔNG lọt ra —
+// mặc định an toàn, đúng chiều cần thiết.
+//
+// `liked` và `care` là chỗ Kay ghi thật: khách chê môi nhạt, da dầu 3 tiếng là trôi, mẹ chồng
+// khó tính. Ghi thật chỉ xảy ra khi người ghi CHẮC CHẮN khách không bao giờ đọc được. Rò một
+// lần là từ đó không ai ghi thật nữa, và cả trường dữ liệu này thành vô dụng.
+export const LOOK_TEXT_FIELDS = ['tone', 'liked', 'care'];
+export const MAX_SHARE_PHOTOS = 24;
+
+export function parseLook(lead) {
+  try { const o = lead && lead.look_json ? JSON.parse(lead.look_json) : {}; return (o && typeof o === 'object') ? o : {}; }
+  catch (e) { return {}; }
+}
+
+export function normalizeLook(input) {
+  const out = {}; const errors = [];
+  if (!input || typeof input !== 'object') return { data: out, errors };
+  for (const k of LOOK_TEXT_FIELDS) {
+    if (!(k in input)) continue;
+    out[k] = cleanStr(input[k], 1500);
+  }
+  if ('share' in input) {
+    const s = input.share;
+    if (s === null) { out.share = null; }              // null = thu hồi
+    else if (typeof s !== 'object') { errors.push('share phải là object hoặc null'); }
+    else {
+      const sh = {};
+      if ('enabled' in s) sh.enabled = s.enabled === true;
+      if ('note' in s) sh.note = cleanStr(s.note, 800);
+      if ('photos' in s) {
+        if (!Array.isArray(s.photos)) errors.push('share.photos phải là mảng');
+        else if (s.photos.length > MAX_SHARE_PHOTOS) errors.push(`share.photos tối đa ${MAX_SHARE_PHOTOS} ảnh`);
+        // Chỉ nhận key R2 dạng jobs/<id>/<file>. Việc kiểm key có ĐÚNG job này không nằm ở
+        // look.js — ở đây chỉ chặn hình dạng rác, không chặn được quyền.
+        else sh.photos = s.photos.map(p => cleanStr(p, 300)).filter(p => /^jobs\/[A-Za-z0-9_-]+\/[A-Za-z0-9._-]+$/.test(p));
+      }
+      out.share = sh;
+    }
+  }
+  return { data: out, errors };
+}
+
+// Gộp patch vào look cũ. `share` gộp nông một cấp để bật/tắt link không xoá mất danh sách ảnh.
+export function mergeLook(before, patch) {
+  const next = Object.assign({}, before, patch);
+  if ('share' in patch) {
+    next.share = patch.share === null ? null : Object.assign({}, before.share || {}, patch.share);
+  }
+  return next;
+}
+
+/* CỬA RA DUY NHẤT cho trang khách xem. Trả về đúng những gì khách được thấy, không hơn.
+   Danh sách trắng, không phải danh sách đen: thêm field nội bộ mới vào look_json thì nó
+   KHÔNG tự lọt ra đây. Hàm này thuần, không chạm DB, nên test được thẳng. */
+export function publicLook(look) {
+  const l = look && typeof look === 'object' ? look : {};
+  const s = l.share && typeof l.share === 'object' ? l.share : {};
+  return {
+    tone: cleanStr(l.tone, 1500) || null,
+    note: cleanStr(s.note, 800) || null,
+    photos: Array.isArray(s.photos) ? s.photos.slice(0, MAX_SHARE_PHOTOS) : []
+  };
+}
+
+// Link chỉ sống khi CẢ HAI đúng: có token trong cột riêng, và share.enabled === true.
+// Hai công tắc có chủ ý: tắt tạm (enabled=false, giữ danh sách ảnh đã chọn) khác thu hồi
+// hẳn (share_token = NULL, link cũ chết vĩnh viễn).
+export function shareIsLive(lead, look) {
+  return !!(lead && lead.share_token && look && look.share && look.share.enabled === true);
+}
+
+export function newShareToken() {
+  return Array.from(crypto.getRandomValues(new Uint8Array(16)))
+    .map(b => b.toString(16).padStart(2, '0')).join('');
+}

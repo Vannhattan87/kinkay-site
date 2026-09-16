@@ -104,6 +104,24 @@
   .thumbs img{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:8px;background:#efe9e2;display:block}
   .thumbs .x{position:absolute;top:4px;right:4px;border:0;border-radius:50%;width:24px;height:24px;line-height:24px;padding:0;background:rgba(0,0,0,.55);color:#fff;font-size:15px;cursor:pointer}
   .thumbs figcaption{font-size:11px;color:var(--mute);margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  /* CR-20260916-35 · hồ sơ buổi làm + link gửi khách */
+  .lkrow{border-top:1px dashed var(--line);padding:8px 0}
+  .lklab{font-size:12px;color:var(--mute);margin-bottom:2px}
+  .lkval{white-space:pre-wrap;font-size:14px}
+  .lkval.empty{color:var(--mute);font-style:italic}
+  .pill.int{background:#efe7dc;color:#6b5c47;border-color:#e0d4c2}
+  .shbox{margin-top:12px;border-top:1px solid var(--line);padding-top:12px}
+  .shbox .shlab{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);margin-bottom:8px}
+  .shbox.on .shlab{color:var(--gold2)}
+  .shurl{font-size:12px;word-break:break-all;background:#f6f1e9;border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-bottom:8px}
+  .shbtns{display:flex;gap:6px;flex-wrap:wrap}
+  .shbtns .btn{margin:0}
+  .thumbs.pick figure{cursor:pointer}
+  .thumbs.pick img{opacity:.42;transition:opacity .12s}
+  .thumbs.pick figure.on img{opacity:1;outline:3px solid var(--gold2);outline-offset:-3px}
+  .thumbs.pick .tick{position:absolute;top:4px;left:4px;width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.9);color:#3d342b;font-size:13px;line-height:22px;text-align:center}
+  .thumbs.pick figure.on .tick{background:var(--gold2);color:#fff}
+  .card.tl.me{border-color:var(--gold2)}
   details.histbox{padding:12px 14px}
   details.histbox summary{margin:0}
   .bcprev{background:#e9e2d8;border-radius:14px;padding:10px;display:flex;justify-content:center}
@@ -547,6 +565,7 @@
         '<div style="margin-top:6px"><span class="money">Expected ' + esc(money(l.expected_revenue)) + '</span> · Cọc ' + esc(l.deposit || '—') + ' · <span class="money">Actual ' + esc(money(l.actual_revenue)) + (l.actual_revenue != null ? (l.actual_verified ? ' ✓ đã xác minh' : ' (chưa xác minh)') : '') + '</span></div>' +
         (d.partner ? '<div class="warn">Đối tác: <a href="#/partner/' + esc(d.partner.id) + '">' + esc(d.partner.name) + '</a> · ' + esc(d.partner.commercial_terms || 'referral chuẩn 10%') + '</div>' : '') +
         (l.next_action ? '<div style="margin-top:8px"><b>Việc tiếp:</b> ' + esc(l.next_action) + (l.next_followup ? ' <span class="pill ' + dueClass(l.next_followup, today) + '">' + dmy(l.next_followup) + '</span>' : '') + '</div>' : '') +
+        '<div style="margin-top:10px"><button class="btn sec sm" data-go="#/khach/' + esc(encodeURIComponent(l.id)) + '">Xem cả lịch sử khách này</button></div>' +
         '</div>';
 
       var quick = '<div class="card" id="quick"><h2>Cập nhật nhanh (≤ 60 giây)</h2>' +
@@ -587,7 +606,7 @@
 
       var del = '<div class="card"><h2>Xoá bản ghi</h2><p class="muted" style="margin:0">Chỉ khi nhập trùng / nhập sai / test. Khách thật không chốt thì đổi <b>Lost</b>.</p>' +
         '<button class="btn danger" id="btnDel">Xoá job này</button></div>';
-      shell('', head + jobCard(l, d) + '<div id="sameSlot"></div><div id="jobsSlot"></div><div id="mediaSlot"></div><div id="bcSlot"></div>' + quick + full + hist + del, 'leads'); bindRows(); bindQuickDates(app);
+      shell('', head + jobCard(l, d) + '<div id="sameSlot"></div><div id="jobsSlot"></div><div id="mediaSlot"></div><div id="lookSlot"></div><div id="bcSlot"></div>' + quick + full + hist + del, 'leads'); bindRows(); bindQuickDates(app);
       // Dùng lại đúng sheet của BC nhưng ở chế độ CHỈ LƯU: PATCH /booking, không phát hành bản nào.
       var bkBtn = $('#bkEdit');
       if (bkBtn) bkBtn.onclick = function () {
@@ -597,6 +616,7 @@
       sameMount(l);
       jobsMount(l);    // CR-32 T0 — các job khác CÙNG SỐ LIÊN HỆ
       mediaMount(l);   // CR-32 T3 — ảnh/album của ĐÚNG job này
+      lookMount(l);    // CR-35 — hồ sơ buổi làm + link gửi khách
       $('#btnDel').onclick = function () { confirmDelete('lead', l); };
       $('#f_status').onchange = function () { $('#moneyBox').style.display = ['Quoted', 'Hold', 'Deposit Paid', 'Confirmed', 'Completed'].indexOf(this.value) >= 0 ? '' : 'none'; };
 
@@ -775,6 +795,183 @@
     api('/leads/' + encodeURIComponent(l.id) + '/media')
       .then(function (d) { draw(d.media || []); })
       .catch(function () { /* endpoint chưa lên thì ẩn khối, không làm gãy trang */ });
+  }
+
+  /* ═══ CR-20260916-35 · HỒ SƠ BUỔI LÀM ════════════════════════════════
+     Tân 16/09: "không có chỗ để xem hồ sơ lưu của khách... để lần sau khách biết muốn làm i
+     như vậy, hay thay đổi chỉnh sửa, thử look mới."
+
+     HAI LỚP, in ra màn hình cũng phải nhìn là biết đâu là đâu:
+       nhãn "khách xem được" → tông + kiểu, lời nhắn, ảnh đã tick
+       nhãn "chỉ nội bộ"     → khách thích/chê gì, lưu ý da tóc
+     Kay phải thấy nhãn này ngay lúc ĐANG GÕ, không phải đi đọc tài liệu. Ghi thật lòng chỉ
+     xảy ra khi người ghi chắc chắn khách không đọc được. */
+  function lookMount(l) {
+    var slot = $('#lookSlot'); if (!slot) return;
+    api('/leads/' + encodeURIComponent(l.id) + '/look')
+      .then(function (d) { lookDraw(l, d); })
+      .catch(function (e) {
+        // Chưa chạy migration 006 thì khối này chưa dùng được — nói thẳng, đừng ẩn đi.
+        slot.innerHTML = '<div class="card"><h2>Hồ sơ buổi làm</h2><div class="miss">' + esc(e.message) + '</div></div>';
+      });
+  }
+
+  function lookDraw(l, d) {
+    var slot = $('#lookSlot'); if (!slot) return;
+    var k = d.look || {}, pub = d.preview_khach_thay || {};
+    function row(lab, val, internal) {
+      return '<div class="lkrow"><div class="lklab">' + esc(lab) +
+        (internal ? ' <span class="pill int">chỉ nội bộ</span>' : ' <span class="pill rep">khách xem được</span>') + '</div>' +
+        '<div class="lkval' + (val ? '' : ' empty') + '">' + (val ? esc(val) : 'chưa ghi') + '</div></div>';
+    }
+    var nAnh = (pub.photos || []).length;
+    var share = d.share_live
+      ? '<div class="shbox on"><div class="shlab">Link gửi khách đang bật</div>' +
+          '<div class="shurl">' + esc(location.origin + d.share_url) + '</div>' +
+          '<div class="shbtns"><button class="btn sec sm" id="shCopy">Chép link</button>' +
+          '<button class="btn sec sm" id="shNew">Đổi link mới</button>' +
+          '<button class="btn sec sm danger" id="shOff">Thu hồi</button></div>' +
+          '<p class="muted">Đang gửi <b>' + nAnh + ' ảnh</b>. Khách chỉ thấy tông, lời nhắn và đúng số ảnh này. ' +
+          'Hai mục nội bộ ở trên không bao giờ ra.' +
+          (nAnh ? '' : ' <b>Chưa tick ảnh nào nên khách mở ra chưa thấy ảnh.</b>') + '</p></div>'
+      : '<div class="shbox"><div class="shlab">Chưa có link gửi khách</div>' +
+          '<button class="btn sec" id="shOn">Tạo link gửi khách</button>' +
+          '<p class="muted">Tạo xong vẫn phải tick từng ảnh mới gửi. Mặc định 0 ảnh.</p></div>';
+
+    slot.innerHTML = '<div class="card"><div class="jh"><h2>Hồ sơ buổi làm</h2>' +
+      '<button class="btn sec sm" id="lkEdit">Sửa</button></div>' +
+      row('Tông + kiểu đã làm', k.tone, false) +
+      row('Khách thích gì / chê gì', k.liked, true) +
+      row('Lưu ý da / tóc', k.care, true) +
+      share + '</div>';
+
+    $('#lkEdit').onclick = function () { lookSheet(l, d); };
+    var on = $('#shOn'), nw = $('#shNew'), off = $('#shOff'), cp = $('#shCopy');
+    function mkLink(btn, doiLink) {
+      btn.disabled = true;
+      api('/leads/' + encodeURIComponent(l.id) + '/share', { method: 'POST' })
+        .then(function (r) { toast(doiLink ? 'Link cũ đã chết, đã có link mới' : 'Đã tạo link'); lookMount(l); })
+        .catch(function (e) { btn.disabled = false; toast(e.message, true); });
+    }
+    if (on) on.onclick = function () { mkLink(on, false); };
+    if (nw) nw.onclick = function () {
+      if (!window.confirm('Đổi link mới? Link đã gửi cho khách sẽ chết ngay.')) return;
+      mkLink(nw, true);
+    };
+    if (off) off.onclick = function () {
+      if (!window.confirm('Thu hồi link? Khách đã lưu link cũng không mở được nữa.')) return;
+      off.disabled = true;
+      api('/leads/' + encodeURIComponent(l.id) + '/share', { method: 'DELETE' })
+        .then(function (r) { toast(r.note || 'Đã thu hồi'); lookMount(l); })
+        .catch(function (e) { off.disabled = false; toast(e.message, true); });
+    };
+    if (cp) cp.onclick = function () {
+      var u = location.origin + d.share_url;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(u).then(function () { toast('Đã chép link'); },
+          function () { toast('Không chép được, chọn tay ở ô trên', true); });
+      } else toast('Trình duyệt không cho chép tự động, chọn tay ở ô trên', true);
+    };
+  }
+
+  function lookSheet(l, d) {
+    var k = d.look || {}, sh = k.share || {};
+    api('/leads/' + encodeURIComponent(l.id) + '/media').then(function (md) {
+      var photos = (md.media || []).filter(function (m) { return m && m.kind === 'photo'; });
+      var chosen = {}; (sh.photos || []).forEach(function (p) { chosen[p] = true; });
+      var bg = document.createElement('div'); bg.className = 'sheet-bg';
+      bg.innerHTML = '<div class="sheet"><div class="grab"></div><h3>Hồ sơ buổi làm</h3>' +
+        '<div class="muted">' + esc(l.customer_name) + (l.event_date ? ' · ' + dmy(l.event_date) : '') + '</div>' +
+        '<label>Tông + kiểu đã làm <span class="pill rep">khách xem được</span></label>' +
+        '<textarea id="lk_tone" placeholder="Tông ấm, mắt nâu khói, môi cam đất. Tóc búi thấp cài hoa baby">' + esc(k.tone || '') + '</textarea>' +
+        '<label>Khách thích gì / chê gì <span class="pill int">chỉ nội bộ</span></label>' +
+        '<textarea id="lk_liked" placeholder="Thích phần mắt. Chê môi nhạt hơn ảnh mẫu">' + esc(k.liked || '') + '</textarea>' +
+        '<label>Lưu ý da / tóc <span class="pill int">chỉ nội bộ</span></label>' +
+        '<textarea id="lk_care" placeholder="Da dầu vùng T, 3 tiếng là trôi. Tóc mỏng cần phồng chân">' + esc(k.care || '') + '</textarea>' +
+        '<p class="muted" style="margin:2px 0 12px">Hai mục có nhãn <b>chỉ nội bộ</b> không bao giờ ra trang khách xem. Ghí thật để lần sau còn dùng được.</p>' +
+        '<label>Lời nhắn gửi khách <span class="pill rep">khách xem được</span></label>' +
+        '<textarea id="lk_note" placeholder="Cảm ơn chị đã tin tưởng KINKAY. Hẹn gặp lại chị dịp tới.">' + esc(sh.note || '') + '</textarea>' +
+        '<label>Ảnh gửi cho khách xem' + (photos.length ? ' (bấm để chọn)' : '') + '</label>' +
+        (photos.length ? '<div class="thumbs pick" id="lk_ph"></div>'
+                       : '<p class="muted">Job này chưa có ảnh chụp nào. Chụp ảnh ở khối trên rồi quay lại đây.</p>') +
+        '<div class="bcbtns"><button class="btn sec" id="lk_cancel">Huỷ</button><button class="btn bc" id="lk_ok">Lưu hồ sơ</button></div></div>';
+      document.body.appendChild(bg);
+
+      var box = $('#lk_ph', bg);
+      if (box) {
+        box.innerHTML = photos.map(function (m) {
+          return '<figure class="' + (chosen[m.key] ? 'on' : '') + '" data-k="' + esc(m.key) + '">' +
+            '<img data-ph="' + esc(m.url) + '" alt=""><span class="tick">' + (chosen[m.key] ? '✓' : '') + '</span></figure>';
+        }).join('');
+        box.querySelectorAll('img[data-ph]').forEach(function (im) {
+          photoBlob(im.getAttribute('data-ph')).then(function (u) { im.src = u; }).catch(function () { im.removeAttribute('data-ph'); });
+        });
+        box.querySelectorAll('figure[data-k]').forEach(function (f) {
+          f.onclick = function () {
+            var key = f.getAttribute('data-k');
+            chosen[key] = !chosen[key];
+            f.className = chosen[key] ? 'on' : '';
+            f.querySelector('.tick').textContent = chosen[key] ? '✓' : '';
+          };
+        });
+      }
+      bg.addEventListener('click', function (e) { if (e.target === bg) bg.remove(); });
+      $('#lk_cancel', bg).onclick = function () { bg.remove(); };
+      $('#lk_ok', bg).onclick = function () {
+        var btn = this; btn.disabled = true; btn.textContent = 'Đang lưu…';
+        var body = { look: {
+          tone: $('#lk_tone', bg).value.trim(),
+          liked: $('#lk_liked', bg).value.trim(),
+          care: $('#lk_care', bg).value.trim(),
+          share: { note: $('#lk_note', bg).value.trim(),
+                   photos: Object.keys(chosen).filter(function (x) { return chosen[x]; }) }
+        } };
+        api('/leads/' + encodeURIComponent(l.id) + '/look', { method: 'PATCH', body: body })
+          .then(function () { bg.remove(); toast('Đã lưu hồ sơ'); lookMount(l); })
+          .catch(function (e) { btn.disabled = false; btn.textContent = 'Lưu hồ sơ'; toast(e.message, true); });
+      };
+    }).catch(function (e) { toast(e.message, true); });
+  }
+
+  /* Trang khách: XẾP các hồ sơ buổi làm cạnh nhau theo thời gian. Nó KHÔNG sở hữu dữ liệu
+     và không được đẻ ra một "hồ sơ khách hàng" thứ hai. Gom theo SỐ LIÊN HỆ, chưa xác nhận
+     cùng một người — câu cảnh báo của server BẮT BUỘC in ra, y như luật đặt từ CR-32. */
+  function viewCustomer(leadId) {
+    loading('leads');
+    api('/history?self=1&lead=' + encodeURIComponent(leadId)).then(function (d) {
+      var jobs = d.jobs || [];
+      var head = '<button class="back" data-go="#/lead/' + esc(leadId) + '">‹ Về job</button>' +
+        '<div class="card"><h2>Khách này đã làm gì</h2>' +
+        '<div class="muted">' + jobs.length + ' buổi · gom theo số liên hệ</div>' +
+        '<div class="warn">' + esc(d.warning || '') + '</div>' +
+        (d.mixed_names ? '<div class="warn"><b>' + d.distinct_names + ' tên khác nhau</b> trên cùng số này. Rất có thể là người đặt hộ (mẹ, planner) chứ không phải một khách quay lại.</div>' : '') +
+        '</div>';
+      var body = jobs.length ? jobs.map(function (x) {
+        var lk = {}, med = [], bk = {};
+        try { lk = JSON.parse(x.look_json || '{}') || {}; } catch (e) { lk = {}; }
+        try { med = (JSON.parse(x.media_json || '[]') || []).filter(function (m) { return m && m.kind === 'photo'; }); } catch (e) { med = []; }
+        try { bk = JSON.parse(x.booking_json || '{}') || {}; } catch (e) { bk = {}; }
+        return '<div class="card tl' + (x.id === leadId ? ' me' : '') + '">' +
+          '<div class="jh"><div><b>' + esc(x.event_date ? dmy(x.event_date) : 'chưa có ngày') + '</b> ' + pill(x.status) +
+            (x.id === leadId ? ' <span class="pill rep">buổi đang mở</span>' : '') + '</div>' +
+            '<button class="btn sec sm" data-go="#/lead/' + esc(x.id) + '">Mở</button></div>' +
+          '<div class="muted">' + esc([x.service, bk.venue, bk.ready_time ? 'có mặt ' + bk.ready_time : ''].filter(Boolean).join(' · ')) + '</div>' +
+          (lk.tone ? '<div class="lkrow"><div class="lklab">Tông + kiểu đã làm</div><div class="lkval">' + esc(lk.tone) + '</div></div>'
+                   : '<div class="lkrow"><div class="lkval empty">chưa ghi hồ sơ look cho buổi này</div></div>') +
+          (lk.care ? '<div class="lkrow"><div class="lklab">Lưu ý da / tóc <span class="pill int">nội bộ</span></div><div class="lkval">' + esc(lk.care) + '</div></div>' : '') +
+          (lk.liked ? '<div class="lkrow"><div class="lklab">Khách thích / chê <span class="pill int">nội bộ</span></div><div class="lkval">' + esc(lk.liked) + '</div></div>' : '') +
+          (med.length ? '<div class="thumbs">' + med.slice(0, 6).map(function (m) {
+              return '<figure><img data-ph="' + esc(m.url) + '" alt=""></figure>'; }).join('') + '</div>' : '') +
+          '</div>';
+      }).join('')
+      : '<div class="card"><div class="empty">Chưa tra ra buổi nào.</div>' + (d.note ? '<p class="muted">' + esc(d.note) + '</p>' : '') + '</div>';
+
+      shell('', head + body, 'leads'); bindRows();
+      app.querySelectorAll('img[data-ph]').forEach(function (im) {
+        photoBlob(im.getAttribute('data-ph')).then(function (u) { im.src = u; })
+          .catch(function () { im.removeAttribute('data-ph'); im.alt = 'không tải được'; });
+      });
+    }).catch(function (e) { shell('', '<div class="warn">' + esc(e.message) + '</div>', 'leads'); });
   }
 
   function sameMount(l) {
@@ -1447,6 +1644,7 @@
     if (h === '#/today') viewToday();
     else if (h === '#/leads') viewLeads();
     else if ((m = h.match(/^#\/lead\/(.+)$/))) viewLead(decodeURIComponent(m[1]));
+    else if ((m = h.match(/^#\/khach\/(.+)$/))) viewCustomer(decodeURIComponent(m[1]));
     else if (h === '#/new') viewNew();
     else if (h === '#/partners') viewPartners();
     else if (h === '#/partner-new') viewPartnerNew();

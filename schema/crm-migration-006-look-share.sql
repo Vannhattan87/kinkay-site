@@ -1,0 +1,75 @@
+-- KINKAY CRM · MIGRATION 006 · CR-20260916-35 · 16/09/2026
+-- Duyệt: Tân 16/09 (ngoại lệ HẸP của DEC-20260906-03 P5 Freeze, chỉ cho CR-35).
+--
+-- Yêu cầu gốc, lời Tân: "không có chỗ để xem hồ sơ lưu của khách kiểu bật lên là 1 hồ sơ
+-- báo cáo lần này làm gì, hình ảnh ra sao. Để lần sau khách biết muốn làm i như vậy, hay
+-- thay đổi chỉnh sửa, thử look mới."
+--
+-- ─────────────────────────────────────────────────────────────────────────
+-- SỐ MIGRATION — ĐỌC TRƯỚC KHI ĐẶT SỐ CHO LẦN SAU
+-- ─────────────────────────────────────────────────────────────────────────
+-- File 005 có ghi "CR-31 Đ8 khi làm phải dùng 006 và schema_version 1.5".
+-- CR-31 Đ8 (request_id / idempotency) tới giờ VẪN chưa duyệt, chưa build, chưa chạy.
+-- Luật đã chốt ở file 004 là: DÃY SỐ PHẢI PHẢN ÁNH THỨ TỰ CHẠY THẬT. Nếu để trống 006
+-- cho một việc chưa biết bao giờ làm, rồi migration này mang số 007 chạy trước, thì người
+-- đọc sổ sau này suy ra sai trạng thái database — đúng cái bệnh mà file 004 đã đặt luật để
+-- tránh. Giữ chỗ không thắng được thứ tự thật.
+--
+--   *** CR-31 Đ8 TỪ NAY DÙNG 007 VÀ schema_version 1.6. ***
+--
+-- Chạy SAU crm-migration-005 (schema_version 1.4).
+-- An toàn chạy lại: CREATE INDEX có IF NOT EXISTS. ALTER TABLE chỉ chạy được 1 lần —
+-- lần 2 báo "duplicate column name", bỏ qua là đúng.
+--
+-- ROLLBACK: KHÔNG xoá cột trên production. Hai cột dưới đây là cộng thêm, không cột nào cũ
+-- bị đổi, không dòng nào bị ghi đè. Quay lui bằng revert code. Muốn tắt gấp mọi link đã gửi
+-- khách mà không cần deploy:  UPDATE leads SET share_token = NULL;
+
+-- ─────────────────────────────────────────────────────────────────────────
+-- 1. look_json — HỒ SƠ BUỔI LÀM
+-- ─────────────────────────────────────────────────────────────────────────
+-- VÌ SAO KHÔNG NHÉT VÀO `booking_json`: booking_json là NGUỒN CỦA TÀI LIỆU GỬI KHÁCH
+-- (Booking Confirmation). Mọi field trong đó đều có khả năng đi vào snapshot bất biến.
+-- Hồ sơ look là ghi chép nghề: tông da, khách chê gì, da dễ trôi. Nó KHÔNG được phép
+-- lọt vào bản xác nhận, và nó thay đổi sau buổi làm trong khi booking đã đóng từ trước.
+-- Hai vòng đời khác nhau thì hai cột khác nhau.
+--
+-- Hình dạng (mọi khoá đều tuỳ chọn):
+--   {
+--     "tone":  "Tông ấm, mắt nâu khói, môi cam đất. Tóc búi thấp cài hoa baby",
+--     "liked": "Khách thích phần mắt, chê môi hơi nhạt so với ảnh mẫu",   ← NỘI BỘ
+--     "care":  "Da dầu vùng T, 3 tiếng là trôi. Tóc mỏng, cần phồng chân", ← NỘI BỘ
+--     "updated_at": "...", "updated_by": "...",
+--     "share": {
+--       "enabled": true,
+--       "note":    "Cảm ơn chị đã tin tưởng KINKAY...",                    ← ĐỐI NGOẠI
+--       "photos":  ["jobs/KK-260914-005/1758...-ab12.jpg"],                ← Kay tick từng tấm
+--       "created_at": "...", "created_by": "..."
+--     }
+--   }
+--
+-- HAI LỚP, KHÔNG BAO GIỜ TRỘN:
+--   ĐỐI NGOẠI (khách đọc được qua link): tone, share.note, đúng các ảnh trong share.photos.
+--   NỘI BỘ   (chỉ trong CRM):            liked, care, và mọi thứ còn lại của lead.
+-- `liked` và `care` là chỗ Kay ghi thật lòng. Ghi thật chỉ xảy ra khi người ghi CHẮC CHẮN
+-- khách không đọc được. Rò một lần là mất luôn giá trị của cả trường dữ liệu này.
+ALTER TABLE leads ADD COLUMN look_json TEXT;
+
+-- ─────────────────────────────────────────────────────────────────────────
+-- 2. share_token — KHOÁ CỦA TRANG KHÁCH XEM LẠI
+-- ─────────────────────────────────────────────────────────────────────────
+-- Khách không có tài khoản GitHub, nên trang /xem/<token> nằm NGOÀI cổng xác thực.
+-- Thứ duy nhất bảo vệ nó là token: 32 ký tự hex ngẫu nhiên từ crypto.getRandomValues.
+-- Cột riêng chứ không nhét trong look_json vì trang công khai phải tra bằng token —
+-- cần index, không thể quét toàn bảng rồi parse JSON từng dòng.
+--
+-- NULL = chưa từng tạo link, HOẶC đã thu hồi. Thu hồi là gán NULL, không phải xoá dòng:
+-- link cũ chết ngay lập tức, không có đường sống lại, và không ai đoán được token mới
+-- từ token cũ (mỗi lần tạo lại sinh token hoàn toàn mới).
+--
+-- UNIQUE nhưng SQLite cho phép nhiều NULL trong unique index — đúng cái cần: rất nhiều
+-- job chưa có link, nhưng không job nào trùng token với job khác.
+ALTER TABLE leads ADD COLUMN share_token TEXT;
+CREATE UNIQUE INDEX IF NOT EXISTS idx_leads_share_token ON leads(share_token);
+
+INSERT OR REPLACE INTO meta(key, value) VALUES ('schema_version', '1.5');

@@ -46,9 +46,16 @@ export async function onRequestGet({ request, env }) {
   }
 
   const args = [key];
+  /* CR-20260916-35: tra kem `look_json` va `booking_json`.
+     Trang khach xep cac ho so buoi lam canh nhau theo thoi gian, nen no can biet lan truoc
+     lam tong gi va may gio — khong the bat no goi them 1 request cho TUNG job.
+     `?self=1`: giu CA job dang mo trong danh sach. Khoi "job khac cua khach nay" trong trang
+     chi tiet thi loai job hien tai ra (mac dinh), nhung dong thoi gian cua khach thi phai co
+     du — thieu dung buoi vua lam xong la dong thoi gian noi doi. */
+  const keepSelf = u.searchParams.get('self') === '1';
   let sql = 'SELECT id, created_date, customer_name, contact, contact_channel, service, event_date, status, '
-          + 'expected_revenue, actual_revenue, owner, media_json FROM leads WHERE contact_key = ?';
-  if (leadId) { sql += ' AND id != ?'; args.push(leadId); }
+          + 'expected_revenue, actual_revenue, owner, media_json, look_json, booking_json FROM leads WHERE contact_key = ?';
+  if (leadId && !keepSelf) { sql += ' AND id != ?'; args.push(leadId); }
   sql += ' ORDER BY COALESCE(event_date, created_date) DESC, id DESC LIMIT 100';
 
   const rows = (await db.prepare(sql).bind(...args).all()).results || [];
