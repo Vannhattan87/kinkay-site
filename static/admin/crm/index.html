@@ -105,6 +105,10 @@
   .thumbs .x{position:absolute;top:4px;right:4px;border:0;border-radius:50%;width:24px;height:24px;line-height:24px;padding:0;background:rgba(0,0,0,.55);color:#fff;font-size:15px;cursor:pointer}
   .thumbs figcaption{font-size:11px;color:var(--mute);margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   /* CR-20260916-35 · hồ sơ buổi làm + link gửi khách */
+  /* CR-20260916-37 · băng báo database chưa khớp code */
+  #hbanner .hb{background:#fdecea;border:1px solid #f2c4bd;color:#7a2318;border-radius:10px;
+    padding:10px 12px;margin:0 0 10px;font-size:13px;line-height:1.55}
+  #hbanner .hb div+div{margin-top:6px;padding-top:6px;border-top:1px dashed #f2c4bd}
   .lkrow{border-top:1px dashed var(--line);padding:8px 0}
   .lklab{font-size:12px;color:var(--mute);margin-bottom:2px}
   .lkval{white-space:pre-wrap;font-size:14px}
@@ -299,6 +303,24 @@
     }
     window.addEventListener('message', onMsg);
   }
+  /* ═══ CR-20260916-37 · BIẾT TRƯỚC KHI KAY ĐỤNG PHẢI ═════════════════════════
+     Ngày 16/09 bẫy "code lên trước migration" sập hai lần, cả hai lần đều phát hiện bằng
+     cách tệ nhất: người dùng bấm vào giữa lúc đang làm việc rồi thấy hỏng.
+     Khối này hỏi thẳng database lúc mở app và treo băng đỏ nếu thiếu. Băng nằm NGOÀI `app`
+     nên mọi lần chuyển trang nó vẫn còn đó — không cho ai lướt qua.
+     Health hỏng thì im: nó là lớp cảnh báo, không được phép tự mình chặn app. */
+  function healthCheck() {
+    api('/health').then(function (h) {
+      var msgs = [];
+      if (!h.khop) msgs.push(h.thong_bao);
+      if (h.kho_anh !== 'đã gắn') msgs.push('Kho ảnh chưa gắn (binding R2 CRM_MEDIA). Nút Chụp ảnh sẽ không dùng được.');
+      var el = document.getElementById('hbanner');
+      if (!msgs.length) { if (el) el.remove(); return; }
+      if (!el) { el = document.createElement('div'); el.id = 'hbanner'; app.parentNode.insertBefore(el, app); }
+      el.innerHTML = '<div class="hb">' + msgs.map(function (m) { return '<div>' + esc(m) + '</div>'; }).join('') + '</div>';
+    }).catch(function () { /* lớp cảnh báo hỏng thì im, đừng chặn app */ });
+  }
+
   function logout(clear) { state.token = null; state.user = null; try { localStorage.removeItem(TOKEN_KEY); } catch (x) { } if (clear !== false) render(); else renderLogin(); }
 
   function renderLogin(msg) {
@@ -315,6 +337,7 @@
       state.lists = j; state.user = j.user; state.dev = !state.token; state.cutover = !!j.cutover;
       if (!location.hash) location.hash = '#/today';
       render();
+      healthCheck();
     }).catch(function (e) {
       state.token = null;
       renderLogin(/hết hạn|401|Chưa đăng nhập/.test(e.message) ? '' : e.message);

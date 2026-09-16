@@ -18,7 +18,7 @@
 //                                                Chưa đặt / khác "1" = CHỈ ĐỌC (đối chiếu), Sheet vẫn master, form web đi đường cũ.
 //   CRM_DEV_USER        (CHỈ local dev)          — bỏ qua GitHub, coi như user này. KHÔNG BAO GIỜ đặt ở Production.
 
-import { err, isCutover } from './_lib.js';
+import { err, isCutover, migrationGapError } from './_lib.js';
 
 const CACHE = new Map(); // tokenHash -> { login, exp }
 const TTL_MS = 10 * 60 * 1000;
@@ -54,10 +54,21 @@ export async function onRequest(context) {
   if (!env.CRM_DB) return err('CRM_DB chưa được gắn (Cloudflare Pages → Settings → Bindings → D1 → CRM_DB).', 503);
 
   // QA 06/09 điểm 1: chưa cutover thì chặn mọi ghi (sau khi đã xác thực). Đọc/đối chiếu/export vẫn được.
-  const gate = () => {
+  const gate = async () => {
     if (!isCutover(env) && request.method !== 'GET' && request.method !== 'HEAD')
       return err('CRM đang ở chế độ CHỈ ĐỌC (đối chiếu). Sheet LIVE vẫn là nguồn duy nhất. Tân bật CRM_CUTOVER=1 khi đối chiếu xong.', 423, 'cutover_off');
-    return next();
+    /* CR-20260916-37 — MỘT CHỖ DUY NHẤT dịch lỗi "database thiếu thứ code đang hỏi".
+       Mọi đường /api/crm/* đi qua đây, nên không phải vá từng file và không thể quên file nào.
+       Trước đây lỗi này nổi lên giao diện dưới dạng `Unexpected token '<'` (Cloudflare trả
+       trang HTML khi function ném) — vô dụng với người đang ngồi làm việc.
+       Lỗi KHÁC vẫn ném nguyên: đổi một lỗi khó hiểu lấy một lỗi khó hiểu khác thì được gì. */
+    try {
+      return await next();
+    } catch (e) {
+      const gap = migrationGapError(e);
+      if (gap) return err(gap.message, 503, 'migration_missing:' + (gap.migration || '?'));
+      throw e;
+    }
   };
 
   if (env.CRM_DEV_USER) {                     // local dev only

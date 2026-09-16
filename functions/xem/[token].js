@@ -54,7 +54,7 @@ const notFound = () => new Response(
   { status: 404, headers: { 'content-type': 'text/html; charset=utf-8', 'x-robots-tag': 'noindex, nofollow', 'cache-control': 'no-store' } }
 );
 
-export async function onRequestGet({ params, env }) {
+async function _impl({ params, env }) {
   if (!env.CRM_DB) return notFound();
   const token = String(params.token || '').trim();
   // Chặn hình dạng trước khi chạm database: token thật luôn là 32 ký tự hex.
@@ -127,4 +127,11 @@ ${photos ? `<div class="card"><h2>${esc(t.photos)}</h2><div class="grid">${photo
       'cache-control': 'no-store, private'
     }
   });
+}
+
+/* Boc ngoai: loi database (ke ca thieu migration) KHONG duoc lo ra cho nguoi la.
+   Khach chi thay dung mot cau nhu moi truong hop khac. Chi tiet nam o /api/crm/health,
+   sau cong dang nhap. */
+export async function onRequestGet(ctx) {
+  try { return await _impl(ctx); } catch (e) { return notFound(); }
 }

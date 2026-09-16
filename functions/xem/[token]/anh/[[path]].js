@@ -22,7 +22,7 @@ const deny = () => new Response('', {
   headers: { 'cache-control': 'no-store', 'x-robots-tag': 'noindex, nofollow' }
 });
 
-export async function onRequestGet({ params, env }) {
+async function _impl({ params, env }) {
   if (!env.CRM_DB || !env.CRM_MEDIA) return deny();
 
   const token = String(params.token || '').trim();
@@ -58,4 +58,11 @@ export async function onRequestGet({ params, env }) {
   // ở trình duyệt khách hay ở CDN.
   h.set('cache-control', 'no-store, private');
   return new Response(obj.body, { headers: h });
+}
+
+/* Boc ngoai: loi database (ke ca thieu migration) KHONG duoc lo ra cho nguoi la.
+   Khach chi thay dung mot cau nhu moi truong hop khac. Chi tiet nam o /api/crm/health,
+   sau cong dang nhap. */
+export async function onRequestGet(ctx) {
+  try { return await _impl(ctx); } catch (e) { return deny(); }
 }

@@ -645,3 +645,66 @@ export function newShareToken() {
   return Array.from(crypto.getRandomValues(new Uint8Array(16)))
     .map(b => b.toString(16).padStart(2, '0')).join('');
 }
+
+// ===================== Chặn bẫy "code lên trước migration" (CR-20260916-37) =====================
+// Ngày 16/09/2026 cái bẫy này sập HAI LẦN trong một ngày:
+//   · CR-33 push 15/09, migration 005 không chạy → Booking Confirmation chết trên production
+//     suốt gần một ngày, không ai biết, cho tới khi Tân chụp màn hình gửi lên.
+//   · CR-35 push 16/09, migration 006 chưa chạy → hồ sơ buổi làm, trang khách và link gửi khách
+//     cùng chết. Tân bấm vào đúng lúc đang làm việc.
+//
+// Cả hai lần triệu chứng y hệt nhau và vô dụng như nhau: Cloudflare trả trang HTML lỗi,
+// giao diện ném ra `Unexpected token '<'`. Không nói được thiếu cái gì, không nói được phải
+// làm gì. Người ngồi trước màn hình chỉ thấy phần mềm hỏng.
+//
+// Không thể bắt migration chạy tự động — D1 không có runner, và chạy DDL tự động lúc có
+// request là cách hay nhất để hỏng database vào đúng giờ đông khách. Thứ ĐỔI ĐƯỢC là:
+// khi thiếu, phải nói ra thiếu migration số mấy, chứ không ném lỗi cú pháp vào mặt người dùng.
+//
+// Bảng dưới đây map CỘT → SỐ MIGRATION sinh ra nó. Thêm cột mới trong migration nào thì
+// thêm một dòng vào đây cùng lúc, đừng để lần sau.
+export const COLUMN_MIGRATION = {
+  // 002
+  booking_json: '002',
+  // 004
+  contact_key: '004', media_json: '004',
+  // 005 (bảng booking_confirmations)
+  status: '005', superseded_at: '005', superseded_by_id: '005', superseded_reason: '005', status_set_by: '005',
+  // 006
+  look_json: '006', share_token: '006'
+};
+
+export const TABLE_MIGRATION = { booking_confirmations: '002' };
+
+/* Nhận diện lỗi "database thiếu thứ code đang hỏi". Trả null nếu là lỗi khác — KHÔNG nuốt
+   lỗi thật thành thông báo migration, vì như vậy chỉ đổi một lỗi khó hiểu này lấy một lỗi
+   khó hiểu khác. D1 gói lỗi kiểu:  D1_ERROR: no such column: look_json: SQLITE_ERROR */
+export function migrationGapError(e) {
+  const msg = String((e && (e.message || e.cause && e.cause.message)) || e || '');
+  let m = /no such column:?\s*([A-Za-z0-9_.]+)/i.exec(msg);
+  if (m) {
+    const col = m[1].split('.').pop();
+    const num = COLUMN_MIGRATION[col];
+    return {
+      kind: 'column', name: col, migration: num || null,
+      message: num
+        ? `Tính năng này cần migration ${num} (cột \`${col}\`) mà database chưa chạy. Chạy schema/crm-migration-${num}-*.sql trong D1 Console rồi thử lại.`
+        : `Database chưa có cột \`${col}\`. Có migration chưa chạy — xem schema/README_CRM.md.`
+    };
+  }
+  m = /no such table:?\s*([A-Za-z0-9_.]+)/i.exec(msg);
+  if (m) {
+    const tb = m[1].split('.').pop();
+    const num = TABLE_MIGRATION[tb];
+    return {
+      kind: 'table', name: tb, migration: num || null,
+      message: num
+        ? `Tính năng này cần migration ${num} (bảng \`${tb}\`) mà database chưa chạy.`
+        : `Database chưa có bảng \`${tb}\`. Có migration chưa chạy — xem schema/README_CRM.md.`
+    };
+  }
+  return null;
+}
+
+// Phiên bản schema mà CODE HIỆN TẠI cần. Tăng cùng lúc với mỗi migration mới.
+export const SCHEMA_VERSION_REQUIRED = '1.5';

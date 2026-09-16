@@ -380,3 +380,53 @@ Lý do là **bắt buộc**, ghi vào `lead_events` dưới field `bc_status:<id
 biết vì sao nó bị chặn, không phải đoán.
 
 Sửa: `static/admin/crm/index.html` (bcMount + `bcVoidSheet`). Không migration, không API mới.
+
+---
+
+## CR-20260916-37 · Chặn bẫy "code lên trước migration" (16/09/2026)
+
+Ngày 16/09 bẫy này sập **hai lần trong một ngày**:
+
+- CR-33 push 15/09, migration 005 không chạy → Booking Confirmation chết trên production gần
+  một ngày, không ai biết, cho tới khi Tân chụp màn hình gửi lên.
+- CR-35 push 16/09, migration 006 chưa chạy → hồ sơ buổi làm, trang khách và link gửi khách
+  chết cùng lúc. Tân bấm trúng giữa lúc đang làm việc.
+
+Cả hai lần triệu chứng y hệt và vô dụng như nhau: Cloudflare trả trang HTML lỗi, giao diện
+ném `Unexpected token '<'`. Không nói thiếu cái gì, không nói phải làm gì.
+
+**Không thể bắt migration chạy tự động.** D1 không có runner, và chạy DDL tự động lúc có
+request là cách hay nhất để hỏng database đúng giờ đông khách. Thứ đổi được là *khi thiếu thì
+phải nói ra thiếu số mấy*.
+
+### Ba lớp
+
+**1. Dịch lỗi — một chỗ duy nhất.** `_middleware.js` bọc `next()`. Mọi đường `/api/crm/*` đi
+qua đó, nên không phải vá từng file và không thể quên file nào. `migrationGapError()` trong
+`_lib.js` đọc lỗi D1, tra bảng `COLUMN_MIGRATION` (cột → số migration), trả 503 kèm câu
+*"Tính năng này cần migration 006 (cột `look_json`) mà database chưa chạy"* và mã
+`migration_missing:006`.
+
+Lỗi **khác** vẫn ném nguyên. Đổi một lỗi khó hiểu lấy một lỗi khó hiểu khác thì được gì.
+
+**2. Biết trước khi Kay đụng phải.** `GET /api/crm/health` đọc `PRAGMA table_info` và so với
+danh sách cột code cần. Giao diện gọi một lần lúc khởi động và treo băng đỏ **ngoài** `app`
+nên chuyển trang nó vẫn còn đó. Cũng báo luôn khi thiếu binding R2 — cùng loại bệnh
+"deploy xong còn thiếu một bước tay".
+
+**3. Trang công khai không lộ.** `/xem/*` bọc try/catch riêng, lỗi database trả 404 trung
+tính. Khách thấy đúng một câu như mọi trường hợp khác; chi tiết nằm ở `/health`, sau đăng nhập.
+
+### Quy trình từ nay
+
+Thêm cột trong migration mới thì **cùng lúc** cập nhật ba chỗ, không để lần sau:
+`COLUMN_MIGRATION` trong `_lib.js` · `CAN_CO` trong `health.js` · `SCHEMA_VERSION_REQUIRED`.
+
+Sau mỗi lần push có migration: mở CRM, nếu có băng đỏ thì chạy migration rồi tải lại.
+
+Mới: `functions/api/crm/health.js`, `tests/crm_migration_guard.mjs`.
+Sửa: `_lib.js`, `_middleware.js`, `functions/xem/[token].js`,
+`functions/xem/[token]/anh/[[path]].js`, `static/admin/crm/index.html`.
+Không migration.
+
+Test: `crm_migration_guard.mjs` 11/11.
