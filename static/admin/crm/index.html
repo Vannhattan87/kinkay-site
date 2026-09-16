@@ -1220,6 +1220,13 @@
     ctx.drawImage(img, x + (w - dw) / 2, y + (h - dh) * 0.32, dw, dh);
     ctx.restore();
   }
+  // Vẽ trọn tấm ảnh trong khung đã cho, không cắt. Khung phải được tính sẵn đúng tỉ lệ.
+  function lcFit(ctx, img, x, y, w, h, r) {
+    ctx.save(); lcRound(ctx, x, y, w, h, r); ctx.clip();
+    ctx.fillStyle = '#EFE9E2'; ctx.fillRect(x, y, w, h);
+    ctx.drawImage(img, x, y, w, h);
+    ctx.restore();
+  }
   function lcTag(ctx, text, x, y, w, h) {
     ctx.save(); lcRound(ctx, x, y, w, h, 12); ctx.clip();
     var g = ctx.createLinearGradient(0, y + h - 96, 0, y + h);
@@ -1230,17 +1237,78 @@
     ctx.restore();
   }
 
-  /* imgs = mảng Image (tối đa 4) · info = { name, meta, note, tone, lang, tags }
-     Chữ đo trước, ảnh ăn phần đất còn lại. Câu look dài thì ảnh thấp xuống chứ không bao giờ
-     tràn khung; hết đường co chữ thì CẮT CHỮ, không cắt ảnh — ảnh mới là thứ khách đăng. */
+  /* imgs = mảng Image (tối đa 4) · info = { name, meta, note, tone, lang, tags, fit }
+     Chiều cao card KHÔNG cố định.
+
+     Tân 16/09 xem bản 1080×1350: "chọn 1 hình thì hình bị cắt ngắn quá". Đúng — khổ chết cứng
+     4:5 chỉ chừa ~534px cho ảnh, tức khoảng 45% chiều cao một tấm chân dung 3:4. Nên từ bản này
+     card CAO THEO ẢNH:
+       fit = 'full' (mặc định) — chiều cao card = chữ + đúng chiều cao ảnh cần, chặn trên 1920
+         (đúng khổ Story). MỘT ẢNH thì vẽ contain chứ không cover: thà chừa hai mép kem còn hơn
+         cắt mất cằm hoặc mất tóc. Nhiều ảnh vẫn cover vì lưới cần các ô bằng nhau.
+       fit = 'feed'  — ép 1080×1350, cắt ảnh, dành cho ai cần đăng feed Instagram không bị cắt.
+
+     Chặn dưới 1080 (vuông) cho ảnh ngang. Chữ đo trước, ảnh ăn phần còn lại; ở 'feed' hết đường
+     co chữ thì CẮT CHỮ chứ không cắt thêm ảnh. */
   function lcRender(imgs, info) {
-    var c = document.createElement('canvas'); c.width = LC.W; c.height = LC.H;
+    var feed = info.fit === 'feed';
+    var W = LC.W, P = LC.PAD, CW = W - P * 2, IW = CW - LC.CPAD * 2;
+    var FOOT = 118, y0 = 240, labelH = 30, labelGap = 18, g = 14;
+    var nPh = Math.min(imgs.length, LC.MAXPH);
+
+    var probe = document.createElement('canvas').getContext('2d');
+    var fsNote = 27, fsLook = 28, noteL = [], lookL = [], hNote = 0, hLook = 0, chrome = 0;
+    function measure() {
+      probe.font = 'italic 300 ' + fsNote + 'px "Be Vietnam Pro", system-ui, sans-serif';
+      noteL = info.note ? wrapLines(probe, info.note, IW) : [];
+      probe.font = '300 ' + fsLook + 'px "Be Vietnam Pro", system-ui, sans-serif';
+      lookL = info.tone ? wrapLines(probe, info.tone, IW) : [];
+      hNote = noteL.length ? LC.CPAD * 2 + noteL.length * Math.round(fsNote * 1.5) : 0;
+      hLook = lookL.length ? LC.CPAD * 2 + labelH + labelGap + lookL.length * Math.round(fsLook * 1.5) : 0;
+      chrome = y0 + (hNote ? hNote + LC.GAP : 0) + (hLook ? hLook + LC.GAP : 0) + LC.CPAD * 2 + labelH + labelGap;
+    }
+    measure();
+
+    // Tỉ lệ cao/rộng của ảnh. Nhiều ảnh thì lấy trung vị — một tấm chụp ngang lọt vào giữa bộ
+    // ảnh dọc không được phép kéo dài cả cái card.
+    function ar(im) { return im.height / im.width; }
+    function medAr() {
+      var a = imgs.slice(0, nPh).map(ar).sort(function (x, y) { return x - y; });
+      return a.length % 2 ? a[(a.length - 1) / 2] : (a[a.length / 2 - 1] + a[a.length / 2]) / 2;
+    }
+    function naturalGrid() {
+      if (nPh === 1) return IW * ar(imgs[0]);
+      if (nPh === 2) return ((IW - g) / 2) * medAr();
+      if (nPh === 3) return Math.round(IW * 0.6) * ar(imgs[0]);
+      return 2 * (((IW - g) / 2) * medAr()) + g;
+    }
+
+    var H, gridH;
+    if (feed) {
+      H = 1350; gridH = H - chrome - FOOT;
+      while (gridH < 430 && (fsNote > 22 || fsLook > 23)) {
+        if (fsNote > 22) fsNote--; if (fsLook > 23) fsLook--; measure(); gridH = H - chrome - FOOT;
+      }
+      if (gridH < 430) {
+        var over = Math.ceil((430 - gridH) / Math.round(fsLook * 1.5));
+        if (lookL.length > 2) {
+          var keep = Math.max(2, lookL.length - over);
+          if (keep < lookL.length) { lookL = lookL.slice(0, keep); lookL[keep - 1] = lookL[keep - 1].replace(/\s+\S*$/, '') + '…'; }
+        }
+        measure(); gridH = Math.max(H - chrome - FOOT, 430);
+      }
+    } else {
+      gridH = Math.round(naturalGrid());
+      H = chrome + gridH + FOOT;
+      if (H > 1920) { H = 1920; gridH = H - chrome - FOOT; }
+      if (H < 1080) { H = 1080; gridH = H - chrome - FOOT; }
+    }
+
+    var c = document.createElement('canvas'); c.width = W; c.height = H;
     var ctx = c.getContext('2d');
     var T = LC_T[info.lang === 'en' ? 'en' : 'vi'];
-    var W = LC.W, P = LC.PAD, CW = W - P * 2, IW = CW - LC.CPAD * 2;
-    var FOOT = 118;
 
-    ctx.fillStyle = LC.bg; ctx.fillRect(0, 0, W, LC.H);
+    ctx.fillStyle = LC.bg; ctx.fillRect(0, 0, W, H);
     ctx.textBaseline = 'alphabetic';
 
     ctx.textAlign = 'center'; ctx.fillStyle = LC.gold;
@@ -1256,32 +1324,6 @@
     ctx.fillStyle = LC.ink; ctx.fillText(info.name || '', P, 160);
     ctx.fillStyle = LC.mute; ctx.font = '300 25px "Be Vietnam Pro", system-ui, sans-serif';
     ctx.fillText(info.meta || '', P, 202);
-
-    var fsNote = 27, fsLook = 28, noteL = [], lookL = [], hNote = 0, hLook = 0, gridH = 0;
-    var y0 = 240, nPh = Math.min(imgs.length, LC.MAXPH), labelH = 30, labelGap = 18;
-
-    function measure() {
-      ctx.font = 'italic 300 ' + fsNote + 'px "Be Vietnam Pro", system-ui, sans-serif';
-      noteL = info.note ? wrapLines(ctx, info.note, IW) : [];
-      ctx.font = '300 ' + fsLook + 'px "Be Vietnam Pro", system-ui, sans-serif';
-      lookL = info.tone ? wrapLines(ctx, info.tone, IW) : [];
-      hNote = noteL.length ? LC.CPAD * 2 + noteL.length * Math.round(fsNote * 1.5) : 0;
-      hLook = lookL.length ? LC.CPAD * 2 + labelH + labelGap + lookL.length * Math.round(fsLook * 1.5) : 0;
-      var chrome = LC.CPAD * 2 + labelH + labelGap;
-      gridH = LC.H - (y0 + (hNote ? hNote + LC.GAP : 0) + (hLook ? hLook + LC.GAP : 0) + chrome + FOOT);
-    }
-    measure();
-    while (gridH < 430 && (fsNote > 22 || fsLook > 23)) {
-      if (fsNote > 22) fsNote--; if (fsLook > 23) fsLook--; measure();
-    }
-    if (gridH < 430) {
-      var over = Math.ceil((430 - gridH) / Math.round(fsLook * 1.5));
-      if (lookL.length > 2) {
-        var keep = Math.max(2, lookL.length - over);
-        if (keep < lookL.length) { lookL = lookL.slice(0, keep); lookL[keep - 1] = lookL[keep - 1].replace(/\s+\S*$/, '') + '…'; }
-      }
-      measure(); if (gridH < 430) gridH = 430;
-    }
 
     var y = y0;
     function cardBox(h) {
@@ -1312,9 +1354,11 @@
 
     cardBox(LC.CPAD * 2 + labelH + labelGap + gridH);
     label(T.photos, y + LC.CPAD + 19);
-    var gx = P + LC.CPAD, gy = y + LC.CPAD + labelH + labelGap, g = 14;
+    var gx = P + LC.CPAD, gy = y + LC.CPAD + labelH + labelGap;
     if (nPh === 1) {
-      lcCover(ctx, imgs[0], gx, gy, IW, gridH, 12);
+      // contain: KHÔNG cắt một milimet nào. Thừa bề ngang thì chừa mép kem hai bên.
+      var w1 = Math.min(IW, gridH / ar(imgs[0])), h1 = Math.min(gridH, w1 * ar(imgs[0]));
+      lcFit(ctx, imgs[0], gx + (IW - w1) / 2, gy + (gridH - h1) / 2, w1, h1, 12);
     } else if (nPh === 2) {
       var w2 = (IW - g) / 2;
       lcCover(ctx, imgs[0], gx, gy, w2, gridH, 12);
@@ -1336,10 +1380,10 @@
     }
 
     ctx.strokeStyle = LC.line; ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(W / 2 - 120, LC.H - 78); ctx.lineTo(W / 2 + 120, LC.H - 78); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(W / 2 - 120, H - 78); ctx.lineTo(W / 2 + 120, H - 78); ctx.stroke();
     ctx.textAlign = 'center'; ctx.fillStyle = LC.mute;
     ctx.font = '300 23px "Be Vietnam Pro", system-ui, sans-serif';
-    ctx.fillText(LC_FOOT, W / 2, LC.H - 34);
+    ctx.fillText(LC_FOOT, W / 2, H - 34);
     return c;
   }
 
@@ -1362,7 +1406,7 @@
         name: lead.customer_name || '',
         meta: [lead.service || '', when].filter(Boolean).join(' · '),
         note: pub.note || '', tone: pub.tone || '',
-        lang: isEn ? 'en' : 'vi', tags: false
+        lang: isEn ? 'en' : 'vi', tags: false, fit: 'full'
       };
 
       var chosen = list.slice(0, Math.min(LC.MAXPH, list.length));   // mặc định lấy các ảnh đầu
@@ -1373,12 +1417,17 @@
       wrap.innerHTML = '<div class="sheet"><div class="grab"></div><h3>Card ảnh gửi khách</h3>' +
         '<div class="muted">' + esc(info.name) + ' · card ' + (isEn ? 'tiếng Anh' : 'tiếng Việt') + '</div>' +
         (list.length > 1 ? '<label style="margin-top:10px">Chọn ảnh lên card (tối đa ' + LC.MAXPH + ')</label><div class="lcstrip" id="lcStrip"></div>' : '') +
+        '<label style="margin-top:10px">Khổ card</label>' +
+        '<div class="chips" id="lcFit"><button type="button" class="chip on" data-fit="full">Đủ hình (card dài ra)</button>' +
+        '<button type="button" class="chip" data-fit="feed">Vừa feed Instagram (4:5)</button></div>' +
         '<div id="lcTagRow" hidden><label class="lcchk"><input type="checkbox" id="lcTags"> Ghi nhãn TRƯỚC / SAU lên 2 ảnh</label></div>' +
         '<div class="bcbtns" style="margin-top:8px"><button class="btn bc" id="lcShare" disabled>Đang tạo ảnh…</button>' +
         '<button class="btn sec" id="lcSave" disabled>Lưu ảnh</button><button class="btn sec" id="lcClose">Đóng</button></div>' +
         '<div class="bcprev" id="lcWrap" style="margin-top:10px"><div class="empty">⏳ Đang tạo ảnh 1080×1350…</div></div>' +
         '<p class="muted">Card in câu cảm ơn, tông + kiểu đã làm, ảnh và thông tin KINKAY. ' +
-        '<b>Không in giá, không in ghi chú nội bộ.</b> Khách đăng lên trang cá nhân thì thương hiệu đi theo.</p></div>';
+        '<b>Không in giá, không in ghi chú nội bộ.</b> Khách đăng lên trang cá nhân thì thương hiệu đi theo. ' +
+        'Khổ <b>Đủ hình</b> cao theo ảnh (tối đa 1080×1920, vừa khổ Story) — gửi Zalo, WhatsApp, IG Story thì dùng khổ này. ' +
+        'Feed Instagram cắt ảnh cao hơn 4:5, muốn đăng feed thì chọn khổ kia.</p></div>';
       document.body.appendChild(wrap);
 
       var sheetEl = $('.sheet', wrap), blob = null, gen = 0;
@@ -1406,6 +1455,14 @@
       }
       paintStrip();
       $('#lcTags', wrap).onchange = function () { info.tags = this.checked; run(); };
+      $('#lcFit', wrap).querySelectorAll('.chip').forEach(function (b) {
+        b.onclick = function () {
+          if (info.fit === b.getAttribute('data-fit')) return;
+          info.fit = b.getAttribute('data-fit');
+          $('#lcFit', wrap).querySelectorAll('.chip').forEach(function (x) { x.classList.remove('on'); });
+          b.classList.add('on'); run();
+        };
+      });
 
       function run() {
         var my = ++gen; blob = null;
@@ -1422,7 +1479,8 @@
           blob = b;
           $('#lcShare', wrap).disabled = false; $('#lcShare', wrap).textContent = 'Chia sẻ ảnh';
           $('#lcSave', wrap).disabled = false;
-          console.log('[KINKAY LOOKCARD]', chosen.length + ' ảnh', Math.round(b.size / 1024) + ' KB');
+          var cv = $('#lcWrap', wrap).querySelector('canvas');
+          console.log('[KINKAY LOOKCARD]', chosen.length + ' ảnh', cv ? cv.width + 'x' + cv.height : '?', Math.round(b.size / 1024) + ' KB');
         }).catch(function (e) { if (my === gen) bcShowErr(sheetEl, 'Không tạo được card. Bỏ bớt ảnh rồi thử lại.', e); });
       }
       run();
