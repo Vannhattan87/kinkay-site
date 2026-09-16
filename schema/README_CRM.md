@@ -349,3 +349,34 @@ Test: `node tests/crm_look_share.mjs` 18/18 · `crm_job_detail.mjs` 12/12 ·
 
 Bẫy đã gặp: `functions/xem/[token]/anh/[[path]].js` sâu **ba** cấp so với `functions/`, import
 `_lib` phải là `../../../api/crm/_lib.js`. Bản đầu viết hai chấm, test bắt được.
+
+---
+
+## CR-20260916-36 · Nút đánh dấu bản xác nhận SAI (16/09/2026)
+
+CR-33 thiết kế ba trạng thái cho Booking Confirmation và `POST /api/crm/confirmations/<id>`
+đã sống trên production từ đó. Nhưng giao diện **chưa bao giờ có nút bấm nó**.
+
+Hệ quả thật, phát hiện 16/09: hai bản `BC-KK-260914-005-V1` và `V2` in sai phạm vi đã bán
+(pax 2 · 1,8tr, trong khi thoả thuận là 1 khách × 1.800.000) vẫn nằm đó với nút *Xem / gửi
+lại*, và cách duy nhất để chặn là gõ SQL thẳng vào database production.
+
+**Thiết kế xong mà không có đường bấm thì coi như chưa làm.**
+
+Giờ mỗi dòng version có thêm nút:
+
+- **Đánh dấu sai** → sheet bắt ghi lý do → `status='voided'`. Bản đó không gửi lại được nữa,
+  dưới mọi đường.
+- **Bỏ đánh dấu** → về `active`. Chỉ hiện khi bản đó chưa bị bản khác thay thế (có
+  `superseded_by_id` thì trạng thái đúng của nó là `superseded`, không phải `active`).
+
+`superseded` vẫn **do server tự đặt** khi phát hành bản mới, không đặt tay được — đúng luật
+CR-33 giữ nguyên.
+
+Snapshot **không bị sửa**. Bản đã phát hành là bất biến kể cả khi nội dung sai: khách đã cầm
+tờ đó trên tay rồi, sửa lại lịch sử là tự nói dối mình. Chỉ chặn đường gửi lại.
+
+Lý do là **bắt buộc**, ghi vào `lead_events` dưới field `bc_status:<id>` — sau này mở ra phải
+biết vì sao nó bị chặn, không phải đoán.
+
+Sửa: `static/admin/crm/index.html` (bcMount + `bcVoidSheet`). Không migration, không API mới.

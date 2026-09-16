@@ -1194,12 +1194,60 @@
             : (st === 'superseded' ? '<span class="muted"> · ' + BC_ST.superseded + (v.superseded_by_id ? ' bởi ' + esc(String(v.superseded_by_id).split('-').pop()) : '') + '</span>' : '');
           return '<div style="display:flex;justify-content:space-between;align-items:center;gap:6px;' + (sendable ? '' : 'opacity:.72') + '">'
             + '<span>' + esc(v.id) + ' · ' + esc(dmy(v.generated_at)) + ' · ' + esc(v.generated_by || '') + (v.language ? ' · ' + (v.language === 'en' ? 'EN' : 'VI') : '') + tag + '</span>'
-            + '<button class="btn sec sm" data-bcv="' + esc(v.id) + '" data-bcst="' + esc(st) + '">' + (sendable ? 'Xem / gửi lại' : 'Xem') + '</button></div>';
+            + '<span style="display:flex;gap:6px;flex-shrink:0">'
+            + '<button class="btn sec sm" data-bcv="' + esc(v.id) + '" data-bcst="' + esc(st) + '">' + (sendable ? 'Xem / gửi lại' : 'Xem') + '</button>'
+            /* CR-20260916-36: API đổi trạng thái có từ CR-33 nhưng chưa bao giờ có nút bấm nó.
+               Hệ quả: một bản in sai phạm vi đã bán vẫn nằm đó với nút "gửi lại", và cách duy nhất
+               để chặn là gõ SQL thẳng vào database production. Thiết kế xong mà không có đường bấm
+               thì coi như chưa làm.
+               'superseded' vẫn do server tự đặt khi phát hành bản mới — không đặt tay được, đúng
+               luật CR-33. Ở đây chỉ có voided (bản SAI Dữ KIỆN) và gỡ voided. */
+            + (st === 'voided'
+                ? (v.superseded_by_id ? '' : '<button class="btn sec sm" data-bcun="' + esc(v.id) + '">Bỏ đánh dấu</button>')
+                : '<button class="btn sec sm danger" data-bcvoid="' + esc(v.id) + '">Đánh dấu sai</button>')
+            + '</span></div>';
         }).join('') + '</div>' : '') + '</div>';
       slot.innerHTML = h;
       $('#bcGo').onclick = function () { bcForm(lead, d.booking, d.missing, false, d.language); };
       slot.querySelectorAll('[data-bcv]').forEach(function (b) { b.onclick = function () { api('/confirmations/' + encodeURIComponent(b.getAttribute('data-bcv'))).then(function (r) { bcPreview(lead, r.confirmation.snapshot, true, r.confirmation.status || b.getAttribute('data-bcst') || 'active'); }).catch(function (e) { toast(e.message, true); }); }; });
+      slot.querySelectorAll('[data-bcvoid]').forEach(function (b) { b.onclick = function () { bcVoidSheet(lead, b.getAttribute('data-bcvoid')); }; });
+      slot.querySelectorAll('[data-bcun]').forEach(function (b) {
+        b.onclick = function () {
+          if (!window.confirm('Bỏ đánh dấu sai cho ' + b.getAttribute('data-bcun') + '? Bản này sẽ gửi lại được.')) return;
+          b.disabled = true;
+          api('/confirmations/' + encodeURIComponent(b.getAttribute('data-bcun')), { method: 'POST', body: { status: 'active' } })
+            .then(function () { toast('Đã bỏ đánh dấu'); bcMount(lead); })
+            .catch(function (e) { b.disabled = false; toast(e.message, true); });
+        };
+      });
     }).catch(function (e) { slot.innerHTML = '<div class="warn">' + esc(e.message) + '</div>'; });
+  }
+
+  /* Đánh dấu một bản xác nhận là SAI Dữ KIỆN.
+     KHÔNG sửa snapshot — bản đã phát hành là bất biến, kể cả khi nội dung sai. Khách đã
+     cầm tờ đó trên tay rồi; sửa lại lịch sử là tự nói dối mình. Chỉ chặn đường gửi lại.
+     BẮT BUỘC ghi lý do: sau này mở ra phải biết vì sao nó bị chặn, không phải đoán. */
+  function bcVoidSheet(lead, bcId) {
+    var bg = document.createElement('div'); bg.className = 'sheet-bg';
+    bg.innerHTML = '<div class="sheet"><div class="grab"></div><h3>Đánh dấu bản này là SAI</h3>' +
+      '<div class="muted">' + esc(bcId) + '</div>' +
+      '<div class="miss" style="margin-top:8px">Bản bị đánh dấu sai sẽ KHÔNG gửi lại được, dưới mọi đường. ' +
+      'Nội dung bản cũ giữ nguyên không sửa — khách đã cầm tờ đó rồi.</div>' +
+      '<label>Lý do (bắt buộc)</label>' +
+      '<textarea id="bv_reason" placeholder="Ví dụ: pax 2 sai phạm vi đã bán; thoả thuận là 1 khách x 1.800.000"></textarea>' +
+      '<div class="bcbtns"><button class="btn sec" id="bv_cancel">Huỷ</button>' +
+      '<button class="btn danger" id="bv_ok">Đánh dấu sai</button></div></div>';
+    document.body.appendChild(bg);
+    bg.addEventListener('click', function (e) { if (e.target === bg) bg.remove(); });
+    $('#bv_cancel', bg).onclick = function () { bg.remove(); };
+    $('#bv_ok', bg).onclick = function () {
+      var reason = $('#bv_reason', bg).value.trim();
+      if (!reason) { toast('Phải ghi lý do', true); $('#bv_reason', bg).focus(); return; }
+      var btn = this; btn.disabled = true; btn.textContent = 'Đang lưu…';
+      api('/confirmations/' + encodeURIComponent(bcId), { method: 'POST', body: { status: 'voided', reason: reason } })
+        .then(function () { bg.remove(); toast('Đã đánh dấu ' + bcId + ' là bản sai'); bcMount(lead); })
+        .catch(function (e) { btn.disabled = false; btn.textContent = 'Đánh dấu sai'; toast(e.message, true); });
+    };
   }
 
   // Sheet điền thông tin: chỉ trường THIẾU bắt buộc, cộng phần "Thêm chi tiết" tuỳ chọn. Không điền sẵn giá trị đoán.
