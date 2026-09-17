@@ -9,7 +9,95 @@ export const LEAD_STATUSES = [
 export const OPEN_STATUSES = ['New', 'Contacted', 'Qualified', 'Quoted', 'Waiting for Response', 'Hold', 'Deposit Paid', 'Confirmed'];
 export const BOOKED_STATUSES = ['Deposit Paid', 'Confirmed', 'Completed'];
 
-export const SOURCES = ['Direct/Unknown', 'Google Organic', 'Instagram Organic', 'Facebook', 'TikTok', 'Website Form', 'Partner Referral', 'Referral', 'Email', 'AI Referral'];
+/* ═══ MKT-DEC-20260917-02 (Luna §4 E, 17/09/2026) — TAXONOMY NGUỒN KHÁCH ═══
+   `source` CHỈ trả lời MỘT câu: khách tìm thấy hoặc được dẫn tới KINKAY từ đâu.
+   KHÔNG dùng `source` để chứa cách khách liên hệ (Website Form, Email), trạng thái
+   quan hệ (Returning Client), quốc gia/IP, hay trang đích. Trộn hai khái niệm vào
+   một cột chính là gốc của 42% lead rơi vào Direct/Unknown hôm 17/09. */
+export const SOURCES = [
+  'Google Search', 'Google Maps / Business Profile', 'Google Organic (Unclassified)',
+  'Instagram', 'Facebook', 'TikTok', 'AI Referral',
+  'Partner', 'Referral', 'Direct/Unknown', 'Other'
+];
+
+/* Nhãn CHỈ DÙNG ĐỂ BÁO CÁO. Không bao giờ được ghi mới vào DB. */
+export const REPORT_ONLY_SOURCES = ['Website Form (legacy)', 'Email (legacy)', 'Other (legacy)'];
+
+/* Map giá trị lịch sử → nhãn báo cáo. Nằm TRONG CODE, versioned trong git, KHÔNG phải
+   bảng trong DB: sửa map thì thấy được ai sửa lúc nào, và không đụng một dòng dữ liệu nào.
+   Rule 04 — không UPDATE, không backfill lịch sử. */
+const SOURCE_LEGACY_MAP = {
+  'Google Organic': 'Google Organic (Unclassified)',
+  'Instagram Organic': 'Instagram',
+  'Partner Referral': 'Partner',
+  'Website Form': 'Website Form (legacy)',
+  'Email': 'Email (legacy)'
+};
+
+/* Cửa ra DUY NHẤT để đọc `source` trong mọi báo cáo. Không khớp thì rơi vào
+   `Other (legacy)` chứ KHÔNG ép sang một nhãn chính xác giả. Ô trống cũng vậy:
+   "chưa từng ghi" không được biến thành "khách tự tìm đến". */
+export function canonicalSource(raw) {
+  const s = String(raw == null ? '' : raw).trim();
+  if (SOURCES.indexOf(s) >= 0) return s;
+  if (SOURCE_LEGACY_MAP[s]) return SOURCE_LEGACY_MAP[s];
+  return 'Other (legacy)';
+}
+export const isLegacySource = v => REPORT_ONLY_SOURCES.indexOf(canonicalSource(v)) >= 0
+  || canonicalSource(v) === 'Google Organic (Unclassified)' && String(v || '').trim() !== 'Google Organic (Unclassified)';
+
+const low = v => String(v == null ? '' : v).trim().toLowerCase();
+const AI_HOSTS = /(^|\.)(chatgpt\.com|openai\.com|claude\.ai|perplexity\.ai|gemini\.google\.com|copilot\.microsoft\.com|you\.com)$/;
+
+/* Phân loại nguồn cho lead từ web. Luật DỨT KHOÁT, versioned, không đoán mò.
+   Thứ tự ưu tiên do Luna chốt (§4 E4):
+     1. UTM tường minh  2. referrer nhận ra được  3. Google nhưng không rõ Search hay Maps
+     4. không đủ bằng chứng → Direct/Unknown
+   TUYỆT ĐỐI không suy nguồn từ cf-ipcountry. */
+export function classifyWebSource(inp) {
+  const i = inp || {};
+  const us = low(i.utm_source), um = low(i.utm_medium), uc = low(i.utm_campaign);
+  const blob = [us, um, uc].join(' ');
+
+  if (blob.trim()) {
+    if (/partner/.test(blob)) return 'Partner';
+    if (/chatgpt|openai|claude|perplexity|gemini|copilot/.test(blob)) return 'AI Referral';
+    if (/instagram|(^|\W)ig(\W|$)/.test(us)) return 'Instagram';
+    if (/facebook|(^|\W)fb(\W|$)/.test(us)) return 'Facebook';
+    if (/tiktok/.test(us)) return 'TikTok';
+    if (/google/.test(us)) {
+      if (/maps|gbp|business/.test(blob)) return 'Google Maps / Business Profile';
+      if (/cpc|paid|ppc/.test(um)) return 'Google Search';
+      return 'Google Organic (Unclassified)';   // organic từ Google mà không rõ Search hay Maps
+    }
+    if (/referral/.test(um)) return 'Referral';
+  }
+
+  const host = low(i.referrer_host), path = low(i.referrer_path);
+  if (host) {
+    if (AI_HOSTS.test(host)) return 'AI Referral';
+    if (/(^|\.)instagram\.com$|(^|\.)l\.instagram\.com$/.test(host)) return 'Instagram';
+    if (/(^|\.)(facebook\.com|fb\.com|fb\.me)$/.test(host)) return 'Facebook';
+    if (/(^|\.)tiktok\.com$/.test(host)) return 'TikTok';
+    if (/(^|\.)maps\.google\./.test(host) || /^\/maps/.test(path)) return 'Google Maps / Business Profile';
+    if (/(^|\.)google\./.test(host)) return 'Google Organic (Unclassified)';
+  }
+  return 'Direct/Unknown';
+}
+
+/* `source_detail` cho lead từ web: MÁY ghi, Kay không gõ. Định dạng cố định, chỉ giữ key
+   có giá trị. KHÔNG lưu nguyên query string, KHÔNG lưu nguyên URL referrer — hostname là
+   đủ để quy nguồn, phần còn lại là dữ liệu thừa của khách. */
+const SD_ORDER = ['contact', 'page', 'referrer_host', 'utm_source', 'utm_medium', 'utm_campaign'];
+export function buildSourceDetail(parts) {
+  const p = parts || {};
+  const out = [];
+  for (const k of SD_ORDER) {
+    const v = cleanStr(p[k], 120);
+    if (v) out.push(k + '=' + v.replace(/[|]/g, '/'));
+  }
+  return cleanStr(out.join(' | '), 400) || null;
+}
 export const CHANNELS = ['Instagram', 'Facebook/Messenger', 'Zalo', 'Email', 'Website Form', 'Phone', 'Referral', 'Other'];
 export const SERVICES = ['Bridal Makeup', 'Destination Wedding', 'Event/Gala Makeup', 'On-Camera / Interview Makeup', 'Commercial / Model / Pageant', 'Pre-wedding Makeup', 'Masterclass', 'Hair Styling', 'Photoshoot Makeup', 'Other'];
 export const SEGMENTS = ['B2C', 'Partner-sourced', 'B2B/Commercial'];
@@ -73,7 +161,7 @@ export function cleanDate(v) {
 }
 
 // Chuẩn hoá một patch/record theo danh sách cột cho phép. Trả {data, errors}.
-export function normalize(body, allowed) {
+export function normalize(body, allowed, prev) {
   const data = {}; const errors = [];
   for (const k of allowed) {
     if (!(k in body)) continue;
@@ -92,6 +180,20 @@ export function normalize(body, allowed) {
   if ('status' in data && data.status && !LEAD_STATUSES.includes(data.status) && !PARTNER_STATUSES.includes(data.status))
     errors.push('status không nằm trong danh sách');
   if ('deposit' in data && data.deposit && !DEPOSITS.includes(data.deposit)) errors.push('deposit phải là Yes / No / N/A');
+
+  /* MKT-DEC-20260917-02 §4 E3 — CỔNG CHÍNH nằm ở server, không ở dropdown.
+     Trước bản này `normalize()` chỉ kiểm `status` và `deposit`, nên API nhận chuỗi bất kỳ
+     tới 400 ký tự. Bằng chứng đã rò trong production: service = 'Party / event'.
+
+     LUẬT: giá trị MỚI hoặc BỊ ĐỔI phải nằm trong danh sách chuẩn. Giá trị CŨ KHÔNG ĐỔI thì
+     vẫn lưu được. Nếu không có vế sau, Kay mở một lead cũ ra sửa số điện thoại là không lưu
+     được chỉ vì nguồn của nó mang nhãn cũ — Luna gọi đúng chỗ này là acceptance bắt buộc. */
+  const unchanged = (k) => prev && String(prev[k] == null ? '' : prev[k]) === String(data[k] == null ? '' : data[k]);
+  if ('source' in data && data.source && !unchanged('source') && !SOURCES.includes(data.source))
+    errors.push('source: "' + data.source + '" không phải nguồn chuẩn. Nguồn = khách tìm thấy KINKAY từ đâu (MKT-DEC-20260917-02).');
+  if ('service' in data && data.service && !unchanged('service') && !SERVICES.includes(data.service))
+    errors.push('service: "' + data.service + '" không nằm trong danh sách dịch vụ chuẩn.');
+
   return { data, errors };
 }
 
@@ -175,6 +277,27 @@ async function insertWithRetry(db, table, prefix, ymd, build) {
 
 // Chèn lead mới (dùng chung cho API và form web /api/lead).
 export async function insertLead(db, actor, input) {
+  /* MKT-DEC-20260917-02 AC1/AC2 — "mọi server write path".
+     `/api/lead.js` gọi thẳng hàm này, KHÔNG đi qua normalize(), nên nếu chỉ chặn ở normalize
+     thì form web là một cửa sau. Chặn ngay tại đây luôn. */
+  if (input && input.source && !SOURCES.includes(input.source))
+    throw new Error('source không chuẩn: ' + input.source);
+
+  /* CỐ Ý KHÔNG chặn `service` ở đây. Acceptance AC2 của Luna nói "mọi write path", nhưng
+     thi hành đúng chữ ở chỗ này sẽ LÀM MẤT LEAD THẬT.
+
+     Lý do (đã kiểm `static/index.html` dòng 1069): ô "Dịp" của form web có bộ giá trị RIÊNG,
+     không liên quan gì tới `SERVICES` — "Cưới — ngày cưới", "Tiệc / sự kiện",
+     "Chụp hình cá nhân / photoshoot", "Ăn hỏi / đám hỏi", "Khác"... và bản tiếng Anh sinh ra
+     "Party / event" đang nằm trong production. `lead.occasion` đi thẳng vào cột `service`.
+
+     Nghĩa là form web CHƯA BAO GIỜ ghi đúng `SERVICES`. Chặn ở đây thì mọi lead từ web đều
+     ném lỗi, bị nuốt trong try/catch, và khách biến mất.
+
+     Lối thoát đúng là MAP dịp-của-form sang `SERVICES` — nhưng đó là một taxonomy mới,
+     Luna chưa duyệt, nên không tự làm (Rule 07). Đã ghi thành RFI R-I.
+     `service` vẫn được chặn ở `normalize()` cho đường CRM (Kay nhập tay), nơi dropdown
+     vốn đã lấy từ `SERVICES`. */
   const ymd = input.created_date || todayVN();
   const ts = nowISO();
   const row = await insertWithRetry(db, 'leads', 'KK', ymd, id => ({
@@ -188,6 +311,8 @@ export async function insertLead(db, actor, input) {
     actual_revenue: input.actual_revenue ?? null, actual_verified: input.actual_verified ? 1 : 0,
     owner: input.owner || 'Kay', next_action: input.next_action ?? null, next_followup: input.next_followup ?? null,
     notes: input.notes ?? null, partner_id: input.partner_id ?? null,
+    // MKT-DEC-20260917-02: form web ghi thẳng chi tiết nguồn vào cột, không chôn trong ghi chú.
+    source_detail: input.source_detail ?? null,
     last_updated: ts, updated_by: actor, created_at: ts
   }));
   await db.prepare('INSERT INTO lead_events(entity, entity_id, ts, actor, field, old_value, new_value) VALUES (?,?,?,?,?,?,?)')

@@ -17,7 +17,7 @@ export async function onRequestGet({ request, env }) {
 export async function onRequestPost({ request, env, data }) {
   let body;
   try { body = await request.json(); } catch (e) { return err('JSON không hợp lệ'); }
-  const { data: d, errors } = normalize(body, PARTNER_FIELDS);
+  const { data: d, errors } = normalize(body, PARTNER_FIELDS, null);
   if (!d.name) errors.push('name: cần tên đối tác');
   if (errors.length) return err('Dữ liệu chưa hợp lệ', 400, errors);
   let row;

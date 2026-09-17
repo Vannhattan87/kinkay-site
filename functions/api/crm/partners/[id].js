@@ -17,7 +17,7 @@ export async function onRequestPatch({ params, request, env, data }) {
   if (!before) return err('Không có đối tác này', 404);
   let body;
   try { body = await request.json(); } catch (e) { return err('JSON không hợp lệ'); }
-  const { data: d, errors } = normalize(body, PARTNER_FIELDS);
+  const { data: d, errors } = normalize(body, PARTNER_FIELDS, before);
   if ('name' in d && !d.name) errors.push('name: không được để trống');
   if (errors.length) return err('Dữ liệu chưa hợp lệ', 400, errors);
   const keys = Object.keys(d);

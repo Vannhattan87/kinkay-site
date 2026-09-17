@@ -16,7 +16,8 @@
 //     Trộn ba cái là đúng lỗi CR-33 đã phải sửa bằng migration 005.
 import {
   json, err, todayVN, parseBooking, lineItemsTotal,
-  isForeign, nationalityStats, statusTimestamps, leadToBookingDays, withCoverage
+  isForeign, nationalityStats, statusTimestamps, leadToBookingDays, withCoverage,
+  canonicalSource, REPORT_ONLY_SOURCES
 } from './_lib.js';
 
 const REACHED_CONFIRMED = ['Deposit Paid', 'Confirmed', 'Completed'];
@@ -122,7 +123,28 @@ export async function onRequestGet({ env }) {
     },
 
     // 2. Lead đến từ đâu (phần "kênh nào")
-    source_mix: bucket(rows, l => l.source),
+    /* MKT-DEC-20260917-02 §4 E6 — đọc qua `canonicalSource`. DB giữ nguyên chữ cũ,
+       chỉ lớp báo cáo gộp lại. Không UPDATE, không backfill một dòng nào. */
+    source_mix: bucket(rows, l => canonicalSource(l.source)),
+
+    /* E6 — chất lượng dữ liệu phải hiện thành số, không giấu trong bảng.
+       42% Direct/Unknown hôm 17/09 là vấn đề cần giảm, nhưng cách chữa KHÔNG phải
+       biến "chưa biết" thành "đã biết" giả. */
+    data_quality: (() => {
+      const cnt = k => rows.filter(r => canonicalSource(r.lead.source) === k).length;
+      const legacy = rows.filter(r => REPORT_ONLY_SOURCES.indexOf(canonicalSource(r.lead.source)) >= 0).length;
+      const unknown = cnt('Direct/Unknown');
+      const unclass = cnt('Google Organic (Unclassified)');
+      return {
+        total: rows.length,
+        direct_unknown: unknown,
+        direct_unknown_pct: rows.length ? Math.round(unknown / rows.length * 1000) / 10 : null,
+        google_unclassified: unclass,
+        legacy_labels: legacy,
+        other_legacy: cnt('Other (legacy)'),
+        note: 'Ba nhóm này là LỖ HỔNG DỮ LIỆU, không phải kênh. Giảm chúng bằng cách hỏi khách và gắn UTM, không bằng cách đoán.'
+      };
+    })(),
 
     // 3. Họ cần dịch vụ gì
     service_mix: bucket(rows, l => l.service),

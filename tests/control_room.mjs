@@ -135,11 +135,12 @@ console.log('7. Source mix: moi kenh co mau so quoc tich RIENG');
     L('KK-3', { source: 'Instagram Organic', nationality: 'Viet Nam' })
   ]);
   const { body } = await get(db);
-  const g = body.source_mix.find(s => s.key === 'Google Organic');
+  // MKT-DEC-20260917-02 E6: nhan bao cao, khong phai chu trong DB
+  const g = body.source_mix.find(s => s.key === 'Google Organic (Unclassified)');
   eq([g.leads, g.nat_known, g.foreign, g.foreign_pct_of_known], [2, 1, 1, 100], 'Google: 1/1 da biet la foreign');
   eq(g.nat_coverage, 'n=1/2', 'mau so cua rieng kenh nay');
   ok(g.foreign_pct_of_known !== 50, 'khong lay tong lead cua kenh lam mau so');
-  const i = body.source_mix.find(s => s.key === 'Instagram Organic');
+  const i = body.source_mix.find(s => s.key === 'Instagram');
   eq(i.foreign_pct_of_known, 0, 'IG: 0/1 foreign');
 }
 
@@ -149,7 +150,8 @@ console.log('8. Lead khong co source/service → gom vao (trong), khong roi mat'
   seed(db, [L('KK-1'), L('KK-2', { source: 'TikTok' })]);
   const { body } = await get(db);
   eq(body.source_mix.reduce((a, b) => a + b.leads, 0), 2, 'tong khop');
-  ok(body.source_mix.some(s => s.key === '(trống)'), 'co nhom (trong)');
+  ok(body.source_mix.some(s => s.key === 'Other (legacy)'), 'source rong gom vao Other (legacy), KHONG bien thanh Direct/Unknown');
+  ok(!body.source_mix.some(s => s.key === 'Direct/Unknown'), 'chua tung ghi nguon != khach tu tim den');
 }
 
 console.log('9. Database rong khong vo');

@@ -288,6 +288,17 @@
     if (!form) return;
     var box = document.getElementById(opts.msgId || 'leadMsg');
     var source = opts.source || 'page';
+    // Referrer: tach lay host va path, bo query + hash. Trinh duyet co the khong cho doc
+    // (rel=noreferrer, chuyen huong https->http) nen luon boc try.
+    function refPart(which) {
+      try {
+        if (!document.referrer) return '';
+        var u = new URL(document.referrer);
+        if (u.hostname === location.hostname) return '';   // dieu huong noi bo, khong phai nguon
+        return which === 'host' ? u.hostname : u.pathname.slice(0, 120);
+      } catch (e) { return ''; }
+    }
+    function qp(k) { try { return new URLSearchParams(location.search).get(k) || ''; } catch (e) { return ''; } }
     var btn = form.querySelector('button[type="submit"]');
     var btnText = btn ? btn.textContent : '';
     var sending = false;
@@ -458,7 +469,13 @@
             kk_hp: g('kk_hp'),          // bay bot — nguoi that luon de trong o nay
             occasion: d.occasion, date: d.date, place: d.place,
             budget: d.budget, note: d.note, source: source,
-            page: location.pathname, ts: new Date().toISOString()
+            page: location.pathname, ts: new Date().toISOString(),
+            /* MKT-DEC-20260917-02 §4 E4/E5 — gửi kèm dấu vết nguồn để SERVER tự phân loại.
+               Chỉ hostname + path của referrer và ba tham số UTM được duyệt.
+               KHÔNG gửi nguyên URL referrer, KHÔNG gửi nguyên query string: hostname là đủ
+               để quy nguồn, phần còn lại là dữ liệu thừa của khách. */
+            referrer_host: refPart('host'), referrer_path: refPart('path'),
+            utm_source: qp('utm_source'), utm_medium: qp('utm_medium'), utm_campaign: qp('utm_campaign')
           })
         }).then(function (r) {
           if (!r || r.status >= 400) return finish(false);

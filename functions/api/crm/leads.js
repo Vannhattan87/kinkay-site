@@ -29,8 +29,11 @@ export async function onRequestGet({ request, env }) {
 export async function onRequestPost({ request, env, data }) {
   let body;
   try { body = await request.json(); } catch (e) { return err('JSON không hợp lệ'); }
-  const { data: d, errors } = normalize(body, LEAD_FIELDS);
+  // prev = null → mọi giá trị đều là MỚI, phải chuẩn (MKT-DEC-20260917-02 E3).
+  const { data: d, errors } = normalize(body, LEAD_FIELDS, null);
   if (!d.customer_name) errors.push('customer_name: cần tên khách');
+  // E-F: Direct/Unknown là một lựa chọn CÓ CHỦ Ý, không phải mặc định im lặng.
+  if (!d.source) errors.push('source: cần chọn nguồn khách (chọn Direct/Unknown nếu thật sự chưa biết)');
   if (errors.length) return err('Dữ liệu chưa hợp lệ', 400, errors);
   if (!d.status) d.status = 'New';
   if (!d.owner) d.owner = 'Kay';

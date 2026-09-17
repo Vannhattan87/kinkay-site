@@ -34,7 +34,9 @@ export async function onRequestPatch({ params, request, env, data }) {
   if (!before) return err('Không có lead này', 404);
   let body;
   try { body = await request.json(); } catch (e) { return err('JSON không hợp lệ'); }
-  const { data: d, errors } = normalize(body, LEAD_FIELDS);
+  // Truyền `before` để normalize phân biệt giá trị CŨ không đổi với giá trị MỚI.
+  // Thiếu tham số này thì sửa số điện thoại của một lead cũ sẽ bị 400 vì nguồn mang nhãn cũ.
+  const { data: d, errors } = normalize(body, LEAD_FIELDS, before);
   if ('customer_name' in d && !d.customer_name) errors.push('customer_name: không được để trống');
   if (errors.length) return err('Dữ liệu chưa hợp lệ', 400, errors);
   // Luật tiền thật: sửa actual_revenue thì cờ verified reset về 0 trừ khi gửi kèm actual_verified=true (Tân xác minh).

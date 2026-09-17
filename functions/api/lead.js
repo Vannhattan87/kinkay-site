@@ -63,8 +63,9 @@ function diag(lead, extra) {
     has_contact: !!lead.contact,
     has_note: !!lead.note,
     occasion: lead.occasion || null,     // giá trị chọn sẵn, không phải khách tự gõ
-    source: lead.source || null,
+    widget: lead.widget || null,
     page: lead.page || null,
+    referrer_host: lead.referrer_host || null,
     country: lead.country || null,
     ...(extra || {})
   });
@@ -182,8 +183,17 @@ export async function onRequestPost({ request, env, waitUntil }) {
     note: clean(body.note, 800),
     channel,
     contact: channel ? normContact(channel, rawContact) : '',
-    source: clean(body.source, 60),
+    /* MKT-DEC-20260917-02 §4 E4/E5 — `body.source` là NHÃN NỘI BỘ của widget form
+       (page.js: `opts.source || 'page'`), KHÔNG phải nguồn khách. Giữ để chẩn đoán,
+       nhưng KHÔNG bao giờ ghi vào cột `source` nữa. */
+    widget: clean(body.source, 60),
     page: clean(body.page, 160),
+    // Chỉ hostname + path. KHÔNG lưu nguyên URL referrer, KHÔNG lưu nguyên query string.
+    referrer_host: clean(body.referrer_host, 120),
+    referrer_path: clean(body.referrer_path, 120),
+    utm_source: clean(body.utm_source, 80),
+    utm_medium: clean(body.utm_medium, 80),
+    utm_campaign: clean(body.utm_campaign, 120),
     ts: clean(body.ts, 40) || new Date().toISOString(),
     // Hữu ích khi soi lead rác: quốc gia và loại thiết bị, không phải IP.
     country: clean(request.headers.get('cf-ipcountry'), 8),
@@ -206,7 +216,14 @@ export async function onRequestPost({ request, env, waitUntil }) {
   if (env && env.CRM_DB && String(env.CRM_CUTOVER || '').trim() === '1') {
     crmTried = true;
     try {
-      const { insertLead, cleanDate, findSimilarLeads, logDiff } = await import('./crm/_lib.js');
+      const { insertLead, cleanDate, findSimilarLeads, logDiff, classifyWebSource, buildSourceDetail } = await import('./crm/_lib.js');
+
+      // Nguồn + chi tiết nguồn: MÁY suy, Kay không phải gõ (MKT-DEC-20260917-02 §4 E4/E5).
+      const webSource = classifyWebSource(lead);
+      const webDetail = buildSourceDetail({
+        contact: 'web_form', page: lead.page, referrer_host: lead.referrer_host,
+        utm_source: lead.utm_source, utm_medium: lead.utm_medium, utm_campaign: lead.utm_campaign
+      });
 
       // 13/09/2026 — CHỐNG TRÙNG. `/api/crm/leads` (nhập tay) đã chặn trùng từ 11/09
       // nhưng form web thì không, nên khách bấm gửi lại sau khi thấy lỗi mạng là tạo
@@ -247,7 +264,9 @@ export async function onRequestPost({ request, env, waitUntil }) {
         if (lead.place) noteParts.push('Địa điểm: ' + lead.place);
         if (lead.budget) noteParts.push('Ngân sách: ' + lead.budget);
         if (lead.note) noteParts.push('Ghi chú khách: ' + lead.note);
-      noteParts.push('Từ form kinkay.vn' + (lead.page ? ' ' + lead.page : '') + (lead.source ? ' (' + lead.source + ')' : '') + (lead.country ? ' · ' + lead.country : ''));
+      /* E8: `cf-ipcountry` ở lại ghi chú. TUYỆT ĐỐI không đổ vào `nationality` — IP là proxy:
+         khách Singapore ngồi Sài Gòn ra VN, khách Việt dùng VPN ra nước khác. */
+      noteParts.push('Từ form kinkay.vn' + (lead.page ? ' ' + lead.page : '') + (lead.country ? ' · IP ' + lead.country : ''));
 
       if (duplicate) {
         /* 13/09/2026 (Luna QA — BLOCKER dữ liệu). Bản trước chỉ `if (!duplicate)` rồi
@@ -274,13 +293,15 @@ export async function onRequestPost({ request, env, waitUntil }) {
       } else {
         await insertLead(env.CRM_DB, 'website-form', {
           customer_name: lead.name,
-          // Liên hệ thật, không còn null. `source` vẫn là 'Website Form' để báo cáo kênh
-          // không đổi; `contact_channel` là kênh khách dùng, vì đó mới là thứ Kay cần biết.
           contact: lead.contact,
           contact_channel: chDef.ch,
           service: lead.occasion,
           event_date: cleanDate(lead.date),
-          source: 'Website Form',
+          /* MKT-DEC-20260917-02 §4 E4 — KHÔNG còn ghi 'Website Form'. Đó là CÁCH khách liên hệ,
+             không phải nơi khách tìm ra KINKAY. Nguồn do luật dứt khoát trong `_lib.js` quyết;
+             không đủ bằng chứng thì ra 'Direct/Unknown' chứ không đoán. */
+          source: webSource,
+          source_detail: webDetail,
           segment: 'B2C',
           status: 'New',
           next_action: 'Trả lời khách qua ' + chDef.ch + ': ' + lead.contact,

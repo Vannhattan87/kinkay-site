@@ -185,7 +185,19 @@
   function addDays(iso, n) { var d = new Date(Date.parse(iso || todayVN()) + n * 86400e3); return d.toISOString().slice(0, 10); }
   var toastT;
   function toast(msg, isErr) { var t = $('#toast'); t.textContent = msg; t.className = 'toast on' + (isErr ? ' err' : ''); clearTimeout(toastT); toastT = setTimeout(function () { t.className = 'toast'; }, isErr ? 4000 : 2000); }
-  function opts(list, cur, allowEmpty) { var h = allowEmpty ? '<option value="">—</option>' : ''; (list || []).forEach(function (o) { h += '<option' + (o === cur ? ' selected' : '') + '>' + esc(o) + '</option>'; }); return h; }
+  /* MKT-DEC-20260917-02 §4 E3 — BẪY CHẾT NGƯỜI, đã suýt mắc.
+     `SOURCES` đổi danh sách nên lead cũ mang 'Website Form', 'Google Organic', 'Instagram Organic'
+     không còn khớp option nào. Bản cũ của hàm này khi đó KHÔNG chọn gì, select rơi về '—',
+     và bấm "Lưu hồ sơ đầy đủ" là ghi source='' — XOÁ SẠCH nguồn của mọi lead cũ, im lặng.
+     Từ nay: giá trị hiện tại không có trong danh sách thì THÊM nó vào cuối và chọn sẵn,
+     nhãn ghi rõ "(giá trị cũ)". Value giữ nguyên chuỗi gốc nên lưu lại không đổi gì. */
+  function opts(list, cur, allowEmpty) {
+    var h = allowEmpty ? '<option value="">—</option>' : '';
+    var arr = list || [], has = false;
+    arr.forEach(function (o) { if (o === cur) has = true; h += '<option value="' + esc(o) + '"' + (o === cur ? ' selected' : '') + '>' + esc(o) + '</option>'; });
+    if (cur && !has) h += '<option value="' + esc(cur) + '" selected>' + esc(cur) + ' (giá trị cũ)</option>';
+    return h;
+  }
   function pill(s, extra) { return '<span class="pill ' + esc(s) + (extra ? ' ' + extra : '') + '">' + esc(s) + '</span>'; }
   function dueClass(iso, today) { if (!iso) return ''; return iso < today ? 'over' : (iso === today ? 'due' : ''); }
 
@@ -1579,7 +1591,7 @@
       '<div class="grid2"><div><label>Contact</label><input id="n_contact" placeholder="@handle / SĐT / email"></div><div><label>Kênh nhắn</label><select id="n_channel">' + opts(L.channels, 'Instagram') + '</select></div></div>' +
       '<div id="dupBox"></div>' +
       '<div class="grid2"><div><label>Dịch vụ</label><select id="n_service">' + opts(L.services, 'Bridal Makeup') + '</select></div><div><label>Ngày sự kiện (nếu biết)</label><input id="n_event" type="date"></div></div>' +
-      '<div class="grid2"><div><label>Nguồn khách</label><select id="n_source">' + opts(L.sources, 'Instagram Organic') + '</select></div><div><label>Trạng thái</label><select id="n_status">' + opts(L.lead_statuses, 'New') + '</select></div></div>' +
+      '<div class="grid2"><div><label>Nguồn khách *</label><select id="n_source">' + opts(L.sources, '', true) + '</select></div><div><label>Trạng thái</label><select id="n_status">' + opts(L.lead_statuses, 'New') + '</select></div></div>' +
       '<label>Chi tiết nguồn (tuỳ chọn)</label><input id="n_srcdetail" placeholder="Truy vấn Google / tên đối tác / ai giới thiệu">' +
       '<label>Việc tiếp theo</label><input id="n_next" value="Trả lời và hỏi ngày, địa điểm, số người">' +
       '<label>Hẹn làm tiếp</label><input id="n_fu" type="date" value="' + addDays(todayVN(), 1) + '">' + quickDates('n_fu') +
@@ -1629,8 +1641,10 @@
     function submitNew(force) {
       var p = { customer_name: $('#n_name').value, contact: $('#n_contact').value, contact_channel: $('#n_channel').value, service: $('#n_service').value,
         event_date: $('#n_event').value, source: $('#n_source').value, status: $('#n_status').value, next_action: $('#n_next').value, next_followup: $('#n_fu').value,
-        notes: $('#n_notes').value, source_detail: $('#n_srcdetail').value, owner: 'Kay', segment: $('#n_source').value === 'Partner Referral' ? 'Partner-sourced' : 'B2C' };
+        notes: $('#n_notes').value, source_detail: $('#n_srcdetail').value, owner: 'Kay', segment: $('#n_source').value === 'Partner' ? 'Partner-sourced' : 'B2C' };
       if (!p.customer_name.trim()) { toast('Cần tên khách', true); return; }
+      // Direct/Unknown là lựa chọn CÓ CHỦ Ý, không phải mặc định im lặng (Luna §4 E R-F).
+      if (!p.source) { toast('Chọn nguồn khách. Thật sự chưa biết thì chọn Direct/Unknown.', true); return; }
       if (force) p.force_duplicate = true;
       $('#btnNew').disabled = true;
       api('/leads', { method: 'POST', body: p }).then(function (r) { toast('Đã thêm ' + r.lead.id); location.hash = '#/lead/' + r.lead.id; })
@@ -1712,7 +1726,7 @@
   function viewControlRoom() {
     loading('more');
     api('/control-room').then(function (d) {
-      var v = d.lead_volume, c = d.conversion, r = d.revenue, t = d.lead_to_booking_days;
+      var v = d.lead_volume, c = d.conversion, r = d.revenue, t = d.lead_to_booking_days, q = d.data_quality || null;
 
       function tbl(rows, head) {
         if (!rows.length) return '<div class="empty">Chưa có dữ liệu</div>';
@@ -1738,7 +1752,14 @@
         (v.nationality_unknown > v.nationality_known ? '<div class="warn">Hơn nửa số lead chưa biết quốc tịch. Chưa đủ để quyết SCALE hay STOP kênh nào.</div>' : '') +
         '</div>' +
 
-        '<div class="card"><h2>Lead đến từ đâu</h2>' + tbl(d.source_mix, ['Nguồn', 'Lead', 'Đã chốt', 'Nước ngoài', 'Độ phủ']) + '</div>' +
+        '<div class="card"><h2>Lead đến từ đâu</h2>' + tbl(d.source_mix, ['Nguồn', 'Lead', 'Đã chốt', 'Nước ngoài', 'Độ phủ']) +
+        // MKT-DEC-20260917-02 §4 E6 — lỗ hổng dữ liệu phải hiện thành số, không giấu trong bảng.
+        (q ? '<div style="margin-top:12px;padding-top:10px;border-top:1px solid #eee">' +
+          '<b>Chưa quy được nguồn:</b> ' + q.direct_unknown + '/' + q.total +
+          (q.direct_unknown_pct == null ? '' : ' (' + q.direct_unknown_pct + '%)') +
+          ' · Google chưa rõ Search hay Maps: ' + q.google_unclassified +
+          ' · nhãn cũ: ' + q.legacy_labels +
+          '<p class="muted">' + esc(q.note) + '</p></div>' : '') + '</div>' +
         '<div class="card"><h2>Họ cần dịch vụ gì</h2>' + tbl(d.service_mix, ['Dịch vụ', 'Lead', 'Đã chốt', 'Nước ngoài', 'Độ phủ']) + '</div>' +
 
         '<div class="card"><h2>Chốt được bao nhiêu</h2>' +
