@@ -177,6 +177,8 @@ export async function onRequestPost({ request, env, waitUntil }) {
   const lead = {
     name: clean(body.name, 120),
     occasion: clean(body.occasion, 80),
+    // R-I.1: khoá ổn định, không phụ thuộc ngôn ngữ. `occasion` chỉ còn để hiển thị + GA4.
+    occasion_key: clean(body.occasion_key, 40),
     date: clean(body.date, 20),
     place: clean(body.place, 160),
     budget: clean(body.budget, 80),
@@ -213,10 +215,24 @@ export async function onRequestPost({ request, env, waitUntil }) {
   // vào CRM, Status = New, Source = Website Form. Đây là NGUỒN DUY NHẤT (thay Sheet).
   // Chỉ ghi khi CRM_CUTOVER=1 (QA 06/09: không có cửa sổ hai master).
   let crmTried = false, crmOk = false, duplicate = false, dupId = null;
+  let crmFailCode = 'store_failed';
   if (env && env.CRM_DB && String(env.CRM_CUTOVER || '').trim() === '1') {
     crmTried = true;
     try {
-      const { insertLead, cleanDate, findSimilarLeads, logDiff, classifyWebSource, buildSourceDetail } = await import('./crm/_lib.js');
+      const { insertLead, cleanDate, findSimilarLeads, logDiff, classifyWebSource, buildSourceDetail, serviceFromOccasion } = await import('./crm/_lib.js');
+
+      /* MKT-DEC-20260917-02 §4A (R-I.3) — dịch lựa chọn của khách sang `service` chuẩn TRƯỚC
+         khi insert. `insertLead` không được nhận nhãn công khai như 'Party / event'.
+         R-I.5 — KHÔNG ĐƯỢC MẤT LEAD IM LẶNG: không nhận ra thì bỏ qua CRM, để khối
+         `crmTried && !crmOk` bên dưới bắn webhook rồi trả lỗi. Khách thấy gửi thất bại,
+         và lead vẫn còn dấu vết ở webhook. Tuyệt đối không âm thầm báo thành công. */
+      const occ = serviceFromOccasion(lead);
+      const occKeyForNote = occ.ok ? occ.key : '';
+      if (!occ.ok) {
+        crmFailCode = occ.code;
+        console.log('[KINKAY lead] khong nhan ra dip:', occ.code, diag(lead));
+        throw new Error('occasion: ' + occ.code);
+      }
 
       // Nguồn + chi tiết nguồn: MÁY suy, Kay không phải gõ (MKT-DEC-20260917-02 §4 E4/E5).
       const webSource = classifyWebSource(lead);
@@ -231,7 +247,9 @@ export async function onRequestPost({ request, env, waitUntil }) {
       try {
         const sim = await findSimilarLeads(env.CRM_DB, {
           customer_name: lead.name, contact: lead.contact,
-          event_date: cleanDate(lead.date), service: lead.occasion
+          // R-I.3: so trùng bằng `service` CHUẨN, đúng thứ sẽ được ghi xuống. Dùng nhãn form
+          // ở đây thì lead mới (chuẩn) không bao giờ khớp lead mới khác → chống trùng vô hiệu.
+          event_date: cleanDate(lead.date), service: occ.service
         });
         // `same_job` của _lib.js đòi TRÙNG CẢ NGÀY. Khách không chọn ngày thì không
         // bao giờ khớp, nên bổ sung nhánh: cùng liên hệ + cùng dịp + cả hai đều chưa
@@ -250,7 +268,9 @@ export async function onRequestPost({ request, env, waitUntil }) {
           const sameContact = Array.isArray(x.reasons) && x.reasons.indexOf('contact') >= 0;
           if (!sameContact) return false;
           if (x.level === 'same_job') return true;
-          const sameSvc = !!(x.lead.service && lead.occasion && x.lead.service === lead.occasion);
+          // R-I.3: so bằng `service` CHUẨN. Lead mới lưu giá trị chuẩn, nên so với nhãn form
+          // thì hai lần bấm gửi liên tiếp không bao giờ khớp nhau → chống trùng vô hiệu.
+          const sameSvc = !!(x.lead.service && occ.service && x.lead.service === occ.service);
           const noDates = !cleanDate(lead.date) && !x.lead.event_date;
           return sameSvc && noDates;
         });
@@ -267,6 +287,11 @@ export async function onRequestPost({ request, env, waitUntil }) {
       /* E8: `cf-ipcountry` ở lại ghi chú. TUYỆT ĐỐI không đổ vào `nationality` — IP là proxy:
          khách Singapore ngồi Sài Gòn ra VN, khách Việt dùng VPN ra nước khác. */
       noteParts.push('Từ form kinkay.vn' + (lead.page ? ' ' + lead.page : '') + (lead.country ? ' · IP ' + lead.country : ''));
+      /* R-I.4 — giữ lựa chọn gốc của khách để đối chiếu. Đây là METADATA KIỂM TRA,
+         KHÔNG phải nguồn sự thật của `service`, và KHÔNG được dùng thay `service` khi báo cáo.
+         Cố ý KHÔNG nhét vào `source_detail`: ô đó chỉ dành cho quy nguồn khách. */
+      if (occKeyForNote) noteParts.push('form_occasion=' + occKeyForNote +
+        (lead.occasion ? ' · form_occasion_label=' + lead.occasion : ''));
 
       if (duplicate) {
         /* 13/09/2026 (Luna QA — BLOCKER dữ liệu). Bản trước chỉ `if (!duplicate)` rồi
@@ -295,7 +320,7 @@ export async function onRequestPost({ request, env, waitUntil }) {
           customer_name: lead.name,
           contact: lead.contact,
           contact_channel: chDef.ch,
-          service: lead.occasion,
+          service: occ.service,          // giá trị chuẩn trong SERVICES, không phải nhãn form
           event_date: cleanDate(lead.date),
           /* MKT-DEC-20260917-02 §4 E4 — KHÔNG còn ghi 'Website Form'. Đó là CÁCH khách liên hệ,
              không phải nơi khách tìm ra KINKAY. Nguồn do luật dứt khoát trong `_lib.js` quyết;
@@ -324,7 +349,9 @@ export async function onRequestPost({ request, env, waitUntil }) {
      khách chờ nó — đẩy sang waitUntil. D1 HỎNG thì nó là đường duy nhất, phải await. */
   if (crmTried && !crmOk) {
     await fireWebhook(env, lead);
-    return json({ ok: false, error: 'store_failed' }, 500);
+    // `unknown_occasion` là lỗi dữ liệu đầu vào (400), không phải kho hỏng (500).
+    const isOcc = crmFailCode === 'unknown_occasion' || crmFailCode === 'unmapped_occasion_key';
+    return json({ ok: false, error: crmFailCode }, isOcc ? 400 : 500);
   }
   if (typeof waitUntil === 'function') waitUntil(fireWebhook(env, lead));
   else await fireWebhook(env, lead);

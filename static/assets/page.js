@@ -343,9 +343,19 @@
       var L = lang2();
       var g = function (n) { var el = form.elements[n]; return el ? String(el.value || '').trim() : ''; };
 
+      /* MKT-DEC-20260917-02 §4A (R-I.1) — `occasion` giu nguyen cho tin Zalo + GA4;
+         `occasion_key` moi la thu server dung de suy ra `service`. Khoa on dinh, khong
+         phu thuoc ngon ngu, nam o `data-key` cua tung <option>. */
+      var occSel = form.elements['occasion'];
+      var occKey = '';
+      try {
+        var oo = occSel && occSel.options && occSel.options[occSel.selectedIndex];
+        occKey = (oo && oo.getAttribute('data-key')) || '';
+      } catch (e) { occKey = ''; }
+
       var d = {
         name: g('name'), contact: '', channel: null,
-        occasion: g('occasion'), date: g('date'), place: g('place'),
+        occasion: g('occasion'), occasion_key: occKey, date: g('date'), place: g('place'),
         budget: g('budget'), note: g('note')
       };
       d.dateText = fmtDateVN(d.date);
@@ -467,7 +477,7 @@
           body: JSON.stringify({
             name: d.name, contact: d.contact, channel: d.channel,
             kk_hp: g('kk_hp'),          // bay bot — nguoi that luon de trong o nay
-            occasion: d.occasion, date: d.date, place: d.place,
+            occasion: d.occasion, occasion_key: d.occasion_key, date: d.date, place: d.place,
             budget: d.budget, note: d.note, source: source,
             page: location.pathname, ts: new Date().toISOString(),
             /* MKT-DEC-20260917-02 §4 E4/E5 — gửi kèm dấu vết nguồn để SERVER tự phân loại.

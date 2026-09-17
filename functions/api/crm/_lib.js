@@ -283,21 +283,18 @@ export async function insertLead(db, actor, input) {
   if (input && input.source && !SOURCES.includes(input.source))
     throw new Error('source không chuẩn: ' + input.source);
 
-  /* CỐ Ý KHÔNG chặn `service` ở đây. Acceptance AC2 của Luna nói "mọi write path", nhưng
-     thi hành đúng chữ ở chỗ này sẽ LÀM MẤT LEAD THẬT.
+  /* MKT-DEC-20260917-02 §4A (R-I.3) — GIỜ MỚI ĐƯỢC BẬT.
 
-     Lý do (đã kiểm `static/index.html` dòng 1069): ô "Dịp" của form web có bộ giá trị RIÊNG,
-     không liên quan gì tới `SERVICES` — "Cưới — ngày cưới", "Tiệc / sự kiện",
-     "Chụp hình cá nhân / photoshoot", "Ăn hỏi / đám hỏi", "Khác"... và bản tiếng Anh sinh ra
-     "Party / event" đang nằm trong production. `lead.occasion` đi thẳng vào cột `service`.
+     Hôm 17/09 khối này cố ý để trống: ô "Dịp" của form web có bộ giá trị riêng (13 trang,
+     52 giá trị, không giá trị nào trùng `SERVICES`), nên chặn ở đây là mọi lead từ web ném
+     lỗi và khách biến mất. Đã ghi thành RFI R-I.
 
-     Nghĩa là form web CHƯA BAO GIỜ ghi đúng `SERVICES`. Chặn ở đây thì mọi lead từ web đều
-     ném lỗi, bị nuốt trong try/catch, và khách biến mất.
-
-     Lối thoát đúng là MAP dịp-của-form sang `SERVICES` — nhưng đó là một taxonomy mới,
-     Luna chưa duyệt, nên không tự làm (Rule 07). Đã ghi thành RFI R-I.
-     `service` vẫn được chặn ở `normalize()` cho đường CRM (Kay nhập tay), nơi dropdown
-     vốn đã lấy từ `SERVICES`. */
+     Luna chốt phương án (a): giữ chữ thân thiện ở form, dịch sang `SERVICES` ở server bằng
+     `serviceFromOccasion()` TRƯỚC khi gọi hàm này. Từ đó `insertLead` chỉ còn nhận giá trị
+     chuẩn, nên bật chặn được — và đó chính là thứ bảo đảm nhãn công khai như 'Party / event'
+     không bao giờ lọt vào cột `service` của lead mới. */
+  if (input && input.service && !SERVICES.includes(input.service))
+    throw new Error('service không chuẩn: ' + input.service);
   const ymd = input.created_date || todayVN();
   const ts = nowISO();
   const row = await insertWithRetry(db, 'leads', 'KK', ymd, id => ({
@@ -918,4 +915,139 @@ export function withCoverage(values, total) {
     avg: ok.length ? ok.reduce((a, b) => a + b, 0) / ok.length : null,
     label: `n=${ok.length}/${total}`
   };
+}
+
+
+/* ═══ MKT-DEC-20260917-02 §4A (Luna, R-I) — DỊCH "DỊP" CỦA FORM SANG DỊCH VỤ CHUẨN ═══
+
+   VẤN ĐỀ THẬT, đã quét cả 13 trang có form ngày 17/09:
+     · 13 trang, mỗi trang MỘT danh sách "Dịp" riêng may đo theo nội dung trang.
+     · 52 giá trị khác nhau. KHÔNG giá trị nào trùng `SERVICES`.
+     · Các trang `/en/` là trang tiếng Anh riêng, option không có `value`, nên value = chữ
+       tiếng Anh. Đó là nguồn của `service = 'Party / event'` trong production.
+     · Trang tiếng Việt từ 01/09 đã giữ `value` cố định tiếng Việt, chỉ đổi chữ hiển thị.
+
+   VÌ SAO KHÔNG ĐỔI `value` THÀNH KEY:
+     Comment trong `static/index.html` dòng 1059 nói rõ — `page.js` đọc `el.value` để soạn tin
+     Zalo và bắn tham số GA4. Đổi value là vỡ cả hai. Nên mỗi option mang thêm `data-key`,
+     `value` giữ nguyên. Đúng tinh thần R-I.1 (khoá ổn định, không phụ thuộc ngôn ngữ) mà
+     không đụng hai hệ thống khác.
+
+   MỘT BẢNG DUY NHẤT. Không nhân bản sang `page.js`, `lead.js` hay giao diện CRM.
+   Sửa bảng này là đổi ngữ nghĩa kinh doanh — phải review như đổi taxonomy (R-I.2). */
+
+// occasion_key → giá trị chuẩn trong SERVICES.
+export const OCCASION_TO_SERVICE = {
+  wedding_day: 'Bridal Makeup',
+  wedding_ancestral: 'Bridal Makeup',
+  engagement: 'Bridal Makeup',
+  bridal_trial: 'Bridal Makeup',
+  wedding_family: 'Event/Gala Makeup',        // §4B: mẹ cô dâu / phù dâu / bưng quả KHÔNG phải cô dâu
+  destination_wedding: 'Destination Wedding',
+  prewedding: 'Pre-wedding Makeup',
+  party_event: 'Event/Gala Makeup',
+  birthday_party: 'Event/Gala Makeup',
+  corporate_gala: 'Event/Gala Makeup',
+  wedding_guest: 'Event/Gala Makeup',         // §4B: GIỮ NGUYÊN
+  corporate_headshot: 'Photoshoot Makeup',    // §4B: chụp ảnh, không phải quay hình
+  headshot_portrait: 'Photoshoot Makeup',     // §4B: chụp ảnh, không phải quay hình
+  personal_photoshoot: 'Photoshoot Makeup',
+  aodai_photoshoot: 'Photoshoot Makeup',
+  family_portrait: 'Photoshoot Makeup',
+  graduation: 'Photoshoot Makeup',
+  tet_holiday: 'Photoshoot Makeup',
+  model_portfolio: 'Commercial / Model / Pageant',
+  editorial: 'Commercial / Model / Pageant',
+  brand_lookbook: 'Commercial / Model / Pageant',
+  hair_wedding: 'Hair Styling',
+  hair_party: 'Hair Styling',
+  full_glam_combo: 'Other',                   // §4B: là GÓI makeup+tóc, không phải một dịch vụ đơn
+  other: 'Other',
+};
+
+/* Năm khoá từng chờ quyết định kinh doanh đã được Luna chốt trong §4B ngày 17/09.
+   Danh sách này RỖNG, và test giữ cho nó rỗng: có khoá nào quay lại đây nghĩa là ai đó
+   thêm ngữ nghĩa kinh doanh mà chưa qua review, đúng thứ R-I.2 cấm.
+
+   BA LUẬT Luna đặt kèm, đọc trước khi sửa bảng trên:
+     · `On-Camera / Interview Makeup` giữ nghĩa HẸP: phỏng vấn, livestream, quay video, dẫn
+       chương trình. Không hút lead chụp ảnh vào nhóm này chỉ vì nó đang có tỉ lệ chốt cao.
+     · `Bridal Makeup` dành cho CÔ DÂU. Mẹ cô dâu, phù dâu, bưng quả, khách dự cưới đi
+       `Event/Gala Makeup` trong taxonomy v0.1.
+     · `Hair Styling` không được dùng để chứa gói makeup + tóc. Gói chưa có chỗ trong
+       `SERVICES` nên đi `Other`; khoá gốc vẫn nằm trong notes nên không mất ngữ nghĩa. */
+export const OCCASION_KEYS_AWAITING_LUNA = [];
+
+/* Lối dự phòng cho trang khách đã cache trong trình duyệt và chưa nhận `data-key`.
+   KHỚP CHÍNH XÁC theo chuỗi, không fuzzy, không đoán theo substring (R-I.2). */
+const OCCASION_VALUE_TO_KEY = new Map([
+  ['Cưới — ngày cưới', 'wedding_day'],
+  ['Wedding — the day itself', 'wedding_day'],
+  ['Wedding — ancestral ceremony only', 'wedding_ancestral'],
+  ['Ăn hỏi / đám hỏi', 'engagement'],
+  ['Ăn hỏi / họp mặt gia đình', 'engagement'],
+  ['Engagement ceremony', 'engagement'],
+  ['Cưới — trial thử look', 'bridal_trial'],
+  ['Wedding — bridal trial', 'bridal_trial'],
+  ['Mẹ cô dâu / người nhà', 'wedding_family'],
+  ['Mother of the bride / groom', 'wedding_family'],
+  ['Bridesmaids / family / tray bearers', 'wedding_family'],
+  ['Wedding — mother of the bride / groom, bridesmaids, tray bearers', 'wedding_family'],
+  ['Mother of the bride / family', 'wedding_family'],
+  ['Destination wedding in Vietnam', 'destination_wedding'],
+  ['Cưới — chụp ảnh cưới / pre-wedding', 'prewedding'],
+  ['Chụp ảnh cưới / pre-wedding', 'prewedding'],
+  ['Wedding — pre-wedding shoot', 'prewedding'],
+  ['Pre-wedding shoot', 'prewedding'],
+  ['Tiệc / sự kiện', 'party_event'],
+  ['Party / event', 'party_event'],
+  ['Party / event / gala', 'party_event'],
+  ['Sinh nhật / tiệc tối', 'birthday_party'],
+  ['Birthday or private party', 'birthday_party'],
+  ['Gala công ty', 'corporate_gala'],
+  ['Chamber / business gala', 'corporate_gala'],
+  ['Company event or year-end party', 'corporate_gala'],
+  ['Awards night / formal dinner', 'corporate_gala'],
+  ['International school event', 'corporate_gala'],
+  ['Đi đám cưới bạn bè', 'wedding_guest'],
+  ['Attending a wedding as a guest', 'wedding_guest'],
+  ['Business headshot / LinkedIn', 'corporate_headshot'],
+  ['Ảnh profile công ty', 'corporate_headshot'],
+  ['Corporate team shoot', 'corporate_headshot'],
+  ['Personal branding shoot', 'corporate_headshot'],
+  ['Headshot / portrait shoot', 'headshot_portrait'],
+  ['Photoshoot / headshots', 'headshot_portrait'],
+  ['Chụp hình cá nhân / photoshoot', 'personal_photoshoot'],
+  ['Chụp hình / photoshoot', 'personal_photoshoot'],
+  ['Áo dài photoshoot', 'aodai_photoshoot'],
+  ['Áo dài photoshoot — living here', 'aodai_photoshoot'],
+  ['Áo dài photoshoot — visiting Vietnam', 'aodai_photoshoot'],
+  ['Family portraits', 'family_portrait'],
+  ['Family áo dài portraits', 'family_portrait'],
+  ['Graduation photos', 'graduation'],
+  ['Tet / holiday photos', 'tet_holiday'],
+  ['Actor or model portfolio', 'model_portfolio'],
+  ['Editorial / concept', 'editorial'],
+  ['Editorial / lookbook', 'editorial'],
+  ['Lookbook thương hiệu', 'brand_lookbook'],
+  ['Hair styling — ngày cưới', 'hair_wedding'],
+  ['Hair styling — dự tiệc', 'hair_party'],
+  ['Full Glam Combo (makeup + tóc)', 'full_glam_combo'],
+  ['Khác', 'other'],
+  ['Other', 'other'],
+]);
+
+export const occasionKeyFromLabel = v => OCCASION_VALUE_TO_KEY.get(String(v == null ? '' : v).trim()) || null;
+
+/* Cửa ra DUY NHẤT để đổi lựa chọn của khách thành `service`.
+   Trả `{ ok:false }` khi không nhận ra — người gọi PHẢI báo lỗi ra ngoài.
+   R-I.5: KHÔNG ĐƯỢC MẤT LEAD IM LẶNG. Nuốt lỗi ở đây là khách bấm gửi, thấy thành công,
+   mà CRM không có gì. */
+export function serviceFromOccasion(input) {
+  const i = input || {};
+  const key = cleanStr(i.occasion_key, 40) || occasionKeyFromLabel(i.occasion);
+  if (!key) return { ok: false, code: 'unknown_occasion', key: null, service: null };
+  const service = OCCASION_TO_SERVICE[key];
+  if (!service) return { ok: false, code: 'unmapped_occasion_key', key, service: null };
+  return { ok: true, key, service };
 }

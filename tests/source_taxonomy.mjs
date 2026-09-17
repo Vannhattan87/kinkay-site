@@ -100,21 +100,27 @@ console.log('AC12 — 12 lead production đọc qua Control Room không mất re
   eq(raw, ['Direct/Unknown', 'Facebook', 'Google Organic', 'Instagram Organic', 'Partner Referral', 'Website Form'], 'Rule 04: DB không bị UPDATE một dòng nào');
 }
 
-console.log('BẪY — form web có bộ "Dịp" RIÊNG, chặn service ở insertLead sẽ làm mất lead thật');
+console.log('R-I (17/09 §4A) — insertLead GIỜ chặn nhãn form, vì server đã dịch sang SERVICES trước');
 {
-  const { insertLead } = await import('../functions/api/crm/_lib.js');
+  const { insertLead, serviceFromOccasion } = await import('../functions/api/crm/_lib.js');
   const fake = { prepare() { return { bind() { return this; }, async first() { return { n: 1 }; }, async run() { return {}; } }; } };
-  let threw = null;
+  // Lịch sử: sáng 17/09 khối chặn này CỐ Ý để trống, vì form web có bộ "Dịp" riêng và
+  // chặn lúc đó sẽ làm mất mọi lead từ web. Luna §4A chốt phương án (a) — dịch ở server
+  // trước khi insert — nên từ đây `insertLead` chỉ nhận giá trị chuẩn và bật chặn được.
+  let t1 = null;
   try { await insertLead(fake, 'website-form', { customer_name: 'A', service: 'Tiệc / sự kiện', source: 'Direct/Unknown' }); }
-  catch (e) { threw = e.message; }
-  ok(!/service/.test(threw || ''), 'service của form web KHÔNG được ném lỗi ở insertLead — lead sẽ bị nuốt mất');
-  let threw2 = null;
+  catch (e) { t1 = e.message; }
+  ok(/service không chuẩn/.test(t1 || ''), 'nhãn công khai KHÔNG được lọt vào cột service của lead mới');
+  // nhưng nhãn đó PHẢI dịch được, nếu không là mất lead
+  ok(serviceFromOccasion({ occasion: 'Tiệc / sự kiện' }).service === 'Event/Gala Makeup', 'và nó phải dịch ra được service chuẩn');
+  let t2 = null;
   try { await insertLead(fake, 'website-form', { customer_name: 'A', source: 'Website Form' }); }
-  catch (e) { threw2 = e.message; }
-  ok(/source/.test(threw2 || ''), 'nhưng source sai thì VẪN phải chặn ở mọi write path');
-  const form = readFileSync('static/index.html', 'utf8');
-  ok(/Tiệc \/ sự kiện/.test(form) && !/Event\/Gala Makeup/.test(form.slice(form.indexOf('lfOccasion'), form.indexOf('lfOccasion') + 900)),
-     'ghi nhận sự thật: ô Dịp của form KHÔNG dùng SERVICES');
+  catch (e) { t2 = e.message; }
+  ok(/source/.test(t2 || ''), 'source sai vẫn phải chặn ở mọi write path');
+  let t3 = null;
+  try { await insertLead(fake, 'website-form', { customer_name: 'A', source: 'Direct/Unknown', service: 'Event/Gala Makeup' }); }
+  catch (e) { t3 = e.message; }
+  ok(t3 === null, 'giá trị chuẩn thì phải đi qua được');
 }
 
 console.log(`\n${pass} pass, ${fail} fail`);
