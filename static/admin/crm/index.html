@@ -1703,14 +1703,83 @@
     }).catch(function (e) { shell('', '<div class="warn">' + esc(e.message) + '</div>', 'partners'); });
   }
 
+
+  // ---------- Marketing Control Room (MKT-DEC-20260916-01 · Luna §4 muc G · CHỈ ĐỌC) ----------
+  // Trang này chỉ trả lời 5 câu: lead từ đâu · cần dịch vụ gì · cái nào chốt · tiền từ kênh nào ·
+  // nên SCALE/HOLD/STOP cái gì. Thêm biểu đồ hay số ngoài 5 câu đó phải mở DEC mới.
+  // KHÔNG tự tính lại số ở đây. Mọi con số do /api/crm/control-room trả về, dùng chung hàm
+  // trong _lib.js. Viết bản tính thứ hai trong giao diện là đúng lỗi normName/normContact đã mắc 2 lần.
+  function viewControlRoom() {
+    loading('more');
+    api('/control-room').then(function (d) {
+      var v = d.lead_volume, c = d.conversion, r = d.revenue, t = d.lead_to_booking_days;
+
+      function tbl(rows, head) {
+        if (!rows.length) return '<div class="empty">Chưa có dữ liệu</div>';
+        return '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:14px">' +
+          '<tr>' + head.map(function (h) { return '<th style="text-align:left;padding:6px 8px;border-bottom:1px solid #ddd;white-space:nowrap">' + esc(h) + '</th>'; }).join('') + '</tr>' +
+          rows.map(function (x) {
+            return '<tr>' +
+              '<td style="padding:6px 8px;border-bottom:1px solid #f0f0f0">' + esc(x.key) + '</td>' +
+              '<td style="padding:6px 8px;border-bottom:1px solid #f0f0f0">' + x.leads + '</td>' +
+              '<td style="padding:6px 8px;border-bottom:1px solid #f0f0f0">' + x.confirmed + (x.conv_confirmed == null ? '' : ' <span class="muted">(' + x.conv_confirmed + '%)</span>') + '</td>' +
+              '<td style="padding:6px 8px;border-bottom:1px solid #f0f0f0">' + (x.foreign_pct_of_known == null ? '<span class="muted">chưa biết</span>' : x.foreign + '/' + x.nat_known + ' <span class="muted">(' + x.foreign_pct_of_known + '%)</span>') + '</td>' +
+              '<td style="padding:6px 8px;border-bottom:1px solid #f0f0f0" class="muted">' + esc(x.nat_coverage) + '</td>' +
+              '</tr>';
+          }).join('') + '</table></div>';
+      }
+
+      var html =
+        '<div class="card"><h2>Control Room · khách nước ngoài</h2>' +
+        '<div style="font-size:28px;font-weight:600">' + v.foreign_among_known + ' / ' + v.nationality_known +
+        (v.foreign_pct_of_known == null ? '' : ' <span class="muted" style="font-size:16px">(' + v.foreign_pct_of_known + '% số đã biết)</span>') + '</div>' +
+        '<p class="muted">' + esc(v.note) + '</p>' +
+        '<p class="muted">Tổng ' + v.total + ' lead · đã biết quốc tịch ' + v.nationality_known + ' · chưa biết ' + v.nationality_unknown + ' · ' + esc(v.coverage) + '</p>' +
+        (v.nationality_unknown > v.nationality_known ? '<div class="warn">Hơn nửa số lead chưa biết quốc tịch. Chưa đủ để quyết SCALE hay STOP kênh nào.</div>' : '') +
+        '</div>' +
+
+        '<div class="card"><h2>Lead đến từ đâu</h2>' + tbl(d.source_mix, ['Nguồn', 'Lead', 'Đã chốt', 'Nước ngoài', 'Độ phủ']) + '</div>' +
+        '<div class="card"><h2>Họ cần dịch vụ gì</h2>' + tbl(d.service_mix, ['Dịch vụ', 'Lead', 'Đã chốt', 'Nước ngoài', 'Độ phủ']) + '</div>' +
+
+        '<div class="card"><h2>Chốt được bao nhiêu</h2>' +
+        '<p>Lead → đã chốt: <b>' + c.reached_confirmed + '/' + c.total + '</b>' + (c.lead_to_confirmed_pct == null ? '' : ' (' + c.lead_to_confirmed_pct + '%)') + '</p>' +
+        '<p>Lead → đã xong việc: <b>' + c.reached_completed + '/' + c.total + '</b>' + (c.lead_to_completed_pct == null ? '' : ' (' + c.lead_to_completed_pct + '%)') + '</p>' +
+        '<p class="muted">Khách nước ngoài đã biết: ' + c.foreign_total + ' lead, chốt ' + c.foreign_confirmed + '</p></div>' +
+
+        '<div class="card"><h2>Tiền</h2>' +
+        '<p class="muted">Ba nhóm này KHÔNG cộng với nhau. Mỗi nhóm là một loại sự thật khác nhau.</p>' +
+        '<p>' + esc(r.agreed_open.label) + '<br><b class="money">' + money(r.agreed_open.value) + '</b> <span class="muted">(' + r.agreed_open.n + ' job)</span></p>' +
+        '<p>' + esc(r.agreed_completed.label) + '<br><b class="money">' + money(r.agreed_completed.value) + '</b> <span class="muted">(' + r.agreed_completed.n + ' job)</span></p>' +
+        '<p>' + esc(r.verified_cash.label) + '<br><b class="money">' + money(r.verified_cash.value) + '</b> <span class="muted">(' + r.verified_cash.n + ' job)</span></p>' +
+        '<p class="muted">Trung bình một job đã thoả thuận: ' + money(r.avg_agreed_booking) + ' · ' + esc(r.line_items_coverage) + '</p>' +
+        (r.warning ? '<div class="warn">' + esc(r.warning) + '</div>' : '') + '</div>' +
+
+        '<div class="card"><h2>Từ lúc nhắn tới lúc chốt</h2>' +
+        '<p style="font-size:22px;font-weight:600">' + (t.avg_days == null ? '—' : t.avg_days + ' ngày') + ' <span class="muted" style="font-size:14px">' + esc(t.coverage) + '</span></p>' +
+        (t.note ? '<p class="muted">' + esc(t.note) + '</p>' : '') + '</div>' +
+
+        '<div class="card"><p class="muted">Trang chỉ đọc. Phạm vi khoá theo ' + esc(d.scope) + '. Số liệu tính thẳng từ D1 mỗi lần mở, không cache.</p></div>';
+
+      shell('', '<button class="back" data-go="#/more">‹ Thêm</button>' + html, 'more');
+      bindRows();   // shell() KHONG tu gan [data-go], phai goi tay — bay da mac o day
+    }).catch(function (e) {
+      // 409 = chưa chạy migration 007. Nói đúng việc phải làm, đừng để người đọc đoán.
+      var msg = (e.data && e.data.error) ? e.data.error : e.message;
+      shell('', '<button class="back" data-go="#/more">‹ Thêm</button><div class="card"><h2>Control Room</h2><div class="warn">' + esc(msg) + '</div></div>', 'more');
+      bindRows();
+    });
+  }
+
   function viewMore() {
-    var html = '<div class="card"><h2>Xuất dữ liệu (archive / báo cáo)</h2>' +
+    var html = '<div class="card"><h2>Control Room · marketing</h2><p class="muted">Lead từ đâu, cần dịch vụ gì, cái nào chốt, tiền từ kênh nào. Chỉ đọc.</p><button class="btn sec" data-go="#/control-room">Mở Control Room</button></div>' +
+      '<div class="card"><h2>Xuất dữ liệu (archive / báo cáo)</h2>' +
       '<p class="muted">Tải CSV rồi dán vào Google Sheet <b>KINKAY_Lead_Tracker_LIVE_v2.0</b> (giờ chỉ là bản lưu / báo cáo). Cột đúng thứ tự tab Leads / Partners. CRM này là nguồn duy nhất; không sửa số trên Sheet.</p>' +
       '<button class="btn sec" data-x="leads">Tải Leads.csv</button><button class="btn sec" data-x="partners">Tải Partners.csv</button><button class="btn sec" data-x="events">Tải lịch sử thay đổi.csv</button></div>' +
       '<div class="card"><h2>Đã xoá (khôi phục được)</h2><div id="trashSlot"><div class="empty">Đang tải…</div></div></div>' +
       '<div class="card"><h2>Tài khoản</h2><p>' + esc(state.user || '') + (state.dev ? ' (chế độ dev, không cần đăng nhập)' : '') + '</p><button class="btn sec" id="btnOut">Đăng xuất</button></div>' +
       '<div class="card"><h2>Cách dùng 60 giây</h2><p class="muted">1. Hôm nay → bấm khách đến hạn. 2. Đổi trạng thái, ghi 1 việc tiếp, chọn hẹn. 3. Ghi 1 dòng vừa xảy ra. 4. Lưu. Có tiền thì chỉ điền khi đã chắc; Tân bật "Đã xác minh".</p></div>';
     shell('', html, 'more');
+    bindRows();
     app.querySelectorAll('[data-x]').forEach(function (b) {
       b.onclick = function () {
         var what = b.getAttribute('data-x');
@@ -2274,6 +2343,7 @@
     else if (h === '#/partner-new') viewPartnerNew();
     else if ((m = h.match(/^#\/partner\/(.+)$/))) viewPartner(decodeURIComponent(m[1]));
     else if (h === '#/more') viewMore();
+    else if (h === '#/control-room') viewControlRoom();
     else { location.hash = '#/today'; }
   }
   window.addEventListener('hashchange', render);
