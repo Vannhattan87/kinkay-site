@@ -36,3 +36,6 @@ Trial không phải để "xem thử cho biết". Nó là buổi mình đọc g�
 Đừng chỉ hỏi "bao nhiêu". Nhắn cho mình ba thứ: ngày cưới, tiệc trong nhà hay ngoài trời, và có bao nhiêu người cần makeup. Với ba thông tin đó mình báo được con số cuối cùng cho đúng ngày của bạn, thay vì một mức chung chung. Look cưới đẹp là look được thiết kế cho bạn, và báo giá cũng vậy.
 
 Bạn đang lên kế hoạch cho ngày cưới ở TP.HCM? Nhắn Kay ngày và địa điểm, mình tư vấn trước khi bạn quyết.
+
+**Reading this in English?** Every price above is published in English at [kinkay.vn/en/pricing](/en/pricing/), and Kay answers on WhatsApp.
+

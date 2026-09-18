@@ -1,10 +1,17 @@
 // AC-6 that: server tu choi -> giao dien KHONG bao thanh cong gia
-import pkg from '/home/claude/.npm-global/lib/node_modules/playwright/index.js';
-const { chromium } = pkg;
+// 18/09/2026 - go duong dan cung cua sandbox cu ('/home/claude/...') de test chay duoc
+// tren CA hai may: sandbox dam may lan may cua Tan. Thu playwright cai san truoc,
+// roi moi den duong dan npm-global cu.
+let chromium;
+try { ({ chromium } = await import('playwright')); }
+catch { ({ chromium } = (await import('/home/claude/.npm-global/lib/node_modules/playwright/index.js')).default); }
 import { createServer } from 'node:http';
 import { readFileSync, existsSync } from 'node:fs';
 
-const root = '/home/claude/wR/static';
+import { fileURLToPath } from 'node:url';
+import { dirname, resolve } from 'node:path';
+const here = dirname(fileURLToPath(import.meta.url));
+const root = existsSync(resolve(here, '../static')) ? resolve(here, '../static') : '/home/claude/wR/static';
 const srv = createServer((q, r) => {
   let p = q.url.split('?')[0];
   if (p.endsWith('/')) p += 'index.html';

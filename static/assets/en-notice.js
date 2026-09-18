@@ -20,8 +20,17 @@
     if (path.indexOf('/en/') === 0) return;
 
     var KEY = 'kk_lang';
-    function getLang() { try { return localStorage.getItem(KEY); } catch (e) { return null; } }
-    function setLang(v) { try { localStorage.setItem(KEY, v); } catch (e) {} }
+    var TTL = 30 * 24 * 3600 * 1000; // 18/09/2026 — lua chon ngon ngu het han sau 30 ngay
+    function getLang() {
+      try {
+        var v = localStorage.getItem(KEY);
+        if (!v) return null;
+        var at = parseInt(localStorage.getItem(KEY + "_at") || "0", 10);
+        if (at && (Date.now() - at) > TTL) { localStorage.removeItem(KEY); localStorage.removeItem(KEY + "_at"); return null; }
+        return v;
+      } catch (e) { return null; }
+    }
+    function setLang(v) { try { localStorage.setItem(KEY, v); localStorage.setItem(KEY + "_at", String(Date.now())); } catch (e) {} }
     function ga(name, params) { if (typeof gtag === 'function') gtag('event', name, params || {}); }
 
     // (1) ?lang= tren URL thang moi thu, roi bien mat khoi URL.

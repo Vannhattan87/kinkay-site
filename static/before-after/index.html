@@ -156,6 +156,15 @@
             <option data-key="other">Khác</option>
           </select>
         </div>
+        <!-- 18/09/2026 - form rut xuong 3 o BAT BUOC (ten, dip, lien he).
+             Ngay/dia diem/ngan sach/ghi chu van ghi vao D1 y nguyen, chi gap lai.
+             Ly do: 24 booking_click -> 4 form_submit_success (bo do 79 phan tram) va
+             form_error chi ban 1 lan -> khach bo vi form DAI, khong phai vi loi ky thuat.
+             Dung <details> chu khong phai JS: khong them phu thuoc, khong hong khi JS loi. -->
+        <details class="fld full kk-opt">
+          <summary>Thêm chi tiết (không bắt buộc)</summary>
+          <p class="kk-opt-hint">Càng nhiều thông tin Kay báo càng đúng. Không bắt buộc.</p>
+          <div class="ff">
         <div class="fld">
           <label for="lfDate">Ngày cần makeup</label>
           <input id="lfDate" name="date" type="date">
@@ -178,6 +187,8 @@
           <label for="lfNote">Bạn muốn Kay biết thêm điều gì?</label>
           <textarea id="lfNote" name="note"></textarea>
         </div>
+          </div>
+        </details>
         <!-- 13/09/2026 — Ô LIÊN HỆ (bắt buộc), MỘT ô tự nhận dạng.
              Bản 12/09 có HAI ô (chọn kênh + điền giá trị) đặt ngay sau ô Dịp. Hai vấn đề:
              đổi kênh thì giá trị cũ nằm nguyên rồi báo lỗi oan, và hỏi liên hệ ngay ở ô thứ 3 là

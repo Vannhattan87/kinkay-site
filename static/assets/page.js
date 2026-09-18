@@ -597,6 +597,14 @@
         track('booking_click', { method: 'instagram', click_source: source || 'page' });
       });
     });
+    /* 18/09/2026 — WhatsApp. Kenh nhan tin cua khach quoc te; ho khong cai Zalo.
+       CUNG event `booking_click` voi method='whatsapp' -> khong de ra key event moi,
+       khong doi schema, van tach duoc duong WhatsApp khoi duong Zalo va duong form. */
+    document.querySelectorAll('a[href*="wa.me"]').forEach(function (a) {
+      a.addEventListener('click', function () {
+        track('booking_click', { method: 'whatsapp', click_source: source || 'page' });
+      });
+    });
   }
 
   /* ---------- 7. cảnh báo trình duyệt trong app (TikTok/IG/FB chặn zalo.me) ---------- */

@@ -1078,6 +1078,15 @@ Ngồi vào ghế KINKAY, bạn nhận được tư vấn thật — bằng con 
             <option value="Khác" data-key="other">Khác</option>
           </select>
         </div>
+        <!-- 18/09/2026 - form rut xuong 3 o BAT BUOC (ten, dip, lien he).
+             Ngay/dia diem/ngan sach/ghi chu van ghi vao D1 y nguyen, chi gap lai.
+             Ly do: 24 booking_click -> 4 form_submit_success (bo do 79 phan tram) va
+             form_error chi ban 1 lan -> khach bo vi form DAI, khong phai vi loi ky thuat.
+             Dung <details> chu khong phai JS: khong them phu thuoc, khong hong khi JS loi. -->
+        <details class="fld full kk-opt">
+          <summary>Thêm chi tiết (không bắt buộc)</summary>
+          <p class="kk-opt-hint">Càng nhiều thông tin Kay báo càng đúng. Không bắt buộc.</p>
+          <div class="ff">
         <div class="fld">
           <label for="lfDate" data-t="form.date">Ngày cần makeup</label>
           <input id="lfDate" name="date" type="date">
@@ -1100,6 +1109,8 @@ Ngồi vào ghế KINKAY, bạn nhận được tư vấn thật — bằng con 
           <label for="lfNote" data-t="form.note">Bạn muốn Kay biết thêm điều gì?</label>
           <textarea id="lfNote" name="note" placeholder="Số người cần makeup, giờ phải xong, kiểu look bạn thích..." data-t-ph="form.notePh"></textarea>
         </div>
+          </div>
+        </details>
         <!-- 13/09/2026 — Ô LIÊN HỆ (bắt buộc), MỘT ô tự nhận dạng.
              Bản 12/09 có HAI ô (chọn kênh + điền giá trị) đặt ngay sau ô Dịp. Hai vấn đề:
              đổi kênh thì giá trị cũ nằm nguyên rồi báo lỗi oan, và hỏi liên hệ ngay ở ô thứ 3 là
@@ -1223,12 +1234,18 @@ function readLang(){
   try {
     var u = new URL(location.href), q = u.searchParams.get('lang');
     if (q === 'vi' || q === 'en') {
-      try { localStorage.setItem(LANG_KEY, q); } catch(e){}
+      try { localStorage.setItem(LANG_KEY, q); localStorage.setItem(LANG_KEY + '_at', String(Date.now())); } catch(e){}
       u.searchParams.delete('lang');
       history.replaceState(null, '', u.pathname + u.search + u.hash);
       return q;
     }
+    /* 18/09/2026 — lua chon ngon ngu het han sau 30 ngay. Truoc do khong co han:
+       khach lo vao /en/ mot lan la trang chu khoa tieng Anh vinh vien. */
     var s = localStorage.getItem(LANG_KEY);
+    var at = parseInt(localStorage.getItem(LANG_KEY + '_at') || '0', 10);
+    if (at && (Date.now() - at) > 30 * 24 * 3600 * 1000) {
+      localStorage.removeItem(LANG_KEY); localStorage.removeItem(LANG_KEY + '_at'); s = null;
+    }
     if (s === 'en' || s === 'vi') return s;
   } catch(e){}
   return 'vi';

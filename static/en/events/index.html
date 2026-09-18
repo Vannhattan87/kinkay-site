@@ -102,7 +102,8 @@
     <h1>Event and gala makeup</h1>
     <p class="lede">Chamber of commerce galas, company year-end parties, school events, awards nights, birthdays, and the dinners where photographs end up on a company website. Makeup and hair in one session, at your place or the venue.</p>
     <div class="pbtns">
-      <a class="btn" href="#form">Check my date</a>
+      <a class="btn btn-wa" href="https://wa.me/84933953179?text=Hi%20KINKAY%2C%20I%27m%20enquiring%20about%20makeup%20and%20hair%20for%20an%20event.%20%28From%20kinkay.vn%2Fen%2Fevents%2F%29" target="_blank" rel="noopener">Message on WhatsApp</a>
+      <a class="btn btn-ghost" href="#form">Check my date</a>
       <a class="btn btn-ghost" href="#pricing">See prices</a>
     </div>
   </div>
@@ -221,6 +222,15 @@
             <option data-key="other">Other</option>
           </select>
         </div>
+        <!-- 18/09/2026 - form rut xuong 3 o BAT BUOC (ten, dip, lien he).
+             Ngay/dia diem/ngan sach/ghi chu van ghi vao D1 y nguyen, chi gap lai.
+             Ly do: 24 booking_click -> 4 form_submit_success (bo do 79 phan tram) va
+             form_error chi ban 1 lan -> khach bo vi form DAI, khong phai vi loi ky thuat.
+             Dung <details> chu khong phai JS: khong them phu thuoc, khong hong khi JS loi. -->
+        <details class="fld full kk-opt">
+          <summary>Add details (optional)</summary>
+          <p class="kk-opt-hint">The more Kay knows, the more exact the reply. None of it is required.</p>
+          <div class="ff">
         <div class="fld">
           <label for="lfDate">Date</label>
           <input id="lfDate" name="date" type="date">
@@ -243,6 +253,8 @@
           <label for="lfNote">Anything Kay should know?</label>
           <textarea id="lfNote" name="note" placeholder="How many people, what time you need to be ready, the look you have in mind..."></textarea>
         </div>
+          </div>
+        </details>
         <!-- 13/09/2026 — Ô LIÊN HỆ (bắt buộc), MỘT ô tự nhận dạng.
              Bản 12/09 có HAI ô (chọn kênh + điền giá trị) đặt ngay sau ô Dịp. Hai vấn đề:
              đổi kênh thì giá trị cũ nằm nguyên rồi báo lỗi oan, và hỏi liên hệ ngay ở ô thứ 3 là
@@ -319,5 +331,12 @@
   KINKAY.init("en_events");
   KINKAY.leadForm({ source: "en_events" });
 </script>
-<script>/* 02/09/2026: vao /en/ = khach chon tieng Anh; nho lai de trang chu va trang VI biet. Link "Tieng Viet" tro ve /?lang=vi de xoa lua chon nay. */try{localStorage.setItem("kk_lang","en")}catch(e){}</script>
+<script>/* 18/09/2026 — thay ban 02/09 ghi vo dieu kien, khong han.
+   Hai bay cua ban cu: (1) khach VIET lo vao /en/ mot lan la trang chu khoa tieng Anh
+   VINH VIEN, va remapLinks doi /blog/gia-makeup-co-dau-tphcm sang /en/pricing/ —
+   bai blog do la trang DUY NHAT dang len trang 1 truy van thuong mai. (2) khong co han
+   nen mot lan to mo khoa mai mai. Gio: KHONG ghi neu trinh duyet co dau vet tieng Viet,
+   va co dau thoi gian de het han sau 30 ngay. Bam ?lang=en van la lua chon co y va van ghi. */
+try{var _l=(navigator.languages||[navigator.language||""]).join(",").toLowerCase();
+if(_l.indexOf("vi")<0){localStorage.setItem("kk_lang","en");localStorage.setItem("kk_lang_at",String(Date.now()));}}catch(e){}</script>
 </body></html>
