@@ -97,6 +97,26 @@
       ]
     },
     {
+      "slug": "party",
+      "label_vi": "Tiệc",
+      "label_en": "Party",
+      "images": [
+        "/assets/img/party/party_003.jpg",
+        "/assets/img/party/party_001.jpg",
+        "/assets/img/party/party_002.jpg",
+        "/assets/img/party/party_004.jpg",
+        "/assets/img/party/party_005.jpg",
+        "/assets/img/img_0253.jpg",
+        "/assets/img/img_0254.jpg",
+        "/assets/img/IMG_0688.JPG",
+        "/assets/img/incollage_save.jpeg",
+        "/assets/img/IMG_7953.jpeg",
+        "/assets/img/IMG_7956.jpeg",
+        "/assets/img/IMG_7954.jpeg",
+        "/assets/img/IMG_7950.jpeg"
+      ]
+    },
+    {
       "slug": "concept",
       "label_vi": "Concept",
       "label_en": "Concept",
